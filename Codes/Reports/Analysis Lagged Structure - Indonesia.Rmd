@@ -1,0 +1,187 @@
+---
+title: "Analysis of the COVID-19 Shock, Technology and Trade"
+subtitle: "Regression Results with Lagged Technology Variables - Indonesia"
+author: "Simón Caicedo"
+date: \today
+header-includes:
+  \usepackage{float}
+  \usepackage{placeins}
+  \usepackage{rotating}
+  \usepackage{graphicx}
+  \usepackage{booktabs}
+  \usepackage{caption}
+  \usepackage{longtable}
+  \usepackage{breqn}
+output:
+  pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.pos = 'H')
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning  = FALSE)
+```
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE, results='hide'}
+
+# Set Working Directory ----
+fileloc <- dirname(rstudioapi::getSourceEditorContext()$path)
+setwd(fileloc)
+rm(fileloc)
+
+
+# modelsummary package options----
+options("modelsummary_format_numeric_latex" = "plain")
+
+
+# Libraries to be used ----
+source("../src/packages.R")
+
+```
+
+# 1. Firm-Product Level Regressions
+
+## 1.1 Does Tech Adoption Affect Trade Outcomes?
+
+```{r}
+
+# Run regressions for products model for Indonesia 
+source("../Indonesia/regressions_product_model_lagged_IDN.R", chdir = TRUE)
+
+```
+
+### Results for eBay-tradable products/products in China e-commerce tax lists
+
+
+```{r, eval=TRUE}
+
+models_ebay_china_IDN_t_1[[2]]
+
+```
+
+
+```{r, eval=TRUE}
+
+models_ebay_china_IDN_t_2[[2]]
+
+```
+
+
+```{r, eval=TRUE}
+
+models_ebay_china_IDN_t_3[[2]]
+
+```
+
+
+
+### Results for BEC products classification
+
+
+```{r, eval=TRUE}
+
+models_BEC_IDN_t_1[[2]]
+
+```
+
+
+```{r, eval=TRUE}
+
+models_BEC_IDN_t_2[[2]]
+
+```
+
+
+```{r, eval=TRUE}
+
+models_BEC_IDN_t_3[[2]]
+
+```
+
+### Results for time-sensitive products
+
+
+
+
+```{r, eval=TRUE}
+
+models_time_sens_IDN_t_1[[2]]
+
+```
+
+
+
+```{r, eval=TRUE}
+
+models_time_sens_IDN_t_2[[2]]
+
+```
+
+
+
+```{r, eval=TRUE}
+
+models_time_sens_IDN_t_3[[2]]
+
+```
+
+
+
+
+### Results for other HS products classification
+
+
+
+```{r, eval=TRUE}
+
+models_other_HS_IDN_t_1[[2]]
+
+```
+
+
+```{r, eval=TRUE}
+
+models_other_HS_IDN_t_2[[2]]
+
+
+```
+
+
+```{r, eval=TRUE}
+
+models_other_HS_IDN_t_3[[2]]
+
+```
+
+
+
+
+
+### Results for capital - intermediate products classification
+
+
+
+```{r, eval=TRUE}
+
+models_cap_int_IDN_t_1[[2]]
+
+```
+
+
+```{r, eval=TRUE}
+
+models_cap_int_IDN_t_2[[2]]
+
+
+```
+
+
+```{r, eval=TRUE}
+
+models_cap_int_IDN_t_3[[2]]
+
+```
+
+
+

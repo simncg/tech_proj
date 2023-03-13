@@ -1,0 +1,933 @@
+---
+title: "Matching Panjiva/Aberdeen/Builtwith Datasets"
+author: "Simon Caicedo"
+date: \today
+header-includes:
+  \usepackage{float}
+  \usepackage{placeins}
+output:
+  pdf_document: 
+    number_sections: yes
+  html_document:
+    number_sections: yes
+---
+
+```{r setup, include = FALSE, warning=F, message=F}
+knitr::opts_chunk$set(fig.pos = 'H')
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning  = FALSE)
+options(knitr.table.format = "latex")
+
+big_number_format<-function(x){format(x, big.mark = ",")}
+
+```
+
+
+```{r chunk-a, ref.label=c('appendix'), echo=F}
+```
+
+
+
+```{r}
+library(tidyverse)
+library(haven)
+library(knitr)
+library(arrow)
+library(data.table)
+library(lubridate)
+library(kableExtra)
+library(ggpubr)
+library(scales)
+
+```
+
+
+
+```{r}
+
+
+fileloc <- dirname(rstudioapi::getSourceEditorContext()$path)
+setwd(fileloc)
+rm(fileloc)
+
+# Libraries to be used ----
+source("../src/packages.R")
+library(tibble)
+library(ggpubr)
+
+# Indonesia ----
+
+# Builtwith Data 
+tech_IDN <- fread("../../Data/Indonesia/Builtwith_IDN_longformat.csv") %>% 
+  select(company_id = New_ID_1, tech) %>% 
+  filter(tech %in% c("payrobust", "ecom")) %>% 
+  distinct(company_id)
+
+
+# Load matched Aberdeen to Panjiva data 
+aberdeen_IDN <- read_xlsx("../../Data/Indonesia/matched_data_Indonesia.xlsx") 
+
+# Correspondance 
+IDN_Domestic_Ids_Corresp <- read_xlsx("../../Data/Indonesia/IDN_Domestic_Ids_Corresp_update.xlsx")
+
+aberdeen_IDN <-IDN_Domestic_Ids_Corresp  %>% 
+  select(prev_our_domestic_id, new_our_domestic_id ) %>% 
+  distinct() %>% 
+  filter(prev_our_domestic_id  %in% aberdeen_IDN$our_domestic_id) %>% 
+  left_join(aberdeen_IDN,  by = c("prev_our_domestic_id" = "our_domestic_id")) %>% 
+  rename(company_id = new_our_domestic_id) %>% 
+  distinct(company_id)
+
+
+# Panjiva Imports Data (Firm-Month-HS6)
+imports_IDN <-read_csv("../../Data/Indonesia/import_summary_by_firm_month_HS_code.csv") %>% 
+  select(company_id, date, date_character,hs6,log_import, import, import_dummy, n_countries_import)%>% 
+  mutate(hs6  = str_pad(hs6 , 6, "left", "0"), 
+         year = year(date)) %>% 
+  mutate(matched_builtwith = company_id %in% tech_IDN$company_id, 
+         matched_aberdeen = company_id %in% aberdeen_IDN$company_id, 
+         matched_both = as.logical(matched_builtwith*matched_aberdeen))
+
+# Panjiva Exports Data (Firm-Month-HS6)
+exports_IDN <-read_csv("../../Data/Indonesia/export_summary_by_firm_month_HS_code.csv") %>% 
+  select(company_id, date, date_character,hs6, log_export, export, export_dummy, n_countries_export)%>% 
+  mutate(hs6  = str_pad(hs6 , 6, "left", "0"), 
+         year = year(date)) %>% 
+  mutate(matched_builtwith = company_id %in% tech_IDN$company_id, 
+         matched_aberdeen = company_id %in% aberdeen_IDN$company_id, 
+         matched_both = as.logical(matched_builtwith*matched_aberdeen))
+
+
+
+# India ----
+
+# Builtwith India 
+tech_IND   <- read_parquet("../../Data/India/Builtwith_no_drop_long.parquet", 
+                            col_select = c("our_ID", "tech")) %>% 
+  # For the moment, we are only going to analyze e-payment/e-commerce technologies
+  filter(tech %in% c("payrobust_nod", "ecom_nod")) %>% 
+  rename(company_id = our_ID) %>% 
+  distinct(company_id)
+
+# Firms matched to Aberdeen 
+aberdeen_IND <- read_csv("../../Data/India/matched_Aberdeen_to_Panjiva_data_India_v2.csv") %>%
+  rename(company_id = our_ID) %>% 
+  distinct(company_id)
+
+
+# Panjiva Imports Data 
+imports_IND <-fread("../../Data/India/import_summaries_by_firm_month_HS_code_complete.csv") %>% 
+  select(company_id = domestic_company_id, year, month, date, date_character,hs6, import, log_import) %>%
+  # filter to analysis period
+  filter(date >= ymd("2019-02-01"),
+         date <= ymd("2021-06-01")) %>% 
+  mutate(hs6  = str_pad(as.character(hs6), 6, "left", "0"), 
+         matched_builtwith = company_id %in% tech_IND$company_id, 
+         matched_aberdeen = company_id %in% aberdeen_IND$company_id, 
+         matched_both = as.logical(matched_aberdeen*matched_builtwith))
+
+
+# Panjiva Exports Data 
+exports_IND <-fread("../../Data/India/export_summaries_by_firm_month_HS_code_complete.csv") %>% 
+  select(company_id = domestic_company_id, year, month, date, date_character,hs6, export, log_export) %>% 
+  # filter to analysis period
+  filter(date >= ymd("2019-02-01"),
+         date <= ymd("2021-09-01"))%>% 
+  mutate(hs6  = str_pad(as.character(hs6) , 6, "left", "0"), 
+         matched_builtwith = company_id %in% tech_IND$company_id, 
+         matched_aberdeen = company_id %in% aberdeen_IND$company_id,
+         matched_both = as.logical(matched_aberdeen*matched_builtwith))
+
+rm(IDN_Domestic_Ids_Corresp)
+
+
+```
+
+
+# Matching Description
+
+## Firms Matching Rates
+
+```{r}
+
+table_IDN<-imports_IDN %>% 
+  select(company_id, matched_builtwith, matched_aberdeen, matched_both) %>% 
+  distinct(company_id, .keep_all = T) %>% 
+  mutate(Data = "Panjiva Imports",
+         n_firms = n()) %>% 
+  group_by(matched_builtwith) %>% 
+  mutate(n_match_builtwith = sum(matched_builtwith), 
+         share_match_builtwith = (n_match_builtwith/n_firms)*100) %>%
+  ungroup() %>%
+  group_by(matched_aberdeen) %>% 
+  mutate(n_match_aberdeen = sum(matched_aberdeen), 
+         share_match_aberdeen = (n_match_aberdeen/n_firms)*100) %>% 
+  ungroup() %>% 
+  group_by(matched_both) %>% 
+  mutate(n_match_both = sum(matched_both), 
+         share_match_both = (n_match_both/n_firms)*100) %>% 
+  ungroup() %>% 
+  filter(share_match_builtwith != 0, 
+         share_match_aberdeen != 0, 
+         share_match_both != 0) %>% 
+  distinct(n_firms, share_match_builtwith, share_match_aberdeen, share_match_both, .keep_all = T) %>% 
+  select(Data,
+         `Number of Firms` = n_firms,
+         `% Matched to Aberdeen` = share_match_aberdeen,
+         `% Matched to BuiltWith` = share_match_builtwith, 
+         `% Matched to Both` = share_match_both
+         ) %>% 
+  bind_rows(
+      exports_IDN %>% 
+      select(company_id, matched_builtwith, matched_aberdeen, matched_both) %>% 
+      distinct(company_id, .keep_all = T) %>% 
+      mutate(Data = "Panjiva Exports",
+             n_firms = n()) %>% 
+      group_by(matched_builtwith) %>% 
+      mutate(n_match_builtwith = sum(matched_builtwith), 
+             share_match_builtwith = (n_match_builtwith/n_firms)*100) %>%
+      ungroup() %>%
+      group_by(matched_aberdeen) %>% 
+      mutate(n_match_aberdeen = sum(matched_aberdeen), 
+             share_match_aberdeen = (n_match_aberdeen/n_firms)*100) %>% 
+      ungroup() %>% 
+      group_by(matched_both) %>% 
+      mutate(n_match_both = sum(matched_both), 
+             share_match_both = (n_match_both/n_firms)*100) %>% 
+      ungroup() %>% 
+      filter(share_match_builtwith != 0, 
+             share_match_aberdeen != 0, 
+             share_match_both != 0) %>% 
+      distinct(n_firms, share_match_builtwith, share_match_aberdeen, share_match_both, .keep_all = T) %>% 
+      select(Data,
+             `Number of Firms` = n_firms,
+             `% Matched to Aberdeen` = share_match_aberdeen,
+             `% Matched to BuiltWith` = share_match_builtwith, 
+             `% Matched to Both` = share_match_both
+             )
+  ) %>% 
+  mutate(across(where(is.numeric), round, 2), 
+         across(where(is.numeric), big_number_format))
+
+
+
+table_IND<-imports_IND %>% 
+  select(company_id, matched_builtwith, matched_aberdeen, matched_both) %>% 
+  distinct(company_id, .keep_all = T) %>% 
+  mutate(Data = "Panjiva Imports",
+         n_firms = n()) %>% 
+  group_by(matched_builtwith) %>% 
+  mutate(n_match_builtwith = sum(matched_builtwith), 
+         share_match_builtwith = (n_match_builtwith/n_firms)*100) %>%
+  ungroup() %>%
+  group_by(matched_aberdeen) %>% 
+  mutate(n_match_aberdeen = sum(matched_aberdeen), 
+         share_match_aberdeen = (n_match_aberdeen/n_firms)*100) %>% 
+  ungroup() %>% 
+  group_by(matched_both) %>% 
+  mutate(n_match_both = sum(matched_both), 
+         share_match_both = (n_match_both/n_firms)*100) %>% 
+  ungroup() %>% 
+  filter(share_match_builtwith != 0, 
+         share_match_aberdeen != 0, 
+         share_match_both != 0) %>% 
+  distinct(n_firms, share_match_builtwith, share_match_aberdeen, share_match_both, .keep_all = T) %>% 
+  select(Data,
+         `Number of Firms` = n_firms,
+         `% Matched to Aberdeen` = share_match_aberdeen,
+         `% Matched to BuiltWith` = share_match_builtwith, 
+         `% Matched to Both` = share_match_both) %>% 
+  bind_rows(
+      exports_IND %>% 
+      select(company_id, matched_builtwith, matched_aberdeen, matched_both) %>% 
+      distinct(company_id, .keep_all = T) %>% 
+      mutate(Data = "Panjiva Exports",
+             n_firms = n()) %>% 
+      group_by(matched_builtwith) %>% 
+      mutate(n_match_builtwith = sum(matched_builtwith), 
+             share_match_builtwith = (n_match_builtwith/n_firms)*100) %>%
+      ungroup() %>%
+      group_by(matched_aberdeen) %>% 
+      mutate(n_match_aberdeen = sum(matched_aberdeen), 
+             share_match_aberdeen = (n_match_aberdeen/n_firms)*100) %>% 
+      ungroup() %>% 
+      group_by(matched_both) %>% 
+      mutate(n_match_both = sum(matched_both), 
+             share_match_both = (n_match_both/n_firms)*100) %>% 
+      ungroup() %>% 
+      distinct(n_firms, share_match_builtwith, share_match_aberdeen, share_match_both, .keep_all = T) %>% 
+      filter(share_match_builtwith != 0, 
+             share_match_aberdeen != 0, 
+             share_match_both!= 0) %>% 
+      select(Data,
+             `Number of Firms` = n_firms,
+             `% Matched to Aberdeen` = share_match_aberdeen,
+             `% Matched to BuiltWith` = share_match_builtwith, 
+             `% Matched to Both` = share_match_both)
+  ) %>% 
+  mutate(across(where(is.numeric), round, 2), 
+         across(where(is.numeric), big_number_format))
+
+
+table_IDN<-t(table_IDN)
+colnames(table_IDN)<-table_IDN[1,]
+table_IDN<-table_IDN[-1,]
+
+
+table_IND<-t(table_IND)
+colnames(table_IND)<-table_IND[1,]
+table_IND<-table_IND[-1,]
+
+
+kbl(cbind(table_IDN, table_IND),  caption = "Panjiva firms matching rates to BuiltWith and Aberdeen datasets", centering = T, booktabs = T) %>%
+  kable_classic() %>%
+  add_header_above(c(" ","Indonesia" = 2, "India" = 2))%>%
+  kable_styling(latex_options = "HOLD_position")
+
+```
+
+## Transactions Matching Rates
+
+```{r}
+
+table_IDN<-imports_IDN %>% 
+  select(company_id, matched_builtwith, matched_aberdeen, matched_both) %>% 
+  mutate(Data = "Panjiva Imports",
+         n_transactions = n()) %>% 
+  group_by(matched_builtwith) %>% 
+  mutate(n_match_builtwith = sum(matched_builtwith), 
+         share_match_builtwith = (n_match_builtwith/n_transactions)*100) %>%
+  ungroup() %>% 
+  group_by(matched_aberdeen) %>% 
+  mutate(n_match_aberdeen = sum(matched_aberdeen), 
+         share_match_aberdeen = (n_match_aberdeen/n_transactions)*100) %>%
+  ungroup() %>% 
+  group_by(matched_both) %>% 
+  mutate(n_match_both = sum(matched_both), 
+         share_match_both = (n_match_both/n_transactions)*100) %>%
+  ungroup() %>% 
+  distinct(n_transactions, share_match_builtwith, share_match_aberdeen, share_match_both, .keep_all = T) %>% 
+  filter(share_match_builtwith != 0, 
+         share_match_aberdeen != 0, 
+         share_match_both!=0) %>% 
+  select(Data,
+         `Number of Transactions` = n_transactions,
+         `% Matched to Aberdeen` = share_match_aberdeen,
+         `% Matched to BuiltWith` = share_match_builtwith,
+         `% Matched to Both` = share_match_both
+         ) %>%  
+  bind_rows(exports_IDN %>% 
+              select(company_id, matched_builtwith, matched_aberdeen, matched_both) %>%
+              mutate(Data = "Panjiva Exports",
+                     n_transactions = n()) %>% 
+              group_by(matched_builtwith) %>% 
+              mutate(n_match_builtwith = sum(matched_builtwith), 
+                     share_match_builtwith = (n_match_builtwith/n_transactions)*100) %>%
+              ungroup() %>% 
+              group_by(matched_aberdeen) %>% 
+              mutate(n_match_aberdeen = sum(matched_aberdeen), 
+                     share_match_aberdeen = (n_match_aberdeen/n_transactions)*100) %>%
+              ungroup() %>% 
+              group_by(matched_both) %>% 
+              mutate(n_match_both = sum(matched_both), 
+                     share_match_both = (n_match_both/n_transactions)*100) %>%
+              ungroup() %>% 
+              distinct(n_transactions, share_match_builtwith, share_match_aberdeen, share_match_both, .keep_all = T) %>% 
+              filter(share_match_builtwith != 0,
+                     share_match_aberdeen != 0,
+                     share_match_both != 0) %>% 
+              select(Data,
+                     `Number of Transactions` = n_transactions,
+                     `% Matched to Aberdeen` = share_match_aberdeen,
+                     `% Matched to BuiltWith` = share_match_builtwith, 
+                     `% Matched to Both` = share_match_both)
+            ) %>% 
+  mutate(across(where(is.numeric), round, 2), 
+         across(where(is.numeric), big_number_format))
+  
+  
+table_IND <- imports_IND %>% 
+  select(company_id, matched_builtwith, matched_aberdeen, matched_both) %>% 
+  mutate(Data = "Panjiva Imports",
+         n_transactions = n()) %>% 
+  group_by(matched_builtwith) %>% 
+  mutate(n_match_builtwith = sum(matched_builtwith), 
+         share_match_builtwith = (n_match_builtwith/n_transactions)*100) %>%
+  ungroup() %>% 
+  group_by(matched_aberdeen) %>% 
+  mutate(n_match_aberdeen = sum(matched_aberdeen), 
+         share_match_aberdeen = (n_match_aberdeen/n_transactions)*100) %>%
+  ungroup() %>% 
+  group_by(matched_both) %>% 
+  mutate(n_match_both = sum(matched_both), 
+         share_match_both = (n_match_both/n_transactions)*100) %>%
+  ungroup() %>% 
+  distinct(n_transactions, share_match_builtwith, share_match_aberdeen, share_match_both, .keep_all = T) %>% 
+  filter(share_match_builtwith != 0, 
+         share_match_aberdeen != 0, 
+         share_match_both!=0) %>% 
+  select(Data,
+         `Number of Transactions` = n_transactions,
+         `% Matched to Aberdeen` = share_match_aberdeen,
+         `% Matched to BuiltWith` = share_match_builtwith,
+         `% Matched to Both` = share_match_both
+         ) %>% 
+  bind_rows(exports_IND %>% 
+              select(company_id, matched_builtwith, matched_aberdeen, matched_both) %>% 
+              mutate(Data = "Panjiva Exports",
+                     n_transactions = n()) %>% 
+              group_by(matched_builtwith) %>% 
+              mutate(n_match_builtwith = sum(matched_builtwith), 
+                     share_match_builtwith = (n_match_builtwith/n_transactions)*100) %>%
+              ungroup() %>% 
+              group_by(matched_aberdeen) %>% 
+              mutate(n_match_aberdeen = sum(matched_aberdeen), 
+                     share_match_aberdeen = (n_match_aberdeen/n_transactions)*100) %>%
+              ungroup() %>% 
+              group_by(matched_both) %>% 
+              mutate(n_match_both = sum(matched_both), 
+                     share_match_both = (n_match_both/n_transactions)*100) %>%
+              ungroup() %>% 
+              distinct(n_transactions, share_match_builtwith, share_match_aberdeen, share_match_both, .keep_all = T) %>% 
+              filter(share_match_builtwith != 0,
+                     share_match_aberdeen != 0,
+                     share_match_both != 0
+                     
+                     ) %>% 
+              select(Data,
+                     `Number of Transactions` = n_transactions,
+                     `% Matched to Aberdeen` = share_match_aberdeen,
+                     `% Matched to BuiltWith` = share_match_builtwith, 
+                     `% Matched to Both` = share_match_both
+                     )) %>% 
+  mutate(across(where(is.numeric), round, 2), 
+         across(where(is.numeric), big_number_format))
+
+
+
+
+table_IDN<-t(table_IDN)
+colnames(table_IDN)<-table_IDN[1,]
+table_IDN<-table_IDN[-1,]
+
+
+table_IND<-t(table_IND)
+colnames(table_IND)<-table_IND[1,]
+table_IND<-table_IND[-1,]
+
+
+kbl(cbind(table_IDN, table_IND), caption = "Panjiva transactions at the Firm-Month-HS6 level matching rates to BuiltWith and Aberdeen datasets", centering = T, booktabs = T, format.args = list(big.mark = ",")) %>%
+  kable_classic() %>%
+  add_header_above(c(" ","Indonesia" = 2, "India" = 2))%>%
+  kable_styling(latex_options = "HOLD_position")
+
+
+```
+
+
+## Top 25 exporting/importing firms matching rates
+
+```{r}
+
+rm(table_IND, table_IDN)
+
+top25_IDN<-readRDS("../../Data/Indonesia/processed_data/top25_companies_matching_shares_IDN.rds")
+top25_IND<-readRDS("../../Data/India/processed_data/top25_companies_matching_shares_IND_v2.rds")
+
+```
+
+```{r}
+
+
+kbl(top25_IDN, digits = 2, caption = "Top 25 exporting/importing firms matching rates - Indonesia", centering = T, booktabs = T) %>%
+  kable_classic() %>% 
+  kable_styling(latex_options = "HOLD_position")
+
+
+```
+
+```{r}
+
+
+kbl(top25_IND, digits = 2, caption = "Top 25 exporting/importing firms matching rates - India", centering = T, booktabs = T) %>%
+  kable_classic() %>%
+  kable_styling(latex_options = "HOLD_position")
+
+
+```
+
+
+## Summary statistics of value of transactions at the firm-month-HS6 level matched to both Aberdeen and BuiltWith datasets
+
+
+```{r}
+
+rm(top25_IND, top25_IDN)
+
+exports_IDN %>% 
+  group_by(`Matched Both` = matched_both) %>% 
+  summarize(Min = min(export), 
+            p25 = quantile(export, c(0.25)),
+            Mean = mean(export), 
+            Median = median(export), 
+            p75 = quantile(export, c(0.75)),
+            Max = max(export)) %>% 
+  mutate_if(is.numeric, funs(scales::dollar(.))) %>% 
+  kbl(booktabs = T, caption = "Indonesia - Panjiva Exports Transactions Value (USD) at the firm-month-HS6 level", centering = T) %>% 
+  kable_classic() %>%
+  kable_styling(latex_options = "HOLD_position")
+
+```
+
+
+```{r}
+
+imports_IDN %>% 
+  group_by(`Matched Both` = matched_both) %>% 
+  summarize(Min = min(import), 
+            p25 = quantile(import, c(0.25)),
+            Mean = mean(import), 
+            Median = median(import), 
+            p75 = quantile(import, c(0.75)),
+            Max = max(import)) %>% 
+  mutate_if(is.numeric, funs(scales::dollar(.))) %>% 
+  kbl(booktabs = T, caption = "Indonesia - Panjiva Imports Transactions Value (USD) at the firm-month-HS6 level", centering = T) %>% 
+  kable_classic() %>%
+  kable_styling(latex_options = "HOLD_position")
+            
+
+```
+
+
+```{r}
+
+exports_IND %>% 
+  group_by(`Matched Both` = matched_both) %>% 
+  summarize(Min = min(export), 
+            p25 = quantile(export, c(0.25)),
+            Mean = mean(export), 
+            Median = median(export), 
+            p75 = quantile(export, c(0.75)),
+            Max = max(export)) %>% 
+  mutate_if(is.numeric, funs(scales::dollar(.))) %>% 
+  kbl(booktabs = T, caption = "India - Panjiva Exports Transactions Value (USD) at the firm-month-HS6 level", centering = T) %>% 
+  kable_classic() %>%
+  kable_styling(latex_options = "HOLD_position")
+
+```
+
+
+```{r}
+
+imports_IND %>% 
+  group_by(`Matched Both` = matched_both) %>% 
+  summarize(Min = min(import), 
+            p25 = quantile(import, c(0.25)),
+            Mean = mean(import), 
+            Median = median(import), 
+            p75 = quantile(import, c(0.75)),
+            Max = max(import)) %>% 
+  mutate_if(is.numeric, funs(scales::dollar(.))) %>% 
+  kbl(booktabs = T, caption = "India - Panjiva Imports Transactions Value (USD) at the firm-month-HS6 level", centering = T) %>% 
+  kable_classic() %>%
+  kable_styling(latex_options = "HOLD_position")
+            
+
+```
+
+
+
+```{r}
+# Panjiva imports transactions matched to Aberdeen and Builtwith
+
+# Theme to add to ggplots
+theme_p <- theme(legend.position = "bottom", 
+                 plot.title = element_text(face = "bold", hjust = 0.5), 
+                 plot.subtitle = element_text(face="italic", hjust = 0.5, size = 7), 
+                 axis.title.y  = element_text(size = 9), 
+                 axis.title.x = element_text(size = 9))
+
+# Scale fill manual to add to ggplots
+scale_p <- scale_fill_manual(values = c("#ff3f00", "deepskyblue4"), 
+                          labels = c("Not Matched", "Matched"))
+
+
+# Imports Indonesia
+imp_IDN<-ggplot(imports_IDN)+
+  geom_density(aes(x = log_import, fill = matched_both), alpha = 0.3)+
+  theme_minimal()+
+  ylab("Density")+
+  xlab("Log. imports value (USD)")+
+  ggtitle("", 
+          subtitle = "Panjiva Imports - Indonesia")+
+  labs(fill = "")+
+  theme_p+
+  scale_p
+
+# Exports Indonesia
+exp_IDN<-ggplot(exports_IDN)+
+  geom_density(aes(x = log_export, fill = matched_both), alpha = 0.3)+
+  theme_minimal()+
+  ylab("Density")+
+  xlab("Log. exports value (USD)")+
+  ggtitle("", 
+          subtitle = "Panjiva Exports - Indonesia")+
+  labs(fill = "")+
+  theme_p+
+  scale_p
+
+# Imports India
+imp_IND<-ggplot(imports_IND)+
+  geom_density(aes(x = log_import, fill = matched_both), alpha = 0.3)+
+  theme_minimal()+
+  ylab("Density")+
+  xlab("Log. imports value (USD)")+
+  ggtitle("", 
+          subtitle = "Panjiva Imports - India")+
+  labs(fill = "")+
+  theme_p+
+  scale_p
+
+# Exports Indonesia
+exp_IND<-ggplot(exports_IND)+
+  geom_density(aes(x = log_export, fill = matched_both), alpha = 0.3)+
+  theme_minimal()+
+  ylab("Density")+
+  xlab("Log. exports value (USD)")+
+  ggtitle("", 
+          subtitle = "Panjiva Exports - India")+
+  labs(fill = "")+
+  theme_p+
+  scale_p
+
+
+
+figure <- ggarrange(imp_IDN, exp_IDN, imp_IND, exp_IND,
+                    ncol = 2, nrow = 2, common.legend = T, 
+                    legend = "bottom")
+
+figure<-annotate_figure(figure, top = text_grob("Panjiva transactions matched to Aberdeen and Builtwith - Log.Imports and Log. Exports", face = "bold", size = 9))
+
+rm(imp_IDN, exp_IDN, imp_IND, exp_IND, theme_p, scale_p)
+
+figure
+
+
+```
+
+
+
+## Total value of transactions linked to matched/non-matched firms
+
+```{r}
+
+rm(figure)
+
+# Total value of export transaction linked to matched/non-matched firms
+
+  # Indonesia
+  exports_IDN %>% 
+  group_by(matched_both) %>% 
+  summarize(total_export = sum(export)) %>%
+  ungroup() %>% 
+  mutate(perc_exp = as.character(round(total_export/sum(total_export)*100), 1), 
+         across(where(is.numeric), label_number(scale_cut = cut_short_scale())), 
+         tot_share_exp = paste0(total_export, " (", perc_exp, "%)")) %>% 
+  left_join(imports_IDN %>% 
+            group_by(matched_both) %>% 
+            summarize(total_import = sum(import)) %>% 
+            ungroup() %>% 
+            mutate(perc_imp = as.character(round((total_import/sum(total_import))*100, 1)), 
+                   across(where(is.numeric), label_number(scale_cut = cut_short_scale())), 
+                   tot_share_imp = paste0(total_import, " (", perc_imp, "%)")), 
+            by = c("matched_both")
+  ) %>% 
+  select(matched_both, tot_share_exp, tot_share_imp) %>% 
+  # India
+  left_join(exports_IND %>% 
+      group_by(matched_both) %>% 
+      summarize(total_export = sum(export)) %>%
+      ungroup() %>% 
+      mutate(perc_exp = as.character(round(total_export/sum(total_export)*100), 1), 
+             across(where(is.numeric), label_number(scale_cut = cut_short_scale())), 
+             tot_share_exp = paste0(total_export, " (", perc_exp, "%)")) %>% 
+      left_join(imports_IND %>% 
+                group_by(matched_both) %>% 
+                summarize(total_import = sum(import)) %>% 
+                ungroup() %>% 
+                mutate(perc_imp = as.character(round((total_import/sum(total_import))*100, 1)), 
+                       across(where(is.numeric), label_number(scale_cut = cut_short_scale())), 
+                       tot_share_imp = paste0(total_import, " (", perc_imp, "%)")), 
+                by = c("matched_both")
+      ) %>% 
+      select(matched_both,  tot_share_exp, tot_share_imp), 
+      by =  "matched_both") %>% 
+   mutate( matched_both = replace(matched_both, matched_both == TRUE, "Matched"),
+           matched_both = replace(matched_both, matched_both == FALSE, "Not matched")
+           ) %>% 
+  `colnames<-`(c("Matched Panjiva and Aberdeen", "Total Exports", "Total Imports", 
+                 "Total Exports", "Total Imports")) %>% 
+  # Create table
+  kbl(caption = "Total value of transactions in USD dollar linked to matched/non-matched firms", 
+      centering = T, booktabs = T, format.args = list(big.mark = ",")) %>%
+  kable_classic() %>%
+  add_header_above(c(" ","Indonesia" = 2, "India" = 2))%>%
+  kable_styling(latex_options = "HOLD_position")
+
+
+```
+
+
+# Number of months of data availability by matched and non-matched firms to both Aberdeen and Builtwith datasets.
+
+
+```{r}
+
+
+perc_available_firms_month<-function(data, plot_title){
+  data1<-data %>% 
+    distinct(company_id, date, .keep_all = T) %>% 
+    count(matched_both, company_id) %>% 
+    rename(n_months_available = n) %>% 
+    count(n_months_available, matched_both) %>% 
+    rename(n_firms = n) %>% 
+    # Number of unique firms
+    mutate(n_unique_firms = sum(n_firms)) %>% 
+    group_by(n_months_available) %>% 
+    # Number of firms per month availability
+    mutate(n_firms_overall = sum(n_firms),
+           perc_overall = round((n_firms_overall/n_unique_firms)*100, 2)) %>% 
+    left_join(
+      data %>% 
+        distinct(company_id, .keep_all = T) %>% 
+        count(matched_both) %>% 
+        # Total matched firms and non-matched firms
+        mutate(n_firms_group_match = n),
+      by = c("matched_both")
+      ) %>% 
+      select(-n) %>% 
+      mutate(perc_matched = round((n_firms/n_firms_group_match)*100, 2)) 
+
+  # From the matched firms count the percentage of months available
+  matched_firms_pct <- data1 %>% 
+    filter(matched_both) %>% 
+    select(n_months_available, perc_matched)
+  
+  # From the non-matched firms count the percentage of months available
+  non_matched_firms_pct<- data1 %>% 
+    filter(!matched_both) %>% 
+    rename(perc_non_matched = perc_matched) %>% 
+    select(n_months_available, perc_non_matched)
+  
+  n_month_availability_pct<-
+    # From all the firms count the percentage of months available
+    data1 %>% 
+      distinct(n_months_available, .keep_all = T) %>% 
+      select(n_months_available, perc_overall) %>% 
+      # Join with the percentage of non-matched firms
+      left_join(non_matched_firms_pct, by="n_months_available") %>% 
+      # Join with the percentage of matched firms
+      left_join(matched_firms_pct, by = "n_months_available") %>% 
+      pivot_longer(cols = c("perc_overall", "perc_non_matched", "perc_matched"),
+                   names_to = "set_firms",
+                   values_to = "percentage",
+                   names_prefix = "perc_")
+  
+  
+  p<-n_month_availability_pct %>% 
+    ggplot(.) +
+    geom_col(aes(x = n_months_available, y = percentage, fill = set_firms),
+             position="dodge", alpha = 0.7) + 
+    ylab("Percentage of firms")+
+    xlab("Number of months with data available")+
+    labs(fill = "")+
+    theme_minimal() + 
+    scale_fill_manual(values = c("deepskyblue4", "#ff3f00", "gray56"), 
+                      labels = c("Matched", "Non-matched", "Overall")) +
+    theme(legend.position = "bottom", 
+          axis.title.x = element_text(size = 10), 
+          axis.title.y = element_text(size = 9), 
+          panel.grid.major.x = element_blank(), 
+          axis.text.x = element_text(size=6),
+          axis.text.y = element_text(size=8), 
+          plot.title = element_text(face = "bold", hjust = 0.5), 
+          plot.subtitle = element_text(face = "italic", hjust = 0.5, size = 13), 
+  
+          ) + 
+    scale_y_continuous(breaks = c(5, 10, 15, 20, 25))+
+    scale_x_continuous(breaks = n_month_availability_pct$n_months_available)+
+    ggtitle(plot_title)
+  
+  return(p)  
+}
+
+# Plot for exports indonesia dataset
+p_exp_idn<-perc_available_firms_month(exports_IDN, "Exports Indonesia")
+
+
+# Plot for imports indonesia dataset
+p_imp_idn<-perc_available_firms_month(imports_IDN, "Imports Indonesia")
+
+
+
+# Plot for exports India dataset
+p_exp_ind<-perc_available_firms_month(exports_IND, "Exports India")
+
+
+# Plot for imports india dataset
+p_imp_ind<-perc_available_firms_month(imports_IND, "Imports India")
+
+
+
+```
+
+
+```{r, fig.height=4}
+
+p_imp_idn
+
+```
+
+
+
+```{r, fig.height=4}
+
+p_exp_idn
+
+```
+
+
+
+
+```{r, fig.height=4}
+
+p_exp_ind
+
+```
+
+
+
+```{r, fig.height=4}
+
+p_imp_ind
+
+```
+
+# Firm monthly mean trade volume by matched/non-matched firms to both Aberdeen and Builtwith datasets 
+
+```{r}
+
+# Mean Trade Volume by Matched/Non-Matched Firms
+
+mean_trade_volume_plots<-function(data_imports, data_exports, country){
+
+  # Calculate the lower and upper bounds for the export variable
+  lower_bound_exp <- quantile(data_exports$export, 0.01)
+  upper_bound_exp <- quantile(data_exports$export, 0.99)
+  lower_bound_imp <- quantile(data_imports$import, 0.01)
+  upper_bound_imp <- quantile(data_imports$import, 0.99)
+  
+  
+  exp<-data_exports %>% 
+    filter(export >= lower_bound_exp & export <= upper_bound_exp) %>% 
+    group_by(company_id, date, matched_both) %>% 
+    summarize(total_export = sum(export)) %>% 
+    ungroup() %>% 
+    group_by(date, matched_both) %>% 
+    summarize(mean_export = mean(total_export))
+  
+  imp<-data_imports %>% 
+    filter(import >= lower_bound_imp & import <= upper_bound_imp) %>% 
+    group_by(company_id, date, matched_both) %>% 
+    summarize(total_import = sum(import)) %>% 
+    ungroup() %>% 
+    group_by(date, matched_both) %>% 
+    summarize(mean_import = mean(total_import))
+    
+  
+  p_exp<-ggplot(exp)+
+    geom_line(aes(x = date, y = mean_export, color = matched_both), size=0.8) + 
+    geom_point(aes(x = date, y = mean_export, color = matched_both), size = 1.5) + 
+    theme_minimal()+
+    labs(colour = "")+
+    ggtitle(paste(country,"Exporting Firms"))+
+    theme(legend.position = "bottom", 
+            axis.title.x = element_text(size = 10),
+            axis.text.x = element_text(size = 6),
+            axis.text.y = element_text(size = 7),
+            axis.title.y = element_text(size = 9), 
+            plot.title = element_text(face = "bold", hjust = 0.5, size = 10))+
+    scale_color_manual(values = c("#ff3f00", "deepskyblue4"),
+                       labels = c("Non-matched firms", "Matched firms"))+
+    ylab("Mean Trade Volume (USD)")+
+    xlab("Date")+
+    scale_y_continuous(labels = scales::dollar)+
+    scale_x_date(date_breaks = "3 months", 
+                 date_labels = "%b %Y")
+  
+  
+  p_imp<-ggplot(imp)+
+    geom_line(aes(x = date, y = mean_import, color = matched_both), size=0.8) + 
+    geom_point(aes(x = date, y = mean_import, color = matched_both), size = 1.5) + 
+    theme_minimal()+
+    labs(colour = "")+
+    ggtitle(paste(country,"Importing Firms"))+
+    theme(legend.position = "bottom", 
+          axis.title.x = element_text(size = 8),
+          axis.text.x = element_text(size = 6),
+          axis.text.y = element_text(size = 7),
+          axis.title.y = element_text(size = 7), 
+          plot.title = element_text(face = "bold", hjust = 0.5, size = 10)
+          )+
+    scale_color_manual(values = c("#ff3f00", "deepskyblue4"),
+                       labels = c("Non-matched firms", "Matched firms"))+
+    ylab("Mean Trade Volume (USD)")+
+    xlab("Date")+
+    scale_y_continuous(labels = scales::dollar)+
+    scale_x_date(date_breaks = "3 months", 
+                 date_labels = "%b %Y")
+    
+  return(list(p_exp, p_imp))
+    
+}
+
+
+
+```
+
+
+```{r}
+
+plots_ind<-mean_trade_volume_plots(imports_IND, exports_IND, "India")
+plots_idn<-mean_trade_volume_plots(imports_IDN, exports_IDN, "Indonesia")
+
+
+```
+
+```{r, fig.height=4}
+
+plots_ind[[1]]
+
+```
+
+```{r, fig.height=4}
+
+plots_ind[[2]]
+
+```
+
+
+
+```{r, fig.height=4}
+
+plots_idn[[1]]
+
+```
+
+```{r, fig.height=4}
+
+plots_idn[[2]]
+
+```
+

@@ -1,0 +1,244 @@
+---
+title: "Top 5 transactions in Panjiva datasets"
+author: "Simón Caicedo"
+date: \today
+header-includes:
+  \usepackage{float}
+  \usepackage{placeins}
+  \usepackage{rotating}
+  \usepackage{graphicx}
+  \usepackage{booktabs}
+  \usepackage{caption}
+  \usepackage{longtable}
+  \usepackage{breqn}
+output:
+  pdf_document: 
+    number_sections: yes
+  html_document:
+    number_sections: yes
+---
+
+```{r setup, include = FALSE, warning=F, message=F}
+knitr::opts_chunk$set(fig.pos = 'H')
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning  = FALSE)
+options(knitr.table.format = "latex")
+
+big_number_format<-function(x){format(x, big.mark = ",")}
+
+```
+
+
+
+```{r}
+
+
+fileloc <- dirname(rstudioapi::getSourceEditorContext()$path)
+setwd(fileloc)
+rm(fileloc)
+
+# Libraries to be used ----
+source("../src/packages.R")
+library(tibble)
+library(ggpubr)
+
+# Indonesia ----
+
+# Builtwith Data 
+tech_IDN <- fread("../../Data/Indonesia/Builtwith_IDN_longformat.csv") %>% 
+  select(company_id = New_ID_1, tech) %>% 
+  filter(tech %in% c("payrobust", "ecom")) %>% 
+  distinct(company_id)
+
+
+# Load matched Aberdeen to Panjiva data 
+aberdeen_IDN <- read_xlsx("../../Data/Indonesia/matched_data_Indonesia.xlsx") 
+
+# Correspondance 
+IDN_Domestic_Ids_Corresp <- read_xlsx("../../Data/Indonesia/IDN_Domestic_Ids_Corresp_update.xlsx")
+
+aberdeen_IDN <-IDN_Domestic_Ids_Corresp  %>% 
+  select(prev_our_domestic_id, new_our_domestic_id ) %>% 
+  distinct() %>% 
+  filter(prev_our_domestic_id  %in% aberdeen_IDN$our_domestic_id) %>% 
+  left_join(aberdeen_IDN,  by = c("prev_our_domestic_id" = "our_domestic_id")) %>% 
+  rename(company_id = new_our_domestic_id) %>% 
+  distinct(company_id)
+
+
+# Panjiva Imports Data (Firm-Month-HS8)
+imports_IDN <-read_dta("../../Data/Indonesia/IDN_Imports_Monthly_domestic_level_dropdup.dta") %>% 
+  select(company_id, year, month, hs, import, import_price, import_qty, country)%>% 
+  filter(!str_starts(hs, "27")) %>% 
+  mutate(hs6 = substr(hs, 1, 6)) %>%
+  mutate(hs6  = str_pad(hs6 , 6, "left", "0")) %>% 
+  mutate(matched_builtwith = company_id %in% tech_IDN$company_id, 
+         matched_aberdeen = company_id %in% aberdeen_IDN$company_id, 
+         matched_both = as.logical(matched_builtwith*matched_aberdeen))
+
+# Panjiva Exports Data (Firm-Month-HS8)
+exports_IDN <-read_dta("../../Data/Indonesia/IDN_Exports_Monthly_domestic_level_dropdup.dta") %>% 
+  select(company_id, year, month, hs, export, export_price, export_qty, country)%>% 
+  filter(!str_starts(hs, "27")) %>% 
+  mutate(hs6 = substr(hs, 1, 6)) %>%
+  mutate(hs6  = str_pad(hs6 , 6, "left", "0")) %>% 
+  mutate(matched_builtwith = company_id %in% tech_IDN$company_id, 
+         matched_aberdeen = company_id %in% aberdeen_IDN$company_id, 
+         matched_both = as.logical(matched_builtwith*matched_aberdeen))
+
+# India ----
+
+# Builtwith India
+tech_IND   <- read_parquet("../../Data/India/Builtwith_no_drop_long.parquet",
+                            col_select = c("our_ID", "tech")) %>%
+  # For the moment, we are only going to analyze e-payment/e-commerce technologies
+  filter(tech %in% c("payrobust_nod", "ecom_nod")) %>%
+  rename(company_id = our_ID) %>%
+  distinct(company_id)
+
+# Firms matched to Aberdeen
+aberdeen_IND <- read_csv("../../Data/India/matched_Aberdeen_to_Panjiva_data_India_v2.csv") %>%
+  rename(company_id = our_ID) %>%
+  distinct(company_id)
+
+#gc()
+
+# Panjiva Imports Data (Firm-Month-HS8)
+imports_IND <-read_dta("../../Data/India/IND_imports_Monthly_domestic_level_dropdup.dta") %>%
+  select(company_id = domestic_company_id, year, month, hs6, import, import_price, country, import_qty, company_name = domestic_company_name) %>%
+  filter(!str_starts(hs6 , "27")) %>%
+  mutate(date = as.Date(paste0(year, "-", month, "-01"))) %>%
+  # filter to analysis period
+  filter(date >= ymd("2019-02-01"),
+         date <= ymd("2021-06-01")) %>%
+  mutate(hs6  = str_pad(as.character(hs6), 6, "left", "0"),
+         matched_builtwith = company_id %in% tech_IND$company_id,
+         matched_aberdeen = company_id %in% aberdeen_IND$company_id,
+         matched_both = as.logical(matched_aberdeen*matched_builtwith))
+
+
+# Panjiva Exports Data (Firm-Month-HS8)
+exports_IND <-read_dta("../../Data/India/IND_Exports_Monthly_domestic_level_dropdup.dta") %>%
+  select(company_id = domestic_company_id, year, month,hs6, export, export_price, country, export_qty, company_name = domestic_company_name) %>%
+  filter(!str_starts(hs6 , "27")) %>%
+  # filter to analysis period
+  mutate(date = as.Date(paste0(year, "-", month, "-01"))) %>%
+  # filter to analysis period
+  filter(date >= ymd("2019-02-01"),
+         date <= ymd("2021-09-01"))%>%
+  mutate(hs6  = str_pad(as.character(hs6) , 6, "left", "0"),
+         matched_builtwith = company_id %in% tech_IND$company_id,
+         matched_aberdeen = company_id %in% aberdeen_IND$company_id,
+         matched_both = as.logical(matched_aberdeen*matched_builtwith))
+
+rm(IDN_Domestic_Ids_Corresp)
+
+
+
+```
+
+# Indonesia 
+
+```{r}
+
+#gc()
+
+exports_IDN %>% 
+  arrange(desc(export)) %>% 
+  head(5) %>% 
+  select(-matched_aberdeen, -matched_builtwith, -matched_both) %>% 
+  mutate(`HS6 Description` = c("Electric motors and generators", "Motorcycles and cycles", "	Glycerol, crude", "Coal", "Rubber; new pneumatic tyres")) %>% 
+  mutate(across(c(export, export_price), scales::dollar), 
+         year = as.character(year),
+         across(where(is.numeric), big_number_format)) %>% 
+  relocate(`Company ID` = company_id, Year = year, Month = month, HS8=hs, HS6=hs6, 
+           `HS6 Description`,
+           `Partner Country` = country, `Export Value` = export, `Export Quantity` = export_qty,
+           `Unit Price` = export_price) %>% 
+  kbl(booktabs = T, caption = "Indonesia - Panjiva Exports Top 5 Transactions Value (USD)", centering = T) %>% 
+  kable_classic() %>%
+  kable_styling(latex_options = c("HOLD_position", "scale_down"))
+
+
+```
+
+
+
+
+```{r}
+
+
+imports_IDN %>%
+  arrange(desc(import)) %>%
+  head(5) %>%
+  select(-matched_aberdeen, -matched_builtwith, -matched_both) %>%
+  mutate(`HS6 Description` = c("Meters; parts and accessories of gas, liquid, electricity supply or production meters", "Aeroplanes and other aircraft",
+                               "Aeroplanes and other aircraft",
+                               "Aeroplanes and other aircraft",
+                               "Vessels")) %>%
+  mutate(across(c(import, import_price), scales::dollar),
+         year = as.character(year),
+         across(where(is.numeric), big_number_format)) %>%
+  relocate(`Company ID` = company_id, Year = year, Month = month, HS8=hs, HS6=hs6,
+           `HS6 Description`,
+           `Partner Country` = country, `Import Value` = import, `Import Quantity` = import_qty,
+           `Unit Price` = import_price) %>%
+  kbl(booktabs = T, caption = "Indonesia - Panjiva Imports Top 5 Transactions Value (USD)", centering = T) %>%
+  kable_classic() %>%
+  kable_styling(latex_options = c("HOLD_position", "scale_down"))
+
+
+```
+
+
+# India 
+
+```{r}
+
+
+exports_IND %>%
+  arrange(desc(export)) %>%
+  head(5) %>%
+  select(-matched_aberdeen, -matched_builtwith, -matched_both, -date) %>%
+  mutate(`HS6 Description` = c("Boring or sinking machinery", "Optical fibres, optical fibre bundles and cables", "Unissued banknotes, banknotes and similar securities issued by the government", "Spices", "Vessels")) %>%
+  mutate(across(c(export, export_price), scales::dollar),
+         year = as.character(year),
+         across(where(is.numeric), big_number_format)) %>%
+  relocate(`Company ID` = company_id, `Company Name` = company_name, Year = year, Month = month, HS6=hs6,
+           `HS6 Description`,
+           `Partner Country` = country, `Export Value` = export, `Export Quantity` = export_qty,
+           `Unit Price` = export_price
+           ) %>%
+  kbl(booktabs = T, caption = "India - Panjiva Exports Top 5 Transactions Value (USD)", centering = T) %>%
+  kable_classic() %>%
+  kable_styling(latex_options = c("HOLD_position", "scale_down"))
+
+
+```
+
+
+
+
+```{r}
+
+
+imports_IND %>%
+  arrange(desc(import)) %>%
+  head(5) %>%
+  select(-matched_aberdeen, -matched_builtwith, -matched_both, -date) %>%
+  mutate(`HS6 Description` = c("Metals; gold", "Metals; gold", "Metals; gold", "Metals; gold", "Metals; gold")) %>%
+  mutate(across(c(import, import_price), scales::dollar),
+         year = as.character(year),
+         across(where(is.numeric), big_number_format)) %>%
+  relocate(`Company ID` = company_id, `Company Name` = company_name, Year = year, Month = month, HS6=hs6,
+           `HS6 Description`,
+           `Partner Country` = country, `Import Value` = import, `Import Quantity` = import_qty,
+           `Unit Price` = import_price
+           ) %>%
+  kbl(booktabs = T, caption = "India - Panjiva Imports Top 5 Transactions Value (USD)", centering = T) %>%
+  kable_classic() %>%
+  kable_styling(latex_options = c("HOLD_position", "scale_down"))
+
+
+```

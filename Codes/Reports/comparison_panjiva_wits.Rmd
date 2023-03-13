@@ -1,0 +1,73 @@
+---
+title: "Comparison Panjiva and WITS datasets"
+author: "Simón Caicedo"
+date: \today
+header-includes:
+  \usepackage{float}
+  \usepackage{placeins}
+  \usepackage{rotating}
+  \usepackage{graphicx}
+  \usepackage{booktabs}
+  \usepackage{caption}
+  \usepackage{longtable}
+  \usepackage{breqn}
+output:
+  pdf_document: 
+    number_sections: yes
+  html_document:
+    number_sections: yes
+---
+
+```{r setup, include = FALSE, warning=F, message=F}
+knitr::opts_chunk$set(fig.pos = 'H')
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning  = FALSE)
+options(knitr.table.format = "latex")
+
+big_number_format<-function(x){format(x, big.mark = ",")}
+
+```
+
+
+```{r}
+
+
+fileloc <- dirname(rstudioapi::getSourceEditorContext()$path)
+setwd(fileloc)
+rm(fileloc)
+
+# Libraries to be used ----
+source("../src/packages.R")
+
+```
+
+```{r}
+
+
+idn<-readRDS("../../Data/processed_data/comparison_panjiva_wits_IDN.rds")
+ind<-readRDS("../../Data/processed_data/comparison_panjiva_wits_IND.rds")
+
+
+```
+
+```{r}
+
+idn %>% 
+  kbl(booktabs = T, caption = "Indonesia - Comparison Panjiva and WITS datasets", centering = T) %>%
+  kable_classic() %>%
+  kable_styling(latex_options = c("HOLD_position", "scale_down"))
+
+```
+
+
+
+
+```{r}
+
+ind %>% 
+  kbl(booktabs = T, caption = "India - Comparison Panjiva and WITS datasets", centering = T) %>%
+  kable_classic() %>%
+  kable_styling(latex_options = c("HOLD_position", "scale_down"))
+
+```

@@ -1,0 +1,43 @@
+---
+title: "Analysis of the COVID-19 Shock, Technology and Trade"
+subtitle: "Regression Results for India"
+author: "Simón Caicedo"
+date: \today
+header-includes:
+  \usepackage{float}
+  \usepackage{placeins}
+  \usepackage{rotating}
+  \usepackage{graphicx}
+  \usepackage{booktabs}
+  \usepackage{caption}
+  \usepackage{longtable}
+  \usepackage{breqn}
+output:
+  pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.pos = 'H')
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning  = FALSE)
+```
+
+
+
+# Extensive Margin Analysis 
+
+## Does tech adoption affect trade outcomes 
+
+$$y_{it} = \alpha_0 + \alpha_1 tech_{it} + FE_{i} + FE_{t} + \varepsilon_{it}$$
+
+## Does existing tech use mitigate COVID impacts?
+
+$$y_{it} = \alpha_0 + \alpha_1 tech_{i}\cdot covid_t + FE_{i} + FE_{t} + \varepsilon_{it}$$
+
+* Are Coefficients $\alpha_2$ and $\alpha_3$ from $\alpha_2 tech_i + \alpha_3 covid_t$ absorbed by $FE_i$ and $FE_t$?
+
+
+
+
+

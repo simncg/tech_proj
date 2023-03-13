@@ -1,0 +1,977 @@
+---
+title: "Analysis of the COVID-19 Shock, Technology and Trade"
+subtitle: "Regression Results - Indonesia and India"
+author: "Simón Caicedo"
+date: \today
+header-includes:
+  \usepackage{float}
+  \usepackage{placeins}
+  \usepackage{rotating}
+  \usepackage{graphicx}
+  \usepackage{booktabs}
+  \usepackage{caption}
+  \usepackage{longtable}
+  \usepackage{breqn}
+output:
+  pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.pos = 'H')
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning  = FALSE)
+```
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE, results='hide'}
+
+# Set Working Directory ----
+fileloc <- dirname(rstudioapi::getSourceEditorContext()$path)
+setwd(fileloc)
+rm(fileloc)
+
+# Libraries to be used ----
+source("../src/packages.R")
+
+# modelsummary package options----
+options("modelsummary_format_numeric_latex" = "plain")
+
+
+# Format N, R2, Adj.R2 in tables
+f1 <- function(x) format(round(x, 3), big.mark=",")
+f2 <- function(x) format(round(x, 0), big.mark=",")
+
+gm <- list(
+          list("raw" = "nobs", "clean" = "Num. Obs.", "fmt" = f2),
+          list("raw" = "r.squared", "clean" = "R-squared", "fmt" = f1),
+          list("raw" = "adj.r.squared", "clean" = "Adj.R-squared", "fmt"=f1)
+)
+
+
+```
+
+
+# 1. Firm-Product Level Regressions
+
+## 1.1 Does Tech Adoption Affect Trade Outcomes?
+
+These regressions analyze if technology adoption relates to trade outcomes (value of imports/exports, propensity to import/export) of specific type of products (online tradeable products/durable and consumption goods). The regression model is:
+
+\begin{equation}\label{reg_1}
+    y_{ipt} = \alpha_0 + \alpha_1 tech_{it} \cdot pcategory_{p} + \alpha_2 tech_{it} + FE_p + FE_i + FE_t + \epsilon_{ipt} 
+\end{equation}
+
+
+Where $y_{ipt}$ represents the trade outcome for the firm $i$ product $p$ in the month $t$. Specifically, the outcomes variable can be the logarithm of number of exports/imports for a product $p$ of a firm $i$ in the month $t$, or a dummy indicating if the product $p$ of firm $i$ in the month $t$ is imported/exported or not, we define these variables as the import/export propensity. The variable $tech_{it}$ is a dummy indicating whether the firm $i$ in month $t$ used an adopted technology. The variable $pcategory_p$ is a dummy variable that describes the category of product $p$. We analyze 3 categories of products: a) Products traded online from eBay or from China e-commerce tax lists, b) BEC Classification of products to differentiate between durable, semi-durable and consumption goods, c) Products with different time-sensitivity (e.g., fresh products, frozen products).
+
+The interaction term $tech_{it} \cdot ecommerce_{p}$ captures the relationship that exists between technology adoption and the trade outcomes for the online tradeable products.
+
+Time fixed-effects control for unobserved variables that are constant at the firm-product level but vary over time. Firm fixed-effects control for unobserved time-and-product-invariant heterogeneities across firms. Similarly, product fixed-effects control for unobserved time-and-firm-invariant heterogeneities across products.
+
+```{r}
+
+# Run regressions for products model for Indonesia 
+source("../Indonesia/regressions_product_model_IDN.R", chdir = TRUE)
+
+```
+
+### Results for eBay-tradable products/products in China e-commerce tax lists
+
+```{r, eval=TRUE}
+
+# Assign dependent variable name to models names
+names(models_ebay_china_IDN)<-rep(c("Log.Imports", "Log.Exports"), length(models_ebay_china_IDN)/2)
+
+# Add fixed-effects indicators to tables
+FE<-as.data.frame(matrix(c("Firm FE", rep("Yes", length(models_ebay_china_IDN)), 
+                           "Product FE", rep("Yes", length(models_ebay_china_IDN)),
+                           "Month FE", rep("Yes", length(models_ebay_china_IDN))), 
+                         nrow = 3, byrow=T)) 
+
+# Assign variables names to display in tables
+coef_labels<-c(pay_or_ecomnod="E-payment or E-commerce", 
+               Ebay_tradable = "eBay-tradable", 
+               China_E_commerce = "China e-commerce", 
+               China_E_commerce_updated = "China e-commerce upd.", 
+               diff_new_old_China_ecommerce_list = "Diff. China e-commerce",
+               "pay_or_ecomnod:Ebay_tradable"="E-payment or E-commerce × eBay-tradable",
+               "pay_or_ecomnod:China_E_commerce"="E-payment or E-commerce × China e-commerce",
+               "pay_or_ecomnod:China_E_commerce_updated"="E-payment or E-commerce × China e-commerce upd.",
+               "pay_or_ecomnod:diff_new_old_China_ecommerce_list" = "E-payment or E-commerce × Diff. China e-commerce"
+)
+
+# Produce table with models summary  
+modelsummary(models_ebay_china_IDN,
+             coef_rename = coef_labels, 
+             gof_map = gm, 
+             stars = c('*' = .1, '**' = .05, '***'= 0.01), 
+             add_rows = FE, 
+             output = "latex", 
+             align = paste(c("l", rep("c", length(models_ebay_china_IDN))), sep="", collapse=""), 
+             notes = "Clustered-standard errors at the firm-product level.", 
+             fmt = f1, 
+             title = "Indonesia - Regression Results for Log. Imports and Log. Exports: e-Bay tradable and China e-commerce products") |>
+  add_header_above(c(" " = 1, "Dependent Variables" = length(models_ebay_china_IDN))) %>%
+  kable_styling(latex_options = c("HOLD_position", "scale_down")) 
+
+```
+
+
+E-payment/E-commerce adopters increased the value of imports for eBay tradeable products and products from the China ecommerce tax lists (updated). No statistically significant evidence for export values.
+
+
+```{r, eval = T}
+
+names(models_ebay_china_prop_IDN)<-rep(c("Import Propensity", "Export Propensity"), length(models_ebay_china_prop_IDN)/2)
+
+
+FE<-as.data.frame(matrix(c("Firm FE", rep("Yes", length(models_ebay_china_prop_IDN)), 
+                           "Product FE", rep("Yes", length(models_ebay_china_prop_IDN)),
+                           "Month FE", rep("Yes", length(models_ebay_china_prop_IDN))), 
+                         nrow = 3, byrow=T)) 
+
+
+modelsummary(models_ebay_china_prop_IDN,
+             coef_rename = coef_labels, 
+             gof_map = gm, 
+             stars = c('*' = .1, '**' = .05, '***'= 0.01), 
+             add_rows = FE, 
+             output = "latex", 
+             align = paste(c("l", rep("c", length(models_ebay_china_prop_IDN))), sep="", collapse=""), 
+             notes = "Clustered-standard errors at the firm-product level.", 
+             fmt = 5, 
+             title = "Indonesia - Regression Results for Import/Export Propensity: e-Bay tradable and China e-commerce products") |>
+  add_header_above(c(" " = 1, "Dependent Variables" = length(models_ebay_china_prop_IDN))) %>%
+  kable_styling(latex_options = c("HOLD_position", "scale_down")) 
+  
+  
+```
+
+
+### Results for BEC products classification
+
+```{r}
+
+# Assign dependent variable name to models names
+names(models_BEC_IDN)<-rep(c("Log.Imports", "Log.Exports"), length(models_BEC_IDN)/2)
+
+# Add fixed-effects indicators to tables
+FE<-as.data.frame(matrix(c("Firm FE", rep("Yes", length(models_BEC_IDN)), 
+                           "Product FE", rep("Yes", length(models_BEC_IDN)),
+                           "Month FE", rep("Yes", length(models_BEC_IDN))), 
+                           nrow = 3, byrow=T)) 
+
+# Assign variables names to display in tables
+coef_labels<-c(pay_or_ecomnod="E-payment or E-commerce", 
+               parts_BEC = "Parts", 
+               cons_dur_BEC = "Consumable and Durable", 
+               cons_semi_BEC = "Consumable and Semi-durable", 
+               cons_BEC  = "Consumable",
+               durable_BEC = "Durable",
+               durable_semi_BEC = "Semi-durable",
+               "pay_or_ecomnod:parts_BEC"="E-payment or E-commerce × Parts",
+               "pay_or_ecomnod:cons_dur_BEC"="E-payment or E-commerce × Consumable and Durable",
+               "pay_or_ecomnod:cons_semi_BEC"="E-payment or E-commerce × Consumable and Semi-durable",
+               "pay_or_ecomnod:cons_BEC" = "E-payment or E-commerce × Consumable",
+               "pay_or_ecomnod:durable_BEC" = "E-payment or E-commerce × Durable",
+               "pay_or_ecomnod:durable_semi_BEC" = "E-payment or E-commerce × Semi-durable", 
+               "pay_or_ecomnod:transp_BECTRUE" = "E-payment or E-commerce × Transport"
+)
+
+
+# Produce table with models summary
+modelsummary(models_BEC_IDN,
+             coef_rename = coef_labels, 
+             gof_map = gm, 
+             stars = c('*' = .1, '**' = .05, '***'= 0.01), 
+             add_rows = FE, 
+             output = "latex", 
+             align = paste(c("l", rep("c", length(models_BEC_IDN))), sep="", collapse=""), 
+             notes = "Clustered-standard errors at the firm-product level.", 
+             fmt = f1, 
+             title = "Indonesia - Regression Results for Log. Imports and Log. Exports: BEC products classification") |>
+  add_header_above(c(" " = 1, "Dependent Variables" = length(models_BEC_IDN))) %>% 
+  kable_styling(latex_options = c("HOLD_position", "scale_down")) 
+
+```
+
+There is statistically significant evidence that E-payments/E-commerce adopters increased the value of imports for consumable and semi-durable goods and the value of exports for durable goods. In the same way, the value of imports of products that are classified as "Parts and Accessories" was reduced by E-payments/E-commerce adopters.
+
+
+```{r, eval=TRUE}
+
+# Assign dependent variable name to models names
+names(models_BEC_prop_IDN)<-rep(c("Import Propensity", "Export Propensity"), length(models_BEC_prop_IDN)/2)
+
+# Add fixed-effects indicators to tables
+FE<-as.data.frame(matrix(c("Firm FE", rep("Yes", length(models_BEC_prop_IDN)), 
+                           "Product FE", rep("Yes", length(models_BEC_prop_IDN)),
+                           "Month FE", rep("Yes", length(models_BEC_prop_IDN))), 
+                         nrow = 3, byrow=T)) 
+
+
+modelsummary(models_BEC_prop_IDN,
+             coef_rename = coef_labels, 
+             gof_map = gm, 
+             stars = c('*' = .1, '**' = .05, '***'= 0.01), 
+             add_rows = FE, 
+             output = "latex", 
+             align = paste(c("l", rep("c", length(models_BEC_prop_IDN))), sep="", collapse=""), 
+             notes = "Clustered-standard errors at the firm-product level.", 
+             fmt = 5, 
+             title = "Indonesia - Regression Results for Import/Export Propensity: BEC products classification") |>
+  add_header_above(c(" " = 1, "Dependent Variables" = length(models_BEC_prop_IDN))) %>% 
+  kable_styling(latex_options = c("HOLD_position", "scale_down")) 
+
+
+```
+
+E-payments/E-commerce adopters were more likely to import and export *Durable and Consumable* goods, less likely to export *Consumable and Semi-durable* goods. 
+
+### Results for time-sensitive products
+
+```{r, eval=TRUE}
+
+# Assign dependent variable name to models names
+names(models_time_sens_IDN)<-rep(c("Log.Imports", "Log.Exports"), length(models_time_sens_IDN)/2)
+
+# Add fixed-effects indicators to tables
+FE<-as.data.frame(matrix(c("Firm FE", rep("Yes", length(models_time_sens_IDN)), 
+                           "Product FE", rep("Yes", length(models_time_sens_IDN)),
+                           "Month FE", rep("Yes", length(models_time_sens_IDN))), 
+                         nrow = 3, byrow=T))
+
+# Assign variables names to display in tables
+coef_labels<-c(pay_or_ecomnod="E-payment or E-commerce", 
+               component = "Component", 
+               fresh = "Fresh", 
+               frozen = "Frozen", 
+               hummels_timesensitive  = "Hummels Time-Sensitive",
+               agric_timesensitive = "Agricultural Time-Sensitive",
+               time_sens_hs2013_russ_typeofgoods = "Hummels and Schaur Time-Sensitivity",
+               "pay_or_ecomnod:component"="E-payment or E-commerce × Component ",
+               "pay_or_ecomnod:fresh"="E-payment or E-commerce × Fresh",
+               "pay_or_ecomnod:frozen"="E-payment or E-commerce × Frozen",
+               "pay_or_ecomnod:hummels_timesensitive" = "E-payment or E-commerce × Hummels Time-Sensitive",
+               "pay_or_ecomnod:time_sens_hs2013_russ_typeofgoods" = "E-payment or E-commerce × Hummels and Schaur Time-Sensitive",
+               "pay_or_ecomnod:agric_timesensitive"="E-payment or E-commerce × Agricultural Time-Sensitive"
+)
+
+
+
+modelsummary(models_time_sens_IDN,
+             coef_rename = coef_labels, 
+             gof_map = gm, 
+             stars = c('*' = .1, '**' = .05, '***'= 0.01), 
+             add_rows = FE, 
+             output = "latex", 
+             align = paste(c("l", rep("c", length(models_time_sens_IDN))), sep="", collapse=""), 
+             notes = "Clustered-standard errors at the firm-product level.", 
+             fmt = f1, 
+             title = "Indonesia - Regression Results for Log.Imports and Log.Exports: Time-sensitive Products") |>
+  add_header_above(c(" " = 1, "Dependent Variables" = length(models_time_sens_IDN))) %>% 
+  kable_styling(latex_options = c("HOLD_position", "scale_down")) 
+
+
+
+```
+
+No statistically significant evidence that time sensitivity of products matters for value of imports/exports.  
+
+```{r, eval = TRUE}
+
+names(models_time_sens_prop_IDN)<-rep(c("Import Propensity", "Export Propensity"), length(models_time_sens_prop_IDN)/2)
+
+# Add fixed-effects indicators to tables
+FE<-as.data.frame(matrix(c("Firm FE", rep("Yes", length(models_time_sens_prop_IDN)), 
+                           "Product FE", rep("Yes", length(models_time_sens_prop_IDN)),
+                           "Month FE", rep("Yes", length(models_time_sens_prop_IDN))), 
+                         nrow = 3, byrow=T)) 
+
+
+modelsummary(models_time_sens_prop_IDN,
+             coef_rename = coef_labels, 
+             gof_map = gm, 
+             stars = c('*' = .1, '**' = .05, '***'= 0.01), 
+             add_rows = FE, 
+             output = "latex", 
+             align = paste(c("l", rep("c", length(models_time_sens_prop_IDN))), sep="", collapse=""), 
+             notes = "Clustered-standard errors at the firm-product level.", 
+             fmt = 5, 
+             title = "Indonesia - Regression Results for Import/Export Propensity: Time-sensitive Products") |>
+  add_header_above(c(" " = 1, "Dependent Variables" = length(models_time_sens_prop_IDN))) %>% 
+  kable_styling(latex_options = c("HOLD_position", "scale_down")) 
+
+
+```
+
+E-payments/E-commerce adopters were more likely to export time sensitive *component* goods, less likely to export time sensitive fresh and frozen products. Similarly, E-payments/E-commerce adopters were more likely to export and import products classified as time-sensitive by Hummels (2007).
+
+### Results for other HS products classification 
+
+```{r, eval = TRUE}
+
+# Assign dependent variable name to models names
+names(models_other_HS_IDN)<-rep(c("Log.Imports", "Log.Exports"), length(models_other_HS_IDN)/2)
+
+
+coef_labels<-c(pay_or_ecomnod="E-payment or E-commerce", 
+               "pay_or_ecomnod:relationship_stickiness"="E-payment or E-commerce × Relationship Stickiness",
+               "pay_or_ecomnod:letter_credit_use"="E-payment or E-commerce × Letter Credit Use",
+               "pay_or_ecomnod:mean_IDN_remote_work_ISIC"="E-payment or E-commerce × Mean Remote Work ISIC",
+               "pay_or_ecomnod:frac_lib_diff" = "E-payment or E-commerce × Fraction inputs not sold on exchange and not ref priced"
+)
+
+
+FE<-as.data.frame(matrix(c("Firm FE", rep("Yes", length(models_other_HS_IDN)), 
+                           "Month FE", rep("Yes", length(models_other_HS_IDN)), 
+                           "Produce FE", rep("Yes", length(models_other_HS_IDN))), 
+                         nrow = 3, byrow=T))
+
+
+# Produce table with models summary  
+modelsummary(models_other_HS_IDN,
+             coef_rename = coef_labels, 
+             gof_map = gm, 
+             stars = c('*' = .1, '**' = .05, '***'= 0.01), 
+             add_rows = FE, 
+             output = "latex", 
+             align = paste(c("l", rep("c", length(models_other_HS_IDN))), sep="", collapse=""), 
+             notes = "Clustered-standard errors at the firm-product level.", 
+             fmt = f1, 
+             title = "Indonesia - Regression Results for Log.Exports and Log.Imports: COVID impacted Products") |>
+  add_header_above(c(" " = 1, "Dependent Variables" = length(models_other_HS_IDN)))%>%
+  kable_styling(latex_options = c("HOLD_position", "scale_down")) 
+
+
+```
+
+
+E-commerce or E-payment adoption with remote work flexibility seems to have had a positive impact on the value of imports, while relationship stickiness a negative impact. Likewise, the value of imports of products with a greater fraction of inputs not sold on exchange was positive affected by the e-commerce or e-payment adoption. 
+
+
+```{r, eval=TRUE}
+
+# Assign dependent variable name to models names
+names(models_other_HS_prop_IDN)<-rep(c("Import Propensity", "Export Propensity"), length(models_other_HS_prop_IDN)/2)
+
+
+
+FE<-as.data.frame(matrix(c("Firm FE", rep("Yes", length(models_other_HS_prop_IDN)), 
+                           "Month FE", rep("Yes", length(models_other_HS_prop_IDN)), 
+                           "Produce FE", rep("Yes", length(models_other_HS_prop_IDN))), 
+                         nrow = 3, byrow=T))
+
+
+# Produce table with models summary  
+modelsummary(models_other_HS_prop_IDN,
+             coef_rename = coef_labels, 
+             gof_map = gm, 
+             stars = c('*' = .1, '**' = .05, '***'= 0.01), 
+             add_rows = FE, 
+             output = "latex", 
+             align = paste(c("l", rep("c", length(models_other_HS_prop_IDN))), sep="", collapse=""), 
+             notes = "Clustered-standard errors at the firm-product level.", 
+             fmt = 5, 
+             title = "Indonesia - Regression Results for Import/Export Propensity: COVID impacted Products") |>
+  add_header_above(c(" " = 1, "Dependent Variables" = length(models_other_HS_prop_IDN)))%>%
+  kable_styling(latex_options = c("HOLD_position", "scale_down")) 
+
+
+```
+
+
+## 1.2 Does Existing Tech Use Mitigate COVID Impacts?
+
+The objective of these regressions is to analyze if companies that adopted e-payments/e-commerce before 2019 were able to mitigate the COVID impacts on products' trade outcomes. The specification is as follows:
+
+\begin{dmath}\label{reg_2}
+    y_{ipt} = \alpha_0 + \alpha_1 tech_i \cdot covid_t + \alpha_2 tech_i \cdot covid_t  \cdot  vulnerable_p + \alpha_3 covid_t \cdot vulnerable_p + FE_p + FE_i + FE_t + \epsilon_{ipt}
+\end{dmath}
+
+Trade outcomes $y_{ipt}$ are the same as in equation (1). The variable $tech_i$ is a dummy variable that indicates whether the company adopted e-commerce/e-payments before 2019, $covid_t$ captures COVID timing using the monthly \textit{Stringency Index} and, $vulnerable_p$ is a dummy variable describing whether the product $p$ is a COVID vulnerable product.
+
+The triple interaction term $tech_i \cdot covid_t \cdot vulnerable_p$ captures if adopted e-commerce/e-payments technology (pre-2019) mitigates the effect of COVID on trade outcomes for vulnerable products. The interaction term $tech_i \cdot covid_t$ describes whether adoption of e-commerce/e-payments technology before 2019 mitigates the effect of COVID on products' trade outcomes (not distinguishing by products' vulnerability), while $covid_t \cdot vulnerable_p$ describes the effect of COVID on vulnerable products' trade outcomes (not distinguishing by pre-2019 firms' incorporation of e-commerce/e-payments). Finally, it is included fixed-effects for product, firm and month.
+
+```{r}
+
+# Run regressions for model of tech mitigation of covid 
+source("../Indonesia/regressions_tech_mitigation_covid_model_IDN.R", chdir = TRUE)
+
+```
+
+### Tech Mitigation of COVID impacts for eBay-tradable products/products in China e-commerce tax lists
+
+```{r, eval=TRUE}
+
+# Assign dependent variable name to models names
+names(models_tech_covid_ebay_china_IDN)<-rep(c("Log.Imports", "Log.Exports"), length(models_tech_covid_ebay_china_IDN)/2)
+
+# Add fixed-effects indicators to tables
+FE<-as.data.frame(matrix(c("Firm FE", rep("Yes", length(models_tech_covid_ebay_china_IDN)), 
+                           "Product FE", rep("Yes", length(models_tech_covid_ebay_china_IDN)),
+                           "Month FE", rep("Yes", length(models_tech_covid_ebay_china_IDN))), 
+                         nrow = 3, byrow=T))
+
+# Assign variables names to display in tables
+coef_labels<-c("adopted_pay_or_ecom_before_2019:month_mean_stringency_index"="E-payment or E-commerce 2019 × Monthly Avg. Stringency Index",
+               "adopted_pay_or_ecom_before_2019:month_mean_stringency_index:Ebay_tradable" = "E-payment or E-commerce 2019 × Monthly Avg. Stringency Index × eBay-Tradable",
+               "month_mean_stringency_index:Ebay_tradable" = "Monthly Avg. Stringency Index × eBay-Tradable",
+               "month_mean_stringency_index:China_E_commerce" = "Monthly Avg. Stringency Index × China e-commerce",
+               "adopted_pay_or_ecom_before_2019:month_mean_stringency_index:China_E_commerce" = "E-payment or E-commerce 2019 × Monthly Avg. Stringency Index × China e-commerce",
+               "month_mean_stringency_index:China_E_commerce_updated" = "Monthly Avg. Stringency Index × China e-commerce upd.",
+               "adopted_pay_or_ecom_before_2019:month_mean_stringency_index:China_E_commerce_updated" = "E-payment or E-commerce 2019 × Monthly Avg. Stringency Index × China e-commerce upd.", 
+               "month_mean_stringency_index:diff_new_old_China_ecommerce_list" = "Monthly Avg. Stringency Index × Diff. China e-commerce",
+               "adopted_pay_or_ecom_before_2019:month_mean_stringency_index:diff_new_old_China_ecommerce_list" = "E-payment or E-commerce 2019 × Monthly Avg. Stringency Index × Diff. China e-commerce"
+               )
+
+
+# Table summary models
+modelsummary(models_tech_covid_ebay_china_IDN,
+             coef_rename = coef_labels, 
+             gof_map = gm, 
+             stars = c('*' = .1, '**' = .05, '***'= 0.01), 
+             add_rows = FE, 
+             output = "latex", 
+             align = paste(c("l", rep("c", length(models_tech_covid_ebay_china_IDN))), sep="", collapse=""), 
+             notes = list("The variable E-payment or E-commerce 2019 means that the company adopted the E-payment or E-commerce technology before 2019.", "Clustered-standard errors at the firm-product level."),
+             fmt = f1, 
+             title = 'Indonesia - Regression Results for Log. Exports and Log.Imports: e-Bay tradable and China e-commerce products') |>
+  add_header_above(c(" " = 1, "Dependent Variables" = length(models_tech_covid_ebay_china_IDN))) %>% 
+  kable_styling(latex_options = c("HOLD_position", "scale_down")) 
+
+
+```
+
+Pre-2019 users of E-payments or E-commerce increased the value of imports of online tradeable products. Little evidence for export values.
+
+```{r, eval = TRUE}
+
+
+# Assign dependent variable name to models names
+names(models_tech_covid_ebay_china_prop_IDN)<-rep(c("Import Propensity", "Export Propensity"), length(models_tech_covid_ebay_china_prop_IDN)/2)
+
+# Add fixed-effects indicators to tables
+FE<-as.data.frame(matrix(c("Firm FE", rep("Yes", length(models_tech_covid_ebay_china_prop_IDN)), 
+                           "Product FE", rep("Yes", length(models_tech_covid_ebay_china_prop_IDN)),
+                           "Month FE", rep("Yes", length(models_tech_covid_ebay_china_prop_IDN))), 
+                         nrow = 3, byrow=T))
+
+
+
+# Table summary models
+modelsummary(models_tech_covid_ebay_china_prop_IDN,
+             coef_rename = coef_labels, 
+             gof_map = gm, 
+             stars = c('*' = .1, '**' = .05, '***'= 0.01), 
+             add_rows = FE, 
+             output = "latex", 
+             align = paste(c("l", rep("c", length(models_tech_covid_ebay_china_prop_IDN))), sep="", collapse=""),
+             notes = list("The variable E-payment or E-commerce 2019 means that the company adopted the E-payment or E-commerce technology before 2019.", "Clustered-standard errors at the firm-product level."),
+             fmt = 5, 
+             title = 'Indonesia - Regression Results for Export/Import Propensity: e-Bay tradable and China e-commerce products') |>
+  add_header_above(c(" " = 1, "Dependent Variables" = length(models_tech_covid_ebay_china_prop_IDN)))%>% 
+  kable_styling(latex_options = c("HOLD_position", "scale_down")) 
+
+
+```
+
+
+### Tech Mitigation of COVID impacts for products in BEC classification
+
+```{r, eval = TRUE}
+
+# Assign dependent variable name to models names
+names(models_tech_covid_BEC_IDN)<-rep(c("Log.Imports", "Log.Exports"), length(models_tech_covid_BEC_IDN)/2)
+
+# Add fixed-effects indicators to tables
+FE<-as.data.frame(matrix(c("Firm FE", rep("Yes", length(models_tech_covid_BEC_IDN)), 
+                           "Product FE", rep("Yes", length(models_tech_covid_BEC_IDN)),
+                           "Month FE", rep("Yes", length(models_tech_covid_BEC_IDN))), 
+                         nrow = 3, byrow=T))
+
+
+coef_labels<-c("adopted_pay_or_ecom_before_2019:month_mean_stringency_index"="E-payment or E-commerce 2019 × Monthly Avg. Stringency Index",
+               "adopted_pay_or_ecom_before_2019:month_mean_stringency_index:parts_BEC" = "E-payment or E-commerce 2019 × Monthly Avg. Stringency Index × Parts",
+               "month_mean_stringency_index:parts_BEC" = "Monthly Avg. Stringency Index × Parts",
+               "month_mean_stringency_index:cons_dur_BEC" = "Monthly Avg. Stringency Index × Consumable and Durable",
+               "adopted_pay_or_ecom_before_2019:month_mean_stringency_index:cons_dur_BEC" = "E-payment or E-commerce 2019 × Monthly Avg. Stringency Index × Consumable and Durable",
+               "month_mean_stringency_index:cons_semi_BEC" = "Monthly Avg. Stringency Index × Consumable and Semi-durable",
+               "adopted_pay_or_ecom_before_2019:month_mean_stringency_index:cons_semi_BEC" = "E-payment or E-commerce 2019 × Monthly Avg. Stringency Index × Consumable and Semi-durable", 
+               "month_mean_stringency_index:cons_BEC" = "Monthly Avg. Stringency Index × Consumable",
+               "adopted_pay_or_ecom_before_2019:month_mean_stringency_index:cons_BEC" = "E-payment or E-commerce 2019 × Monthly Avg. Stringency Index × Consumable",
+               "month_mean_stringency_index:transp_BEC" = "Monthly Avg. Stringency Index × Transport",
+               "adopted_pay_or_ecom_before_2019:month_mean_stringency_index:transp_BEC" = "E-payment or E-commerce 2019 × Monthly Avg. Stringency Index × Transport",
+               "month_mean_stringency_index:durable_BEC" = "Monthly Avg. Stringency Index × Durable",
+               "adopted_pay_or_ecom_before_2019:month_mean_stringency_index:durable_BEC" = "E-payment or E-commerce 2019 × Monthly Avg. Stringency Index × Durable",
+               "month_mean_stringency_index:durable_semi_BEC" = "Monthly Avg. Stringency Index × Semi-Durable",
+               "adopted_pay_or_ecom_before_2019:month_mean_stringency_index:durable_semi_BEC" = "E-payment or E-commerce 2019 × Monthly Avg. Stringency Index × Semi-Durable")
+
+
+
+# Table summary models
+modelsummary(models_tech_covid_BEC_IDN,
+             coef_rename = coef_labels, 
+             gof_map = gm, 
+             stars = c('*' = .1, '**' = .05, '***'= 0.01), 
+             add_rows = FE, 
+             output = "latex", 
+             align = paste(c("l", rep("c", length(models_tech_covid_BEC_IDN))), sep="", collapse=""), 
+             notes = list("The variable E-payment or E-commerce 2019 means that the company adopted the E-payment or E-commerce technology before 2019.", "Clustered-standard errors at the firm-product level."), 
+             fmt = f1, 
+             title = 'Indonesia - Regression Results for Log. Exports and Log.Imports: BEC products classification') |>
+  add_header_above(c(" " = 1, "Dependent Variables" = length(models_tech_covid_BEC_IDN))) %>% 
+  kable_styling(latex_options = c("HOLD_position", "scale_down")) 
+
+
+
+```
+
+Pre-2019 users of E-payments or E-commerce increased the value of imports or exports of durable or consumption goods.
+
+
+```{r, eval = T}
+
+
+# Assign dependent variable name to models names
+names(models_tech_covid_BEC_prop_IDN)<-rep(c("Import Propensity", "Export Propensity"), length(models_tech_covid_BEC_prop_IDN)/2)
+
+# Add fixed-effects indicators to tables
+FE<-as.data.frame(matrix(c("Firm FE", rep("Yes", length(models_tech_covid_BEC_prop_IDN)), 
+                           "Product FE", rep("Yes", length(models_tech_covid_BEC_prop_IDN)),
+                           "Month FE", rep("Yes", length(models_tech_covid_BEC_prop_IDN))), 
+                         nrow = 3, byrow=T))
+
+
+modelsummary(models_tech_covid_BEC_prop_IDN,
+             coef_rename = coef_labels, 
+             gof_map = gm, 
+             stars = c('*' = .1, '**' = .05, '***'= 0.01), 
+             add_rows = FE, 
+             output = "latex", 
+             align = paste(c("l", rep("c", length(models_tech_covid_BEC_prop_IDN))), sep="", collapse=""), 
+             notes = list("The variable E-payment or E-commerce 2019 means that the company adopted the E-payment or E-commerce technology before 2019.", "Clustered-standard errors at the firm-product level."), 
+             fmt = 5, 
+             title = 'Indonesia - Regression Results for Export/Import propensity: BEC products classification') |>
+  add_header_above(c(" " = 1, "Dependent Variables" = length(models_tech_covid_BEC_prop_IDN))) %>% 
+  kable_styling(latex_options = c("HOLD_position", "scale_down")) 
+
+
+```
+
+### Tech Mitigation of COVID impacts for time-sensitive products
+
+```{r, eval=TRUE}
+
+
+# Assign dependent variable name to models names
+names(models_covid_time_sensitivity_IDN)<-rep(c("Log.Imports", "Log.Exports"), length(models_covid_time_sensitivity_IDN)/2)
+
+# Add fixed-effects indicators to tables
+FE<-as.data.frame(matrix(c("Firm FE", rep("Yes", length(models_covid_time_sensitivity_IDN)), 
+                           "Product FE", rep("Yes", length(models_covid_time_sensitivity_IDN)),
+                           "Month FE", rep("Yes", length(models_covid_time_sensitivity_IDN))), 
+                         nrow = 3, byrow=T))
+
+
+coef_labels<-c("adopted_pay_or_ecom_before_2019:month_mean_stringency_index"="E-payment or E-commerce 2019 × Monthly Avg. Stringency Index",
+               "adopted_pay_or_ecom_before_2019:month_mean_stringency_index:component" = "E-payment or E-commerce 2019 × Monthly Avg. Stringency Index × Component",
+               "month_mean_stringency_index:component" = "Monthly Avg. Stringency Index × Component",
+               "adopted_pay_or_ecom_before_2019:month_mean_stringency_index:Fresh" = "E-payment or E-commerce 2019 × Monthly Avg. Stringency Index × Fresh",
+               "month_mean_stringency_index:fresh" = "Monthly Avg. Stringency Index × Fresh",
+               "adopted_pay_or_ecom_before_2019:month_mean_stringency_index:frozen" = "E-payment or E-commerce 2019 × Monthly Avg. Stringency Index × Frozen", 
+               "month_mean_stringency_index:frozen" = "Monthly Avg. Stringency Index × Frozen",
+               "adopted_pay_or_ecom_before_2019:month_mean_stringency_index:hummels_timesensitive" = "E-payment or E-commerce 2019 × Monthly Avg. Stringency Index × Hummels Time-Sensitive",
+               "month_mean_stringency_index:hummels_timesensitive" = "Monthly Avg. Stringency Index × Hummels Time-Sensitive",
+               "adopted_pay_or_ecom_before_2019:month_mean_stringency_index:agric_timesensitive" = "E-payment or E-commerce 2019 × Monthly Avg. Stringency Index × Agricultural Time-Sensitive",
+               "month_mean_stringency_index:agric_timesensitive" = "Monthly Avg. Stringency Index × Agricultural Time-Sensitive",
+               "adopted_pay_or_ecom_before_2019:month_mean_stringency_index:time_sens_hs2013_russ_typeofgoods" = "E-payment or E-commerce 2019 × Monthly Avg. Stringency Index × Hummels and Schaur Time-Sensitive",
+               "month_mean_stringency_index:time_sens_hs2013_russ_typeofgoods" = "Monthly Avg. Stringency Index × Hummels and Schaur Time-Sensitive"
+               )
+
+
+
+# Table summary models
+modelsummary(models_covid_time_sensitivity_IDN,
+             coef_rename = coef_labels, 
+             gof_map = gm, 
+             stars = c('*' = .1, '**' = .05, '***'= 0.01), 
+             add_rows = FE, 
+             output = "latex", 
+             align = paste(c("l", rep("c", length(models_covid_time_sensitivity_IDN))), sep="", collapse=""), 
+             notes = list("The variable E-payment or E-commerce 2019 means that the company adopted the E-payment or E-commerce technology before 2019.", "Clustered-standard errors at the firm-product level."), 
+             fmt = f1, 
+             title = "Indonesia - Regression Results for Log. Imports and Log.Exports: Time-sensitive Products") |>
+  add_header_above(c(" " = 1, "Dependent Variables" = length(models_covid_time_sensitivity_IDN))) %>% 
+  kable_styling(latex_options = c("HOLD_position", "scale_down")) 
+
+
+```
+
+No statistically significant evidence that time sensitivity matters for changes in value of imports or exports.
+
+
+```{r, eval = TRUE}
+
+
+# Assign dependent variable name to models names
+names(models_covid_time_sensitivity_prop_IDN)<-rep(c("Import Propensity", "Export Propensity"), length(models_covid_time_sensitivity_prop_IDN)/2)
+
+# Add fixed-effects indicators to tables
+FE<-as.data.frame(matrix(c("Firm FE", rep("Yes", length(models_covid_time_sensitivity_prop_IDN)), 
+                           "Product FE", rep("Yes", length(models_covid_time_sensitivity_prop_IDN)),
+                           "Month FE", rep("Yes", length(models_covid_time_sensitivity_prop_IDN))), 
+                         nrow = 3, byrow=T))
+
+
+# Table summary models
+modelsummary(models_covid_time_sensitivity_prop_IDN,
+             coef_rename = coef_labels, 
+             gof_map = gm, 
+             stars = c('*' = .1, '**' = .05, '***'= 0.01), 
+             add_rows = FE, 
+             output = "latex", 
+             align = paste(c("l", rep("c", length(models_covid_time_sensitivity_prop_IDN))), sep="", collapse=""), 
+             notes = list("The variable E-payment or E-commerce 2019 means that the company adopted the E-payment or E-commerce technology before 2019.", "Clustered-standard errors at the firm-product level."), 
+             fmt = 5, 
+             title = "Indonesia - Regression Results for Import/Export Propensity: Time-sensitive Products") |>
+  add_header_above(c(" " = 1, "Dependent Variables" = length(models_covid_time_sensitivity_prop_IDN))) %>% 
+  kable_styling(latex_options = c("HOLD_position", "scale_down")) 
+
+
+
+```
+
+### Tech Mitigation of COVID impacts for COVID impacted products
+
+```{r, eval=TRUE}
+
+
+# Assign dependent variable name to models names
+names(model_covid_prods_impacted_IDN)<-rep(c("Log.Imports", "Log.Exports"), length(model_covid_prods_impacted_IDN)/2)
+
+# Add fixed-effects indicators to tables
+FE<-as.data.frame(matrix(c("Firm FE", rep("Yes", length(model_covid_prods_impacted_IDN)), 
+                           "Product FE", rep("Yes", length(model_covid_prods_impacted_IDN)),
+                           "Month FE", rep("Yes", length(model_covid_prods_impacted_IDN))), 
+                         nrow = 3, byrow=T))
+
+
+
+coef_labels<-c("adopted_pay_or_ecom_before_2019:month_mean_stringency_index"="E-payment or E-commerce 2019 × Monthly Avg. Stringency Index",
+               "adopted_pay_or_ecom_before_2019:month_mean_stringency_index:letter_credit_use" = "E-payment or E-commerce 2019 × Monthly Avg. Stringency Index × Letter Credit Use",
+               "month_mean_stringency_index:letter_credit_use" = "Monthly Avg. Stringency Index × Letter Credit Use",
+               "adopted_pay_or_ecom_before_2019:month_mean_stringency_index:mean_IDN_remote_work_ISIC" = "E-payment or E-commerce 2019 × Monthly Avg. Stringency Index × Feasibility Remote Work",
+               "month_mean_stringency_index:mean_IDN_remote_work_ISIC" = "Monthly Avg. Stringency Index × Feasibility Remote Work",
+               "adopted_pay_or_ecom_before_2019:month_mean_stringency_index:relationship_stickiness" = "E-payment or E-commerce 2019 × Monthly Avg. Stringency Index × Relationship Stickiness", 
+               "month_mean_stringency_index:relationship_stickiness" = "Monthly Avg. Stringency Index × Relationship Stickiness",
+               "adopted_pay_or_ecom_before_2019:month_mean_stringency_index:frac_lib_diff" = "E-payment or E-commerce 2019 × Monthly Avg. Stringency Index × Fraction inputs not sold on exchange and not ref priced",
+               "month_mean_stringency_index:frac_lib_diff" = "Monthly Avg. Stringency Index × Fraction inputs not sold on exchange and not ref priced")
+               
+
+
+
+# Table summary models
+modelsummary(model_covid_prods_impacted_IDN,
+             coef_rename = coef_labels, 
+             gof_map = gm, 
+             stars = c('*' = .1, '**' = .05, '***'= 0.01), 
+             add_rows = FE, 
+             output = "latex", 
+             align = paste(c("l", rep("c", length(model_covid_prods_impacted_IDN))), sep="", collapse=""), 
+             notes = list("The variable E-payment or E-commerce 2019 means that the company adopted the E-payment or E-commerce technology before 2019.", "Clustered-standard errors at the firm-product level."), 
+             fmt = f1, 
+             title =  "Indonesia - Regression Results for Log. Imports Log. Exports: COVID impacted Products") |>
+  add_header_above(c(" " = 1, "Dependent Variables" = length(model_covid_prods_impacted_IDN))) %>% 
+  kable_styling(latex_options = c("HOLD_position", "scale_down")) 
+
+```
+
+
+```{r, eval = TRUE}
+
+# Assign dependent variable name to models names
+names(model_covid_prods_impacted_prop_IDN)<-rep(c("Import Propensity", "Export Propensity"), length(model_covid_prods_impacted_prop_IDN)/2)
+
+# Add fixed-effects indicators to tables
+FE<-as.data.frame(matrix(c("Firm FE", rep("Yes", length(model_covid_prods_impacted_prop_IDN)), 
+                           "Product FE", rep("Yes", length(model_covid_prods_impacted_prop_IDN)),
+                           "Month FE", rep("Yes", length(model_covid_prods_impacted_prop_IDN))), 
+                         nrow = 3, byrow=T))
+
+# Table summary models
+modelsummary(model_covid_prods_impacted_prop_IDN,
+             coef_rename = coef_labels, 
+             gof_map = gm, 
+             stars = c('*' = .1, '**' = .05, '***'= 0.01), 
+             add_rows = FE, 
+             output = "latex", 
+             align = paste(c("l", rep("c", length(model_covid_prods_impacted_prop_IDN))), sep="", collapse=""), 
+             notes = list("The variable E-payment or E-commerce 2019 means that the company adopted the E-payment or E-commerce technology before 2019.", "Clustered-standard errors at the firm-product level."), 
+             fmt = 5, 
+             title =  "Indonesia - Regression Results for Import/Export Propensity: COVID impacted Products") |>
+  add_header_above(c(" " = 1, "Dependent Variables" = length(model_covid_prods_impacted_prop_IDN))) %>% 
+  kable_styling(latex_options = c("HOLD_position", "scale_down")) 
+
+
+```
+
+
+# 2. Industry Level Regressions
+
+```{r, eval=TRUE}
+
+source("../Indonesia/regressions_sector_exposure_model_IDN.R", chdir = T)
+
+```
+
+## 2.1 Does Existing Technology Use Mitigate COVID Sectorial Impacts?
+
+The purpose of these regressions is to explore the effects of sectorial exposures to COVID on trade outcomes for those sectors with firms that adopted e-payments/e-commerce technologies before 2019. The proposed regression is:
+
+\begin{dmath}\label{reg_3}
+y_{ist} = \alpha_0 + \alpha_1 tech_i \cdot covid_t + \alpha_2 tech_i \cdot covid_t \cdot vulnerable_s + \alpha_3 covid_t \cdot vulnerable_s + FE_i + FE_t + \epsilon_{ist}. 
+\end{dmath}
+
+Where $y_{ist}$ are the trade outcomes for firm $i$ of sector $s$ in the month $t$. Variables $tech_i$ and $covid_t$ are the same as in equation (\ref{reg_2}) and, $vulnerable_s$ can be different sector level indicators that measure sectorial exposure to COVID.
+
+The triple interaction term captures the effect of COVID on trade outcomes based on the sectorial COVID exposure for those companies that adopted e-payments/e-commerce before 2019. The interaction term $tech_i \cdot covid_t$ describes whether adoption of e-commerce/e-payments technology before 2019 mitigates the effect of COVID on trade outcomes, while $covid_t \cdot vulnerable_s$ describes the effect of COVID on trade outcomes depending on the sectorial exposure.
+
+### Sector level indicators from NAICS Classifications and CDC Essential Industries 
+
+```{r, eval=TRUE}
+
+# Assign dependent variable name to models names
+names(models_sect_exports_IDN)<-rep(c("Log.Exports"), length(models_sect_exports_IDN))
+
+# Add fixed-effects indicators to tables
+FE<-as.data.frame(matrix(c("Firm FE", rep("Yes", length(models_sect_exports_IDN)), 
+                           "Month FE", rep("Yes", length(models_sect_exports_IDN))), 
+                         nrow = 2, byrow=T))
+
+# Assign variables names to display in tables
+coef_labels<-c("adopted_pay_or_ecom_before_2019:month_mean_stringency_index"="E-payment or E-commerce 2019 × Monthly Avg. Stringency Index",
+               "month_mean_stringency_index:philadelphia_fed_cisa_v3_0" = "E-payment or E-commerce 2019 × Philadelphia Fed CISA",
+               "adopted_pay_or_ecom_before_2019:month_mean_stringency_index:philadelphia_fed_cisa_v3_0" = "E-payment or E-commerce 2019 × Monthly Avg. Stringency Index × Philadelphia Fed CISA",
+               "month_mean_stringency_index:teleworkable_emp" = "Monthly Avg. Stringency Index × Teleworkable Employment",
+               "adopted_pay_or_ecom_before_2019:month_mean_stringency_index:teleworkable_emp" = "E-payment or E-commerce 2019 × Monthly Avg. Stringency Index × Teleworkable Employment", 
+               "month_mean_stringency_index:teleworkable_wage" = "Monthly Avg. Stringency Index × Teleworkable Wage",
+               "adopted_pay_or_ecom_before_2019:month_mean_stringency_index:teleworkable_wage" = "E-payment or E-commerce 2019 × Monthly Avg. Stringency Index × Teleworkable Wage",
+               "month_mean_stringency_index:teamwork_share" = "Monthly Avg. Stringency Index × Teamwork Share",
+               "adopted_pay_or_ecom_before_2019:month_mean_stringency_index:teamwork_share" = "E-payment or E-commerce 2019 × Monthly Avg. Stringency Index × Teamwork Share",
+               "month_mean_stringency_index:customer_share" = "Monthly Avg. Stringency Index × Costumer Share",
+               "adopted_pay_or_ecom_before_2019:month_mean_stringency_index:customer_share" = "E-payment or E-commerce 2019 × Monthly Avg. Stringency Index × Costumer Share",
+               "month_mean_stringency_index:presence_share" = "Monthly Avg. Stringency Index × Presence Share",
+               "adopted_pay_or_ecom_before_2019:month_mean_stringency_index:presence_share" = "E-payment or E-commerce 2019 × Monthly Avg. Stringency Index × Presence Share",
+               "month_mean_stringency_index:communication_share" = "Monthly Avg. Stringency Index × Communication Share",
+               "adopted_pay_or_ecom_before_2019:month_mean_stringency_index:communication_share" = "E-payment or E-commerce 2019 × Monthly Avg. Stringency Index × Communication Share",
+               "month_mean_stringency_index:affected_share" = "Monthly Avg. Stringency Index × Affected Share",
+               "adopted_pay_or_ecom_before_2019:month_mean_stringency_index:affected_share" = "E-payment or E-commerce 2019 × Monthly Avg. Stringency Index × Affected Share"
+               )
+
+
+
+# Generate regressions results table
+modelsummary(models_sect_exports_IDN,
+             coef_rename = coef_labels, 
+             gof_map = gm, 
+             stars = c('*' = .1, '**' = .05, '***'= 0.01), 
+             add_rows = FE, 
+             output = "latex", 
+             align = paste(c("l", rep("c", length(models_sect_exports_IDN))), sep="", collapse=""), 
+             notes = list("The variable E-payment or E-commerce 2019 means that the company adopted the E-payment or E-commerce technology before 2019."),
+             fmt = f1, 
+             title = "Indonesia - Regression Results for Log. Exports: NAICS and CDC sector level indicators") |>
+  add_header_above(c(" " = 1, "Dependent Variables" = length(models_sect_exports_IDN)))%>% 
+ kable_styling(latex_options = c("HOLD_position", "scale_down")) 
+
+```
+
+Overall, there are no significant triple interaction effects. 
+
+
+```{r, eval = TRUE}
+
+# Assign dependent variable name to models names
+names(models_sect_exports_prop_IDN)<-rep(c("Export Propensity"), length(models_sect_exports_prop_IDN))
+
+# Add fixed-effects indicators to tables
+FE<-as.data.frame(matrix(c("Firm FE", rep("Yes", length(models_sect_exports_prop_IDN)), 
+                           "Month FE", rep("Yes", length(models_sect_exports_prop_IDN))), 
+                         nrow = 2, byrow=T))
+
+
+# Generate regressions results table
+modelsummary(models_sect_exports_prop_IDN,
+             coef_rename = coef_labels, 
+             gof_map = gm, 
+             stars = c('*' = .1, '**' = .05, '***'= 0.01), 
+             add_rows = FE, 
+             output = "latex", 
+             align = paste(c("l", rep("c", length(models_sect_exports_prop_IDN))), sep="", collapse=""), 
+             notes = list("The variable E-payment or E-commerce 2019 means that the company adopted the E-payment or E-commerce technology before 2019."),
+             fmt = 5, 
+             title = "Indonesia - Regression Results for Export Propensity: NAICS and CDC sector level indicators") |>
+  add_header_above(c(" " = 1, "Dependent Variables" = length(models_sect_exports_prop_IDN)))%>% 
+  kable_styling(latex_options = c("HOLD_position", "scale_down")) 
+
+
+```
+
+
+```{r, eval=TRUE}
+
+
+# Assign dependent variable name to models names
+names(models_sect_imports_IDN)<-rep(c("Log.Imports"), length(models_sect_imports_IDN))
+
+# Add fixed-effects indicators to tables
+FE<-as.data.frame(matrix(c("Firm FE", rep("Yes", length(models_sect_imports_IDN)), 
+                           "Month FE", rep("Yes", length(models_sect_imports_IDN))), 
+                         nrow = 2, byrow=T))
+
+# Assign variables names to display in tables
+coef_labels<-c("adopted_pay_or_ecom_before_2019:month_mean_stringency_index"="E-payment or E-commerce 2019 × Monthly Avg. Stringency Index",
+               "month_mean_stringency_index:philadelphia_fed_cisa_v3_0" = "E-payment or E-commerce 2019 × Philadelphia Fed CISA",
+               "adopted_pay_or_ecom_before_2019:month_mean_stringency_index:philadelphia_fed_cisa_v3_0" = "E-payment or E-commerce 2019 × Monthly Avg. Stringency Index × Philadelphia Fed CISA",
+               "month_mean_stringency_index:teleworkable_emp" = "Monthly Avg. Stringency Index × Teleworkable Employment",
+               "adopted_pay_or_ecom_before_2019:month_mean_stringency_index:teleworkable_emp" = "E-payment or E-commerce 2019 × Monthly Avg. Stringency Index × Teleworkable Employment", 
+               "month_mean_stringency_index:teleworkable_wage" = "Monthly Avg. Stringency Index × Teleworkable Wage",
+               "adopted_pay_or_ecom_before_2019:month_mean_stringency_index:teleworkable_wage" = "E-payment or E-commerce 2019 × Monthly Avg. Stringency Index × Teleworkable Wage",
+               "month_mean_stringency_index:teamwork_share" = "Monthly Avg. Stringency Index × Teamwork Share",
+               "adopted_pay_or_ecom_before_2019:month_mean_stringency_index:teamwork_share" = "E-payment or E-commerce 2019 × Monthly Avg. Stringency Index × Teamwork Share",
+               "month_mean_stringency_index:customer_share" = "Monthly Avg. Stringency Index × Costumer Share",
+               "adopted_pay_or_ecom_before_2019:month_mean_stringency_index:customer_share" = "E-payment or E-commerce 2019 × Monthly Avg. Stringency Index × Costumer Share",
+               "month_mean_stringency_index:presence_share" = "Monthly Avg. Stringency Index × Presence Share",
+               "adopted_pay_or_ecom_before_2019:month_mean_stringency_index:presence_share" = "E-payment or E-commerce 2019 × Monthly Avg. Stringency Index × Presence Share",
+               "month_mean_stringency_index:communication_share" = "Monthly Avg. Stringency Index × Communication Share",
+               "adopted_pay_or_ecom_before_2019:month_mean_stringency_index:communication_share" = "E-payment or E-commerce 2019 × Monthly Avg. Stringency Index × Communication Share",
+               "month_mean_stringency_index:affected_share" = "Monthly Avg. Stringency Index × Affected Share",
+               "adopted_pay_or_ecom_before_2019:month_mean_stringency_index:affected_share" = "E-payment or E-commerce 2019 × Monthly Avg. Stringency Index × Affected Share"
+)
+
+# Generate regressions results table
+modelsummary(models_sect_imports_IDN,
+             coef_rename = coef_labels, 
+             gof_map = gm, 
+             stars = c('*' = .1, '**' = .05, '***'= 0.01), 
+             add_rows = FE, 
+             output = "latex", 
+             align = paste(c("l", rep("c", length(models_sect_imports_IDN))), sep="", collapse=""), 
+             notes = list("The variable E-payment or E-commerce 2019 means that the company adopted the E-payment or E-commerce technology before 2019."), 
+             fmt = f1, 
+             title = "Indonesia - Regression Results for Log. Imports: NAICS and CDC sector level indicators") |>
+  add_header_above(c(" " = 1, "Dependent Variables" = length(models_sect_imports_IDN)))%>% 
+  kable_styling(latex_options = c("HOLD_position", "scale_down")) 
+
+```
+
+
+
+```{r, eval = TRUE}
+
+# Assign dependent variable name to models names
+names(models_sect_imports_prop_IDN)<-rep(c("Import Propensity"), length(models_sect_imports_prop_IDN))
+
+# Add fixed-effects indicators to tables
+FE<-as.data.frame(matrix(c("Firm FE", rep("Yes", length(models_sect_imports_prop_IDN)), 
+                           "Month FE", rep("Yes", length(models_sect_imports_prop_IDN))), 
+                         nrow = 2, byrow=T))
+
+
+# Generate regressions results table
+modelsummary(models_sect_imports_prop_IDN,
+             coef_rename = coef_labels, 
+             gof_map = gm, 
+             stars = c('*' = .1, '**' = .05, '***'= 0.01), 
+             add_rows = FE, 
+             output = "latex", 
+             align = paste(c("l", rep("c", length(models_sect_imports_prop_IDN))), sep="", collapse=""), 
+             notes = list("The variable E-payment or E-commerce 2019 means that the company adopted the E-payment or E-commerce technology before 2019."),
+             fmt = 5, 
+             title = "Indonesia - Regression Results for Import Propensity: NAICS and CDC sector level indicators") |>
+  add_header_above(c(" " = 1, "Dependent Variables" = length(models_sect_imports_IDN)))%>% 
+  kable_styling(latex_options = c("HOLD_position", "scale_down")) 
+
+
+```
+
+
+
+## 2.2 Sector measures of likelihood of online trade
+
+```{r}
+
+source("../Indonesia/regressions_sector_tech_adoption_model_IDN.R", chdir = T)
+
+```
+
+
+The objective of this regression is to analyze the effect of sectorial trade tech adoption on trade outcomes. The proposed regression is: 
+
+$$y_{its} = \alpha_0 + \alpha_1 tech_{it} + \alpha_2 tech_{it} \cdot ecommerce_s + FE_i + FE_t + \epsilon_{its}$$
+
+Where $y_{ist}$ are the trade outcomes for a firm $i$ of sector $s$ in the month $t$, $tech_{it}$ is a dummy variable that is indicating whether the firm $i$ in month $t$ used an adopted e-commerce/e-payments technology and, $ecommerce_s$ is the e-commerce revenue share for sector $s$. The interaction term captures the effect on trade outcomes of the magnitude of e-commerce revenue share in sector $s$ for those companies that have an e-commerce/e-payments technology. Fixed effects for firm and month are also included. 
+
+```{r, eval=TRUE}
+
+# Assign dependent variable name to models names
+names(models_sector_tech_adop_IDN)<-c("Log.Imports", "Log.Exports")
+
+# Add fixed-effects indicators to tables
+FE<-as.data.frame(matrix(c("Firm FE", rep("Yes", length(models_sector_tech_adop_IDN)), 
+                           "Month FE", rep("Yes", length(models_sector_tech_adop_IDN))), 
+                         nrow = 2, byrow=T))
+
+
+coef_labels<-c(pay_or_ecom_nod = "E-payment or E-commerce",
+              "pay_or_ecom_nod:ecom_sh_2digit"="E-payment or E-commerce × E-commerce Revenue Share")
+
+
+
+
+# Produce table with models summary  
+modelsummary(models_sector_tech_adop_IDN,
+             coef_rename = coef_labels, 
+             gof_map = gm, 
+             stars = c('*' = .1, '**' = .05, '***'= 0.01), 
+             add_rows = FE, 
+             output = "latex", 
+             align = paste(c("l", rep("c", length(models_sector_tech_adop_IDN))), sep="", collapse=""), 
+             fmt = f1, 
+             title = "Indonesia - Regression Results for Log.Imports and Log.Exports: Sector Likelihood of Online Trading") |>
+  add_header_above(c(" " = 1, "Dependent Variables" = length(models_sector_tech_adop_IDN)))%>%
+  kable_styling(latex_options = c("HOLD_position", "scale_down")) 
+
+```
+
+
+
+```{r, eval = TRUE}
+
+# Assign dependent variable name to models names
+names(models_sector_tech_adop_prop_IDN)<-c("Import Propensity", "Export Propensity")
+
+# Add fixed-effects indicators to tables
+FE<-as.data.frame(matrix(c("Firm FE", rep("Yes", length(models_sector_tech_adop_prop_IDN)), 
+                           "Month FE", rep("Yes", length(models_sector_tech_adop_prop_IDN))), 
+                         nrow = 2, byrow=T))
+
+
+# Produce table with models summary  
+modelsummary(models_sector_tech_adop_prop_IDN,
+             coef_rename = coef_labels, 
+             gof_map = gm, 
+             stars = c('*' = .1, '**' = .05, '***'= 0.01), 
+             add_rows = FE, 
+             output = "latex", 
+             align = paste(c("l", rep("c", length(models_sector_tech_adop_prop_IDN))), sep="", collapse=""), 
+             fmt = f1, 
+             title = "Indonesia - Regression Results for Import/Export Propensity: Sector Likelihood of Online Trading") |>
+  add_header_above(c(" " = 1, "Dependent Variables" = length(models_sector_tech_adop_prop_IDN)))%>%
+  kable_styling(latex_options = c("HOLD_position", "scale_down")) 
+
+
+```
+
+
