@@ -37,7 +37,7 @@ hs_data <- read_csv("../../Data/Extra Data/HS_code_classifications.csv")%>%
          relationship_stickiness, frac_lib_diff) %>% 
   mutate(across(-hs6, ~ median(.,na.rm = T) < ., 
                 .names = 'above_median_{col}')) %>% 
-  mutate(hs6 = as.integer(hs6)) %>% 
+  mutate(hs6 = as.integer(hs6)) %>%  # Although this converts hs6 such as 010121 into 10121 this is not problematic because in exports and imports data (that we read below) this kind of HS6 codes are also without the 0 at the beginning. 
   # Keep only variables indicating whether above the median or not
   select(hs6, contains("above"))
 
