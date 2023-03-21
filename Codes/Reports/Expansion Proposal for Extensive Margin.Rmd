@@ -1,0 +1,145 @@
+---
+title: "Analysis of the COVID-19 Shock, Technology and Trade"
+subtitle: "New Expansion Proposal for Extensive Margin - India"
+author: "Simón Caicedo"
+date: \today
+header-includes:
+  \usepackage{float}
+  \usepackage{placeins}
+  \usepackage{rotating}
+  \usepackage{graphicx}
+  \usepackage{booktabs}
+  \usepackage{caption}
+  \usepackage{longtable}
+  \usepackage{breqn}
+output:
+  pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.pos = 'H')
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning  = FALSE)
+```
+
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE, results='hide'}
+
+# Set Working Directory ----
+fileloc <- dirname(rstudioapi::getSourceEditorContext()$path)
+setwd(fileloc)
+rm(fileloc)
+
+# Libraries to be used ----
+source("../src/packages.R")
+
+```
+
+
+We will blown-up the dataset at the firm-month-HS6 level but we won't use every HS6 possible, just a set of feasible HS6 products for each firm. 
+
+# 1. First Expansion Proposal: Using HS4 codes 
+
+We will expand the dataset at the firm-month-HS6 level, but only using feasible HS6 products. The set of feasible HS6 products will be obtained using the HS4 codes. If a firm exported (imported) an HS6 product,  then we will allow an expansion of this firm in all months (quarters) to all products in the HS4 code of the HS6 product that the firm exported.
+
+```{r, eval=T}
+
+# Read where we generate the data for the number of observations 
+source("../India/04_data_model_extensive_margin_n_obs.R", chdir = T)
+
+```
+
+## 1.1 Number of observations in the blown-up dataset
+
+```{r, eval = T}
+
+kable(table1, caption = "Does tech adoption affect trade outcomes? - Expected number of observations in the Indian expanded datasets when using HS4 codes.", 
+    col.names = c("Data","Num. Obs. Firm-Month-Feasible HS6", "Num. Obs. Firm-Quarter-Feasible HS6"),
+    format = "latex", 
+    booktabs = T,
+    align = c(rep("c", 2)), 
+    format.args = list(big.mark = ",")) %>% 
+  kable_styling(latex_options = c("hold_position"))
+
+```
+
+
+```{r, eval = T}
+
+kable(table1_mitig, caption = "Did tech adoption mitigate COVID impacts on trade outcomes? - Expected number of observations in the Indian expanded datasets when using HS4 codes.", 
+    col.names = c("Data","Num. Obs. Firm-Month-Feasible HS6", "Num. Obs. Firm-Quarter-Feasible HS6"),
+    format = "latex", 
+    booktabs = T,
+    align = c(rep("c", 2)), 
+    format.args = list(big.mark = ",")) %>% 
+  kable_styling(latex_options = c("hold_position"))
+
+```
+
+
+## 1.2 In which percentage are the firms exporting (importing) the same HS4? 
+
+The table below that shows the percentage of firms in which the same HS4 code represents 90%, 80%, or 70% of the total trade volume during the analysis period.
+
+```{r, eval = T}
+
+bind_rows(perc_exp_HS4, perc_imp_HS4) %>% 
+  kable(caption = "Does tech adoption affect trade outcomes? - Percentage of firms for which the same HS4 code accounts for 90\\%, 80\\%, or 70\\% of total trade volume", 
+    col.names = c("Data","90\\% same HS4",  "80\\% same HS4", "70\\% same HS4"),
+    format = "latex", 
+    align = c(rep("c", 2)),
+    booktabs = T,
+    format.args = list(big.mark = ",")) %>% 
+  kable_styling(latex_options = c("hold_position"))
+  
+
+```
+
+
+
+```{r, eval = T}
+
+bind_rows(perc_exp_HS4_mitig, perc_imp_HS4_mitig) %>% 
+  kable(caption = "Did tech adoption mitigate COVID impacts on trade outcomes? - Percentage of firms for which the same HS4 code accounts for 90\\%, 80\\%, or 70\\% of total trade volume", 
+    col.names = c("Data","90\\% same HS4",  "80\\% same HS4", "70\\% same HS4"),
+    format = "latex", 
+    align = c(rep("c", 2)),
+    booktabs = T,
+    format.args = list(big.mark = ",")) %>% 
+  kable_styling(latex_options = c("hold_position"))
+  
+
+```
+
+# 2. Second Expansion Proposal: Using NAICS3 codes 
+
+We will expand the dataset at the firm-month-HS6 level, but only using feasible HS6 products. The set of feasible HS6 products will be obtained using the NAICS3 codes (NAICS subsectors). For each NAICS3 code, we take the HS6 codes that are ever exported by any firm in that 3 digit subsector. This will be the feasible subset of HS6 codes for a firm in a particular 3 digit subsector.  
+
+## 2.1 Number of observations in the blown-up dataset
+
+```{r, eval = T}
+
+kable(table2, caption = "Does tech adoption affect trade outcomes? - Expected number of observations in the Indian expanded datasets when using NAICS3 sucsector.", 
+    col.names = c("Data","Num. Obs. Firm-Month-Feasible HS6", "Num. Obs. Firm-Quarter-Feasible HS6"),
+    format = "latex", 
+    booktabs = T,
+    align = c(rep("c", 2)), 
+    format.args = list(big.mark = ",")) %>% 
+  kable_styling(latex_options = c("hold_position"))
+
+```
+
+
+```{r, eval = T}
+
+kable(table2_mitig, caption = "Did tech adoption mitigate COVID impacts on trade outcomes? - Expected number of observations in the Indian expanded datasets when using NAICS3 sucsector.", 
+    col.names = c("Data","Num. Obs. Firm-Month-Feasible HS6", "Num. Obs. Firm-Quarter-Feasible HS6"),
+    format = "latex", 
+    booktabs = T,
+    align = c(rep("c", 2)), 
+    format.args = list(big.mark = ",")) %>% 
+  kable_styling(latex_options = c("hold_position"))
+
+```
+
