@@ -216,7 +216,7 @@ pay_ecom_import_data_IND<-import_data %>%
   # Keep firms that are part of analyzed SIC groups
   filter(SICGRP %in% included_SIC_Groups) %>%   
   # Select just the bare minimum variables
-  select(company_id, year, month, date_character, hs6, log_import, import_dummy, SITEID, SICGRP, NAICS6_CODE) %>% 
+  select(company_id, year, month, date_character, hs6, log_import, import, import_dummy, SITEID, SICGRP, NAICS6_CODE) %>% 
   # Add the HS code classification data with products information 
   left_join(hs_data, by = c('hs6' = 'hs_2017')) %>% 
   # Add the intermediate - capital products classification information
@@ -257,7 +257,7 @@ pay_ecom_export_data_IND<-export_data %>%
   # Keep firms that are part of analyzed SIC groups
   filter(SICGRP %in% included_SIC_Groups) %>%   
   # Select just the bare minimum variables
-  select(company_id, year, month, date_character, hs6, log_export, export_dummy, SITEID, SICGRP, NAICS6_CODE) %>% 
+  select(company_id, year, month, date_character, hs6, log_export, export, export_dummy, SITEID, SICGRP, NAICS6_CODE) %>% 
   # Add the HS code classification data with products information 
   left_join(hs_data, by = c('hs6' = 'hs_2017')) %>% 
   # Add the intermediate - capital products classification information
@@ -297,7 +297,7 @@ import_tech_mitig<- import_data %>%
   # Keep firms that are part of analyzed SIC groups
   filter(SICGRP %in% included_SIC_Groups) %>%   
   # Select just the bare minimum variables
-  select(company_id, year, month, date, date_character, hs6, log_import, import_dummy, SITEID, SICGRP, NAICS6_CODE) %>% 
+  select(company_id, year, month, date, date_character, hs6, log_import, import, import_dummy, SITEID, SICGRP, NAICS6_CODE) %>% 
   # Add the HS code classification data with products information 
   left_join(hs_data, by = c('hs6' = 'hs_2017')) %>% 
   # Add the intermediate - capital products classification information
@@ -336,7 +336,7 @@ export_tech_mitig<- export_data %>%
   # Keep firms that are part of analyzed SIC groups
   filter(SICGRP %in% included_SIC_Groups) %>%   
   # Select just the bare minimum variables
-  select(company_id, year, month, date, date_character, hs6, log_export, export_dummy, SITEID, SICGRP, NAICS6_CODE) %>% 
+  select(company_id, year, month, date, date_character, hs6, log_export, export, export_dummy, SITEID, SICGRP, NAICS6_CODE) %>% 
   # Add the HS code classification data with products information 
   left_join(hs_data, by = c('hs6' = 'hs_2017')) %>% 
   # Add the intermediate - capital products classification information
