@@ -43,8 +43,8 @@ exports_data_IND<- fread("../../Data/India/processed_data/exports_product_model_
   arrange(company_id, date, hs6) %>% 
   mutate(hs6  = str_pad(hs6, 6, "left", "0"), 
          hs4 = substr(hs6, 1, 4), 
-         NAICS3 = substr(NAICS6_CODE, 1, 3)) %>% 
-  relocate(date, hs6, hs4, company_id, NAICS3) %>% 
+         NAICS4 = substr(NAICS6_CODE, 1, 4)) %>% 
+  relocate(date, hs6, hs4, company_id, NAICS4) %>% 
   # Convert date variable to date type
   mutate(date = as.Date(date))
 
@@ -80,24 +80,41 @@ exp_firm_hs4<-exports_data_IND %>%
          same_hs4_70perc = max(perc_exp_hs4>70), 
          ) %>% 
   ungroup()
-        
 
-exp_naics3_hs6<-exports_data_IND %>% 
-  group_by(NAICS3, hs6) %>% 
+# Descriptive statistics of the number of HS4 codes exported by each firm 
+stats_n_hs4_exp<-
+  exp_firm_hs4 %>% 
+  select(company_id, n_hs4) %>% 
+  distinct(company_id, .keep_all = T) %>% 
+  summarize(Mean = round(mean(n_hs4), 2),
+            Min = min(n_hs4), 
+            p25 = quantile(n_hs4, probs = .25), 
+            Median = median(n_hs4), 
+            p75 = quantile(n_hs4, probs = .75), 
+            Max = max(n_hs4)
+  ) %>% 
+  mutate(Data = 'Exports')
+
+
+
+
+# Approach using NAICS4 codes. 
+exp_NAICS4_hs6<-exports_data_IND %>% 
+  group_by(NAICS4, hs6) %>% 
   summarize(exports = sum(export)) %>%
   ungroup() %>% 
-  group_by(NAICS3) %>% 
+  group_by(NAICS4) %>% 
   summarise(number_hs6 = n_distinct(hs6))
 
 
-exp_firm_naics3<-exports_data_IND %>% 
+exp_firm_NAICS4<-exports_data_IND %>% 
   group_by(company_id) %>% 
   mutate(exports = sum(export)) %>% 
   ungroup() %>% 
-  select(company_id, NAICS3) %>% 
+  select(company_id, NAICS4) %>% 
   distinct(company_id, .keep_all = T) %>% 
-  # Join with the number of HS6 products that has been ever exported by any firm in a particular NAICS subsector (NAICS3)
-  left_join(exp_naics3_hs6, by = "NAICS3") %>% 
+  # Join with the number of HS6 products that has been ever exported by any firm in a particular NAICS subsector (NAICS4)
+  left_join(exp_NAICS4_hs6, by = "NAICS4") %>% 
   # Expected Number of observations in the expanded dataset
   mutate(obs_firm_month_feas_hs6 = number_hs6*length(unique(exports_data_IND$date)), 
          # Total number of observation in the blown-up-dataset at the firm-month-feasible HS6
@@ -114,7 +131,7 @@ imports_data_IND<- fread("../../Data/India/processed_data/imports_product_model_
   arrange(company_id, date, hs6) %>% 
   mutate(hs6  = str_pad(hs6, 6, "left", "0"), 
          hs4 = substr(hs6, 1, 4), 
-         NAICS3 = substr(NAICS6_CODE, 1, 3)) %>% 
+         NAICS4 = substr(NAICS6_CODE, 1, 4)) %>% 
   relocate(date, hs6, hs4, company_id) %>% 
   # Convert date variable to date type
   mutate(date = as.Date(date))
@@ -152,24 +169,38 @@ imp_firm_hs4<-imports_data_IND %>%
   ) %>% 
   ungroup()
 
+# Descriptive statistics of the number of HS4 codes imported by each firm
+stats_n_hs4_imp<-
+  imp_firm_hs4 %>% 
+  select(company_id, n_hs4) %>% 
+  distinct(company_id, .keep_all = T) %>% 
+  summarize(Mean = round(mean(n_hs4), 2),
+            Min = min(n_hs4), 
+            p25 = quantile(n_hs4, probs = .25), 
+            Median = median(n_hs4), 
+            p75 = quantile(n_hs4, probs = .75), 
+            Max = max(n_hs4)
+  ) %>% 
+  mutate(Data = 'Imports')
 
 
-imp_naics3_hs6<-imports_data_IND %>% 
-  group_by(NAICS3, hs6) %>% 
+# Approach of expansion using NAICS4 codes 
+imp_NAICS4_hs6<-imports_data_IND %>% 
+  group_by(NAICS4, hs6) %>% 
   summarize(imports = sum(import)) %>%
   ungroup() %>% 
-  group_by(NAICS3) %>% 
+  group_by(NAICS4) %>% 
   summarise(number_hs6 = n_distinct(hs6))
 
 
-imp_firm_naics3<-imports_data_IND %>% 
+imp_firm_NAICS4<-imports_data_IND %>% 
   group_by(company_id) %>% 
   mutate(imports = sum(import)) %>% 
   ungroup() %>% 
-  select(company_id, NAICS3) %>% 
+  select(company_id, NAICS4) %>% 
   distinct(company_id, .keep_all = T) %>% 
-  # Join with the number of HS6 products that has been ever exported by any firm in a particular NAICS subsector (NAICS3)
-  left_join(imp_naics3_hs6, by = "NAICS3") %>% 
+  # Join with the number of HS6 products that has been ever exported by any firm in a particular NAICS subsector (NAICS4)
+  left_join(imp_NAICS4_hs6, by = "NAICS4") %>% 
   # Expected Number of observations in the expanded dataset
   mutate(obs_firm_month_feas_hs6 = number_hs6*length(unique(imports_data_IND$date)), 
          # Total number of observation in the blown-up-dataset at the firm-month-feasible HS6
@@ -224,15 +255,15 @@ table1<-exp_firm_hs4 %>%
       relocate(Data) 
   )
 
-# Using NAICS3 
-table2<-exp_firm_naics3 %>% 
+# Using NAICS4 
+table2<-exp_firm_NAICS4 %>% 
   select(total_obs_firm_month_feas_hs6, total_obs_firm_quarter_feas_hs6) %>% 
   head(1) %>% 
   mutate(Data = "Exports") %>% 
   relocate(Data) %>% 
   # Join imports data
   bind_rows(
-    imp_firm_naics3 %>% 
+    imp_firm_NAICS4 %>% 
       select(total_obs_firm_month_feas_hs6, total_obs_firm_quarter_feas_hs6) %>% 
       head(1) %>% 
       mutate(Data = "Imports") %>% 
@@ -246,8 +277,8 @@ exports_data_mitig_IND<- fread("../../Data/India/processed_data/exports_tech_mit
   arrange(company_id, date, hs6) %>% 
   mutate(hs6  = str_pad(hs6, 6, "left", "0"), 
          hs4 = substr(hs6, 1, 4), 
-         NAICS3 = substr(NAICS6_CODE, 1, 3)) %>% 
-  relocate(date, hs6, hs4, NAICS3, company_id) %>% 
+         NAICS4 = substr(NAICS6_CODE, 1, 4)) %>% 
+  relocate(date, hs6, hs4, NAICS4, company_id) %>% 
   # Convert date variable to date type
   mutate(date = as.Date(date))
 
@@ -285,24 +316,36 @@ exp_firm_hs4_mitig<-exports_data_mitig_IND %>%
   ungroup()
 
 
+stats_n_hs4_exp_mitig<-exp_firm_hs4_mitig %>% 
+  select(company_id, n_hs4) %>% 
+  distinct(company_id, .keep_all = T) %>% 
+  summarize(Mean = round(mean(n_hs4), 2),
+            Min = min(n_hs4), 
+            p25 = quantile(n_hs4, probs = .25), 
+            Median = median(n_hs4), 
+            p75 = quantile(n_hs4, probs = .75), 
+            Max = max(n_hs4)
+  ) %>% 
+  mutate(Data = 'Exports')
 
 
-exp_naics3_hs6_mitig<-exports_data_mitig_IND %>% 
-  group_by(NAICS3, hs6) %>% 
+
+exp_NAICS4_hs6_mitig<-exports_data_mitig_IND %>% 
+  group_by(NAICS4, hs6) %>% 
   summarize(exports = sum(export)) %>%
   ungroup() %>% 
-  group_by(NAICS3) %>% 
+  group_by(NAICS4) %>% 
   summarise(number_hs6 = n_distinct(hs6))
 
 
-exp_firm_naics3_mitig<-exports_data_mitig_IND %>% 
+exp_firm_NAICS4_mitig<-exports_data_mitig_IND %>% 
   group_by(company_id) %>% 
   mutate(exports = sum(export)) %>% 
   ungroup() %>% 
-  select(company_id, NAICS3) %>% 
+  select(company_id, NAICS4) %>% 
   distinct(company_id, .keep_all = T) %>% 
-  # Join with the number of HS6 products that has been ever exported by any firm in a particular NAICS subsector (NAICS3)
-  left_join(exp_naics3_hs6_mitig, by = "NAICS3") %>% 
+  # Join with the number of HS6 products that has been ever exported by any firm in a particular NAICS subsector (NAICS4)
+  left_join(exp_NAICS4_hs6_mitig, by = "NAICS4") %>% 
   # Expected Number of observations in the expanded dataset
   mutate(obs_firm_month_feas_hs6 = number_hs6*24, 
          # Total number of observation in the blown-up-dataset at the firm-month-feasible HS6
@@ -320,8 +363,8 @@ imports_data_mitig_IND<- fread("../../Data/India/processed_data/imports_tech_mit
   arrange(company_id, date, hs6) %>% 
   mutate(hs6  = str_pad(hs6, 6, "left", "0"), 
          hs4 = substr(hs6, 1, 4), 
-         NAICS3 = substr(NAICS6_CODE, 1, 3)) %>% 
-  relocate(date, hs6, hs4, NAICS3, company_id) %>% 
+         NAICS4 = substr(NAICS6_CODE, 1, 4)) %>% 
+  relocate(date, hs6, hs4, NAICS4, company_id) %>% 
   # Convert date variable to date type
   mutate(date = as.Date(date))
 
@@ -359,23 +402,39 @@ imp_firm_hs4_mitig<-imports_data_mitig_IND %>%
   ungroup()
 
 
+stats_n_hs4_imp_mitig<-imp_firm_hs4_mitig %>% 
+  select(company_id, n_hs4) %>% 
+  distinct(company_id, .keep_all = T) %>% 
+  summarize(Mean = round(mean(n_hs4), 2),
+            Min = min(n_hs4), 
+            p25 = quantile(n_hs4, probs = .25), 
+            Median = median(n_hs4), 
+            p75 = quantile(n_hs4, probs = .75), 
+            Max = max(n_hs4)
+  ) %>% 
+  mutate(Data = 'Imports')
 
-imp_naics3_hs6_mitig<-imports_data_mitig_IND %>% 
-  group_by(NAICS3, hs6) %>% 
+
+
+
+# Expansion approach using NAICS4 
+
+imp_NAICS4_hs6_mitig<-imports_data_mitig_IND %>% 
+  group_by(NAICS4, hs6) %>% 
   summarize(imports = sum(import)) %>%
   ungroup() %>% 
-  group_by(NAICS3) %>% 
+  group_by(NAICS4) %>% 
   summarise(number_hs6 = n_distinct(hs6))
 
 
-imp_firm_naics3_mitig<-imports_data_mitig_IND %>% 
+imp_firm_NAICS4_mitig<-imports_data_mitig_IND %>% 
   group_by(company_id) %>% 
   mutate(imports = sum(import)) %>% 
   ungroup() %>% 
-  select(company_id, NAICS3) %>% 
+  select(company_id, NAICS4) %>% 
   distinct(company_id, .keep_all = T) %>% 
-  # Join with the number of HS6 products that has been ever exported by any firm in a particular NAICS subsector (NAICS3)
-  left_join(imp_naics3_hs6_mitig, by = "NAICS3") %>% 
+  # Join with the number of HS6 products that has been ever exported by any firm in a particular NAICS subsector (NAICS4)
+  left_join(imp_NAICS4_hs6_mitig, by = "NAICS4") %>% 
   # Expected Number of observations in the expanded dataset
   mutate(obs_firm_month_feas_hs6 = number_hs6*24, 
          # Total number of observation in the blown-up-dataset at the firm-month-feasible HS6
@@ -431,14 +490,14 @@ table1_mitig<-exp_firm_hs4_mitig %>%
 
 
 
-table2_mitig<-exp_firm_naics3_mitig %>% 
+table2_mitig<-exp_firm_NAICS4_mitig %>% 
   select(total_obs_firm_month_feas_hs6, total_obs_firm_quarter_feas_hs6) %>% 
   head(1) %>% 
   mutate(Data = "Exports") %>% 
   relocate(Data) %>% 
   # Join imports data
   bind_rows(
-    imp_firm_naics3_mitig %>% 
+    imp_firm_NAICS4_mitig %>% 
       select(total_obs_firm_month_feas_hs6, total_obs_firm_quarter_feas_hs6) %>% 
       head(1) %>% 
       mutate(Data = "Imports") %>% 
