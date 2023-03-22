@@ -1,6 +1,6 @@
 ---
 title: "Analysis of the COVID-19 Shock, Technology and Trade"
-subtitle: "New Expansion Proposal for Extensive Margin - India"
+subtitle: "New Expansion Proposals for Extensive Margin Analysis - India"
 author: "Simón Caicedo"
 date: \today
 header-includes:
@@ -12,6 +12,7 @@ header-includes:
   \usepackage{caption}
   \usepackage{longtable}
   \usepackage{breqn}
+  \usepackage{threeparttable}
 output:
   pdf_document
 ---
@@ -37,11 +38,11 @@ source("../src/packages.R")
 ```
 
 
-We will blown-up the dataset at the firm-month-HS6 level but we won't use every HS6 possible, just a set of feasible HS6 products for each firm. 
+We will expand the dataset to include the firm-month-HS6 level. However, we will only include a feasible set of HS6 products for each firm, rather than using every possible HS6 product. We follow two different approaches to do this. 
 
 # 1. First Expansion Proposal: Using HS4 codes 
 
-We will expand the dataset at the firm-month-HS6 level, but only using feasible HS6 products. The set of feasible HS6 products will be obtained using the HS4 codes. If a firm exported (imported) an HS6 product,  then we will allow an expansion of this firm in all months (quarters) to all products in the HS4 code of the HS6 product that the firm exported.
+We plan to expand the dataset at the firm-month-HS6 level by using only feasible HS6 products, which we will obtain through the HS4 codes. If a firm exports or imports an HS6 product, we will allow the expansion of the firm in all months (or quarters) to all HS6 products in the HS4 code of the exported (imported) HS6 product. 
 
 ```{r, eval=T}
 
@@ -50,48 +51,91 @@ source("../India/04_data_model_extensive_margin_n_obs.R", chdir = T)
 
 ```
 
-## 1.1 Number of observations in the blown-up dataset
+
+
+## 1.1 Descriptive statistics of number of HS6 products by HS4 code
+
+The table below showcases different summary statistics of the number of HS6 products by HS4 code. It reveals that, on average, there are approximately 4 HS6 products for each HS4 code.
 
 ```{r, eval = T}
 
-kable(table1, caption = "Does tech adoption affect trade outcomes? - Expected number of observations in the Indian expanded datasets when using HS4 codes.", 
-    col.names = c("Data","Num. Obs. Firm-Month-Feasible HS6", "Num. Obs. Firm-Quarter-Feasible HS6"),
+hs4_n_prods %>% 
+   summarize(Mean = round(mean(number_hs6), 2),
+            Min = min(number_hs6), 
+            p25 = quantile(number_hs6, probs = .25), 
+            Median = median(number_hs6), 
+            p75 = quantile(number_hs6, probs = .75), 
+            Max = max(number_hs6)
+  ) %>% 
+  kable(caption = "Descriptive statistics of number of HS6 products by HS4 code",
     format = "latex", 
     booktabs = T,
-    align = c(rep("c", 2)), 
     format.args = list(big.mark = ",")) %>% 
-  kable_styling(latex_options = c("hold_position"))
+  kable_styling(latex_options = c("HOLD_position"))
+  
+
+
+
+```
+
+## 1.2 Descriptive statistics of number of distinct HS4 products traded by firm
+
+Table 2 presents the summary statistics for the number of unique HS4 products traded by each firm, based on the regression sample of the model that examines the impact of technology adoption on trade outcomes. On average, firms export products from approximately 10 distinct HS4 codes and import products from about 12 different HS4 codes.
+
+In contrast, Table 3 shows the same information but based on the regression sample of the model examining whether technology adoption mitigated the impacts of COVID-19.
+
+
+```{r, eval = T}
+
+bind_rows(stats_n_hs4_exp, stats_n_hs4_imp) %>% 
+  relocate(Data) %>% 
+  kable(caption = "Descriptive statistics of the number of distinct HS4 products traded by firm.",
+    format = "latex", 
+    align = c(rep("c", 7)),
+    booktabs = T,
+    format.args = list(big.mark = ",")) %>% 
+  kable_styling(latex_options = c("HOLD_position")) %>% 
+  add_footnote("Note: Regression sample of the model that measures if tech adoption affects trade outcomes")
+  
 
 ```
 
 
 ```{r, eval = T}
 
-kable(table1_mitig, caption = "Did tech adoption mitigate COVID impacts on trade outcomes? - Expected number of observations in the Indian expanded datasets when using HS4 codes.", 
-    col.names = c("Data","Num. Obs. Firm-Month-Feasible HS6", "Num. Obs. Firm-Quarter-Feasible HS6"),
+bind_rows(stats_n_hs4_exp_mitig, stats_n_hs4_imp_mitig) %>% 
+  relocate(Data) %>% 
+  kable(caption = "Descriptive statistics of the number of distinct HS4 products traded by firm.", 
     format = "latex", 
+    align = c(rep("c", 7)),
     booktabs = T,
-    align = c(rep("c", 2)), 
     format.args = list(big.mark = ",")) %>% 
-  kable_styling(latex_options = c("hold_position"))
+  kable_styling(latex_options = c("HOLD_position")) %>% 
+  add_footnote("Note: Regression sample of the model that measures if tech adoption helped to mitigate COVID impacts.")
+  
 
 ```
+
 
 
 ## 1.2 In which percentage are the firms exporting (importing) the same HS4? 
 
-The table below that shows the percentage of firms in which the same HS4 code represents 90%, 80%, or 70% of the total trade volume during the analysis period.
+The following tables display the proportion of firms where a single HS4 code constitutes at least 90\%, 80\%, or 70\% of the total trade volume throughout the analysis period. In the regression sample for the model examining the effect of technology adoption on trade outcomes, 46.3\% of firms have a single HS4 code accounting for at least 90\% of the total export volume, while only 36.1\% of firms exhibit a single HS4 code representing at least 90\% of the total import volume.
+
+Regarding the model assessing whether technology adoption mitigated COVID-19 impacts, 45.81\% of firms have a single HS4 code comprising at least 90\% of the total export volume, while a smaller proportion of 35.78\% of firms show a single HS4 code accounting for at least 90\% of the total import volume.
 
 ```{r, eval = T}
 
 bind_rows(perc_exp_HS4, perc_imp_HS4) %>% 
-  kable(caption = "Does tech adoption affect trade outcomes? - Percentage of firms for which the same HS4 code accounts for 90\\%, 80\\%, or 70\\% of total trade volume", 
+  kable(caption = "Percentage of firms for which the same HS4 code accounts for 90\\%, 80\\%, or 70\\% of total trade volume. Sample from the model that measures of tech adoption affects trade outcomes", 
     col.names = c("Data","90\\% same HS4",  "80\\% same HS4", "70\\% same HS4"),
     format = "latex", 
-    align = c(rep("c", 2)),
+    align = c(rep("c", 4)),
     booktabs = T,
+    escape = TRUE,
+    digits = 2, 
     format.args = list(big.mark = ",")) %>% 
-  kable_styling(latex_options = c("hold_position"))
+  kable_styling(latex_options = c("HOLD_position"), position = "center")
   
 
 ```
@@ -101,45 +145,80 @@ bind_rows(perc_exp_HS4, perc_imp_HS4) %>%
 ```{r, eval = T}
 
 bind_rows(perc_exp_HS4_mitig, perc_imp_HS4_mitig) %>% 
-  kable(caption = "Did tech adoption mitigate COVID impacts on trade outcomes? - Percentage of firms for which the same HS4 code accounts for 90\\%, 80\\%, or 70\\% of total trade volume", 
+  kable(caption = "Percentage of firms for which the same HS4 code accounts for 90\\%, 80\\%, or 70\\% of total trade volume. Sample from the model that measures if tech adoption helped to mitigate COVID-19 impacts on trade outcomes", 
     col.names = c("Data","90\\% same HS4",  "80\\% same HS4", "70\\% same HS4"),
     format = "latex", 
-    align = c(rep("c", 2)),
+    align = c(rep("c", 4)),
     booktabs = T,
+    escape = TRUE,
+    digits = 2, 
     format.args = list(big.mark = ",")) %>% 
-  kable_styling(latex_options = c("hold_position"))
+  kable_styling(latex_options = c("HOLD_position"), position = "center") 
+
+```
+
+
+## 1.3 Expected number of observations in the expanded dataset
+
+The tables below display the expected number of observations in the blown-up datasets using the HS4 approach previously described. They present the observation counts for both monthly and quarterly analysis scenarios.
+
+```{r, eval = T}
+
+kable(table1, caption = "Expected Observations in Indian Expanded Datasets (using HS4 approach) for Extensive Margin Analysis: Tech Adoption's Effect on Trade Outcomes", 
+    col.names = c("Data","Num. Obs. at Firm-Month-Feasible HS6 Level", "Num. Obs. at Firm-Quarter-Feasible HS6 Level"),
+    format = "latex", 
+    booktabs = T,
+    align = c(rep("c", 3)), 
+    format.args = list(big.mark = ",")) %>% 
+  kable_styling(latex_options = c("HOLD_position"))
   
 
 ```
 
-# 2. Second Expansion Proposal: Using NAICS3 codes 
-
-We will expand the dataset at the firm-month-HS6 level, but only using feasible HS6 products. The set of feasible HS6 products will be obtained using the NAICS3 codes (NAICS subsectors). For each NAICS3 code, we take the HS6 codes that are ever exported by any firm in that 3 digit subsector. This will be the feasible subset of HS6 codes for a firm in a particular 3 digit subsector.  
-
-## 2.1 Number of observations in the blown-up dataset
 
 ```{r, eval = T}
 
-kable(table2, caption = "Does tech adoption affect trade outcomes? - Expected number of observations in the Indian expanded datasets when using NAICS3 sucsector.", 
+kable(table1_mitig, caption = "Expected Observations in Indian Expanded Datasets (using HS4 approach) for Extensive Margin Analysis: Tech Adoption's Mitigation of COVID-19 Impacts", 
+    col.names = c("Data","Num. Obs. at Firm-Month-Feasible HS6 Level", "Num. Obs. at Firm-Quarter-Feasible HS6 Level"),
+    format = "latex", 
+    booktabs = T,
+    align = c(rep("c", 3)), 
+    format.args = list(big.mark = ",")) %>% 
+  kable_styling(latex_options = c("HOLD_position"))
+
+```
+
+
+# 2. Second Expansion Proposal: Using NAICS4 codes 
+
+We will expand the dataset at the firm-month-HS6 level or firm-quarter-HS6 level, but only using feasible HS6 products. The set of feasible HS6 products will be obtained using the NAICS4 codes (NAICS subsectors). For each NAICS4 code, we take the HS6 codes that are ever exported by any firm in that 4 digit subsector. This will be the feasible subset of HS6 codes for a firm in a particular 4 digit subsector.  
+
+## 2.1 Expected number of observations in the expanded datasets
+
+The tables below display the expected number of observations in the blown-up datasets using the NAICS4 approach previously described. They present the observation counts for both monthly and quarterly analysis scenarios.
+
+```{r, eval = T}
+
+kable(table2, caption = "Expected Observations in Indian Expanded Datasets (using NAICS4 approach) for Extensive Margin Analysis: Tech Adoption's Effect on Trade Outcomes", 
     col.names = c("Data","Num. Obs. Firm-Month-Feasible HS6", "Num. Obs. Firm-Quarter-Feasible HS6"),
     format = "latex", 
     booktabs = T,
-    align = c(rep("c", 2)), 
+    align = c(rep("c", 3)), 
     format.args = list(big.mark = ",")) %>% 
-  kable_styling(latex_options = c("hold_position"))
+  kable_styling(latex_options = c("HOLD_position"))
 
 ```
 
 
 ```{r, eval = T}
 
-kable(table2_mitig, caption = "Did tech adoption mitigate COVID impacts on trade outcomes? - Expected number of observations in the Indian expanded datasets when using NAICS3 sucsector.", 
+kable(table2_mitig, caption = "Expected Observations in Indian Expanded Datasets (using NAICS4 approach) for Extensive Margin Analysis: Tech Adoption's Mitigation of COVID-19 Impacts.", 
     col.names = c("Data","Num. Obs. Firm-Month-Feasible HS6", "Num. Obs. Firm-Quarter-Feasible HS6"),
     format = "latex", 
     booktabs = T,
-    align = c(rep("c", 2)), 
+    align = c(rep("c", 3)), 
     format.args = list(big.mark = ",")) %>% 
-  kable_styling(latex_options = c("hold_position"))
+  kable_styling(latex_options = c("HOLD_position"))
 
 ```
 
