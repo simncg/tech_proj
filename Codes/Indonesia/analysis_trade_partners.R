@@ -62,6 +62,7 @@ library(haven)
 library(data.table)
 library(dtplyr)
 library(readxl)
+library(arrow)
 
 # Import functions to do the foreign partner analysis ----- 
 source("../src/functions_foreign_partner_analysis.R")
@@ -160,12 +161,12 @@ imports_f_data<-read_dta("../../Data/Indonesia/raw_data/IDN_Imports_Monthly_fore
 
 ## HS products information ----
 
-# Read HS Code Classification data with products information ----
+### Read HS Code Classification data with products information ----
 hs_data <- read_csv("../../Data/Extra Data/HS_code_classifications.csv")%>% 
   mutate(hs_2017   = str_pad(hs_2017  , 6, "left", "0")) %>% 
   lazy_dt()
 
-# Read data with intermediate and capital HS products classification ----
+### Read data with intermediate and capital HS products classification ----
 int_cap_HS <- read_excel("../../Data/Extra Data/capital_intermediate_HS_code_classification.xlsx", 
                          sheet = "FromHSToISICToEC") %>% 
   # Keep only HS 2012 version
@@ -192,6 +193,15 @@ int_cap_HS <- read_excel("../../Data/Extra Data/capital_intermediate_HS_code_cla
 
 gc()
 
+## BuiltWith information (tech data)  ----
+tech_data<-read_parquet("../../Data/Indonesia/processed_data/tech_data_IDN.parquet", 
+                        col_select = c("company_id", "date", "pay_or_ecomnod")) %>% 
+  group_by(company_id) %>% 
+  # Did the company ever have an e-payment or e-commerce technology?
+  summarize(ever_pay_or_ecomnod = max(pay_or_ecomnod))
+
+
+
 # Tables ----
 
 # Data of imports that we can analyze, so those observations that have both 
@@ -205,15 +215,19 @@ included_SIC_Groups <- c('AG-M-C', # Agricultural, Construction and Mining
                          "WHL-RT"  # Wholesale-retail
 )
 
-## Table 1 ----
+## Table 1: Local Industry to Foreign Industry Summary Statistics ----
 
-# Create table with summary statistics between local industry and foreign 
+# Create table with summary statistics of trade variables between a local industry and a foreign 
 # industry. We will analyze three categories of industries Wholesale-Retail, Manufacturing
 # and the rest (Agricultural, Construction and Mining, Services, Finance Insurance and Real State,
 # Transport & Utilities). 
 
+
+### Imports statistics of domestic industry X to foreign industry Y ----
 imports_analysis<-imports_f_data %>% 
+  # Only analyze those firms with SIC identified
   na.omit(SICGRP, foreign_SICGRP) %>% 
+  # Keep only firms in SIC groups to be analyzed
   filter(SICGRP %in% included_SIC_Groups, 
          foreign_SICGRP %in% included_SIC_Groups) %>% 
   # Categorize in 3 industries (Wholesale-retail, Manufacturing and the rest)
@@ -226,11 +240,13 @@ imports_analysis<-imports_f_data %>%
   group_by(industry_local, industry_foreign) %>%
   # Create some summary statistics 
   mutate(
-    # Total number of domestic companies in industry X that trade with foreign firms in industry X
+    # Total number of domestic companies in industry X that trade with foreign firms in industry Y
     n_domestic_firms = n_distinct(domestic_company_id), 
-    # Compute the total value of imports from domestic firms (sum of imports across firms) in industry X to all foreign firms in industry X.
+    # Total number of foreign companies in industry Y that trade with domestic firms in industry X
+    n_foreign_firms = n_distinct(foreign_company_id),
+    # Compute the total value of imports from domestic firms (sum of imports across firms) in industry X to all foreign firms in industry Y.
     tot_imp_to_f_ind = sum(import), 
-    # Average per IDN firm of total value of imports from domestic firms in industry X to all foreign firms in industry X
+    # Average per domestic firm of total value of imports from domestic firms in industry X to all foreign firms in industry X
     avg_tot_imp_to_f_ind = tot_imp_to_f_ind/n_domestic_firms 
   ) %>% 
   ungroup() %>% 
@@ -256,15 +272,17 @@ imports_analysis<-imports_f_data %>%
   # Take the average of the firm-to-firm imports 
   mutate(mean_imp_firm_to_firm = mean(imports_firm_to_firm)) %>% 
   ungroup() %>% 
-  select(industry_local, industry_foreign, n_domestic_firms, avg_tot_imp_to_f_ind, 
+  select(industry_local, industry_foreign, n_domestic_firms, n_foreign_firms, avg_tot_imp_to_f_ind, 
          avg_n_exporters, mean_imp_firm_to_firm) %>% 
   distinct(industry_local, industry_foreign, .keep_all = T) %>% 
   as_tibble()
 
 
-
+### Exports statistics of domestic industry X to foreign industry Y ----
 exports_analysis<-exports_f_data %>% 
+  # Only analyze those firms with SIC identified
   na.omit(SICGRP, foreign_SICGRP) %>% 
+  # Keep only firms in SIC groups to be analyzed
   filter(SICGRP %in% included_SIC_Groups, 
          foreign_SICGRP %in% included_SIC_Groups) %>% 
   # Categorize in 3 industries (Wholesale-retail, Manufacturing and the rest)
@@ -277,11 +295,13 @@ exports_analysis<-exports_f_data %>%
   group_by(industry_local, industry_foreign) %>%
   # Create some summary statistics 
   mutate(
-    # Total number of domestic companies in industry X that trade with foreign firms in industry X
-    n_domestic_firms = n_distinct(domestic_company_id), 
+    # Total number of domestic companies in industry X that trade with foreign firms in industry Y
+    n_domestic_firms = n_distinct(domestic_company_id),
+    # Total number of foreign companies in industry Y that trade with domestic firms in industry X
+    n_foreign_firms = n_distinct(foreign_company_id),
     # Compute the total value of exports from domestic firms (sum of exports across firms) in industry X to all foreign firms in industry X.
     tot_exp_to_f_ind = sum(export), 
-    # Average per IDN firm of total value of exports from domestic firms in industry X to all foreign firms in industry X
+    # Average per domestic firm of total value of exports from domestic firms in industry X to all foreign firms in industry X
     avg_tot_exp_to_f_ind = tot_exp_to_f_ind/n_domestic_firms 
   ) %>% 
   ungroup() %>% 
@@ -299,29 +319,43 @@ exports_analysis<-exports_f_data %>%
   ungroup() %>% 
   # Group by domestic firm, foreign firm, local industry and foreign industry
   group_by(domestic_company_id, foreign_company_id, industry_local, industry_foreign) %>% 
-  # Sum the total value of imports between two firms (firm-to-firm imports)
+  # Sum the total value of exports between two firms (firm-to-firm exports)
   mutate(exports_firm_to_firm = sum(export)) %>% 
   ungroup() %>% 
   # Group by local industry and foreign industry
   group_by(industry_local, industry_foreign) %>% 
-  # Take the average of the firm-to-firm imports 
+  # Take the average of the firm-to-firm exports 
   mutate(mean_exp_firm_to_firm = mean(exports_firm_to_firm)) %>% 
   ungroup() %>% 
-  select(industry_local, industry_foreign, n_domestic_firms, avg_tot_exp_to_f_ind, 
+  select(industry_local, industry_foreign, n_domestic_firms, n_foreign_firms, avg_tot_exp_to_f_ind, 
          avg_n_importers, mean_exp_firm_to_firm) %>% 
   distinct(industry_local, industry_foreign, .keep_all = T) %>% 
   as_tibble()
 
 
-## Table 2: Same as table 1 but using products classification ----
+### Store results ---- 
+tables<-list()
+
+tables[["imports_complete"]]<-imports_analysis
+tables[["exports_complete"]]<-exports_analysis
+
+
+
+## Table 2: Local industry to foreign industry but disaggregated by product category or technology adoption ----
 
 # NOTE: There is a double counting in the number of firms, but this is just to see patterns
 
-# Imports 
+### Prepare imports data to analyze domestic industry to foreign industry statistics dissagregated by industry ----
 imp_prod_analysis<-imports_f_data %>% 
+  # Join HS products information
   left_join(hs_data, by = c("hs6" = "hs_2017")) %>% 
+  # Join capital and intermediate HS products information
   left_join(int_cap_HS, by = c("hs6" = "hs_2017")) %>% 
+  # Join tech  info 
+  left_join(tech_data, by = c("domestic_company_id" = "company_id")) %>% 
+  # Only analyze those firms with identified SIC group
   na.omit(SICGRP, foreign_SICGRP) %>% 
+  # Filter by SIC groups to be analyzed
   filter(SICGRP %in% included_SIC_Groups, 
          foreign_SICGRP %in% included_SIC_Groups) %>% 
   # Categorize in 3 industries (Wholesale-retail, Manufacturing and the rest)
@@ -332,10 +366,13 @@ imp_prod_analysis<-imports_f_data %>%
   filter(foreign_country_panjiva == "USA") 
 
 
-# Exports
+### Prepare exports data to analyze domestic industry to foreign industry statistics dissagregated by industry ----
 exp_prod_analysis<-exports_f_data %>% 
+  # Join products information info
   left_join(hs_data, by = c("hs6" = "hs_2017")) %>% 
   left_join(int_cap_HS, by = c("hs6" = "hs_2017")) %>% 
+  # Join tech  info 
+  left_join(tech_data, by = c("domestic_company_id" = "company_id")) %>% 
   na.omit(SICGRP, foreign_SICGRP) %>% 
   filter(SICGRP %in% included_SIC_Groups, 
          foreign_SICGRP %in% included_SIC_Groups) %>% 
@@ -347,5 +384,24 @@ exp_prod_analysis<-exports_f_data %>%
   filter(foreign_country_panjiva == "USA") 
 
 
-consumable_prod_imp<-foreign_prod(imp_prod_analysis, cons_BEC , "Consumable", "Non_Consumable")
-consumable_prod_exp<-foreign_prod(exp_prod_analysis, cons_BEC , "Consumable", "Non_Consumable")
+gc()
+
+# Products categories and tech vars to be analyzed
+products_tech<-c("cons_BEC","durable_BEC", "China_E_commerce", "Ebay_tradable", "ever_pay_or_ecomnod")
+products_tech<-c("ever_pay_or_ecomnod")
+
+# Iterate over products to be analyzed (pass variable names as strings)
+for (product_tech_var in products_tech) {
+  print(product_tech_var)
+  # Convert the string to a symbol and unquote it using !! (bang-bang)
+  product_tech_var_sym <- rlang::sym(product_tech_var)
+  # Imports and Exports
+  imports <- foreign_prod_imp(imp_prod_analysis, !!product_tech_var_sym)
+  exports <- foreign_prod_exp(exp_prod_analysis, !!product_tech_var_sym)
+  tables[[product_tech_var]] <- list(Imports = imports, Exports = exports)
+}
+
+
+# Save tables  
+saveRDS(tables, "../../Outputs/Indonesia/foreign_partners_analysis/Tables.RDS")
+

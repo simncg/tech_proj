@@ -1,0 +1,444 @@
+---
+title: "Analysis of the COVID-19 Shock, Technology and Trade"
+subtitle: "Foreign Trade Partners Analysis - Indonesia and USA"
+author: "Simón Caicedo"
+date: \today
+header-includes:
+  \usepackage{float}
+  \usepackage{placeins}
+  \usepackage{rotating}
+  \usepackage{graphicx}
+  \usepackage{booktabs}
+  \usepackage{caption}
+  \usepackage{longtable}
+  \usepackage{breqn}
+  \usepackage{threeparttable}
+output:
+  pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.pos = 'H')
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning  = FALSE)
+```
+
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE, results='hide'}
+
+# Set Working Directory ----
+fileloc <- dirname(rstudioapi::getSourceEditorContext()$path)
+setwd(fileloc)
+rm(fileloc)
+
+# Libraries to be used ----
+source("../src/packages.R")
+
+```
+
+```{r}
+
+# Read tables of foreign analysis
+tables<-readRDS('../../Outputs/Indonesia/foreign_partners_analysis/Tables.RDS')
+
+```
+
+The 'Rest' industry category comprises several industries, including Agriculture, Construction and Mining, Services, Finance, Insurance and Real Estate, as well as Transport and Utilities. Domestic industries refers to Indonesian industries, and Foreign industries to US industries. 
+
+# Bilateral Industry Trade Patterns
+
+```{r, eval = T}
+
+tables[["exports_complete"]] %>% 
+  mutate(
+    industry_local = case_when(
+      industry_local == "MANUF" ~ "Manufacturing",
+      industry_local == "WHL-RT" ~ "Wholesale/Retail",
+      TRUE ~ industry_local
+    ),
+    industry_foreign = case_when(
+      industry_foreign == "MANUF" ~ "Manufacturing",
+      industry_foreign == "WHL-RT" ~ "Wholesale/Retail",
+      TRUE ~ industry_foreign
+    )
+  ) %>% 
+  kable(caption = "Export Dynamics: Indonesia Industries Trading with USA Industries", 
+    col.names = linebreak(c("IDN Industry","USA Industry", "No. IDN Firms\nin Industry", "No. USA firms\nin Industry", "Avg. Export Value \n per IDN Firm\nto US Industry (\\$)", "Avg. No. US\nImporters per\nIDN firm", "Avg. Value of\nFirm-to-Firm\nExports (\\$)"), align = "c"),
+    format = "latex", 
+    align = c(rep("c", 7)),
+    booktabs = T,
+    escape = FALSE,
+    digits = 2,
+    format.args = list(big.mark = ",")) %>% 
+  kable_styling(latex_options = c("HOLD_position", "scale_down"), position = "center")
+
+```
+
+
+```{r, eval = T}
+
+tables[["imports_complete"]] %>% 
+  mutate(
+    industry_local = case_when(
+      industry_local == "MANUF" ~ "Manufacturing",
+      industry_local == "WHL-RT" ~ "Wholesale/Retail",
+      TRUE ~ industry_local
+    ),
+    industry_foreign = case_when(
+      industry_foreign == "MANUF" ~ "Manufacturing",
+      industry_foreign == "WHL-RT" ~ "Wholesale/Retail",
+      TRUE ~ industry_foreign
+    )
+  ) %>% 
+  kable(caption = "Import Dynamics: Indonesia Industries Trading with USA Industries", 
+    col.names = linebreak(c("IDN Industry","USA Industry", "No. IDN Firms\nin Industry", "No. USA firms\nin Industry", "Avg. Import Value \n per IDN Firm\nto US Industry (\\$)", "Avg. No. US\nExporters per\nIDN firm", "Avg. Value of\nFirm-to-Firm\nImports (\\$)"), align = "c"),
+    #format = "latex", 
+    align = c(rep("c", 7)),
+    booktabs = T,
+    escape = FALSE,
+    digits = 2,
+    format.args = list(big.mark = ",")) %>% 
+  kable_styling(latex_options = c("HOLD_position", "scale_down"), position = "center")
+
+```
+
+
+
+
+# Bilateral Industry Trade Patterns: Dissagregated by Product Category
+
+## Consumable Goods
+
+```{r, eval = T}
+
+cols_exports<-c("IDN Industry", "USA Industry", rep(c("No. IDN Firms\nin Industry", "Avg. Export Value \n per IDN Firm\nto US Industry (\\$)", "Avg. No. US\nImporters per\nIDN firm", "Avg. Value of\nFirm-to-Firm\nExports (\\$)"), 2))
+
+tables[["cons_BEC"]][["Exports"]] %>% 
+  relocate(matches("yes"), .before = 3) %>% 
+  mutate(
+    industry_local = case_when(
+      industry_local == "MANUF" ~ "Manufacturing",
+      industry_local == "WHL-RT" ~ "Wholesale/Retail",
+      TRUE ~ industry_local
+    ),
+    industry_foreign = case_when(
+      industry_foreign == "MANUF" ~ "Manufacturing",
+      industry_foreign == "WHL-RT" ~ "Wholesale/Retail",
+      TRUE ~ industry_foreign
+    )
+  ) %>% 
+  kable(caption = "Exports Dynamics for Consumable Goods: Indonesia Industries Trading with USA Industries", 
+    col.names = linebreak(cols_exports, align = "c"),
+    #format = "latex", 
+    align = c(rep("c", 7)),
+    booktabs = T,
+    escape = FALSE,
+    digits = 2,
+    format.args = list(big.mark = ",")) %>% 
+  kable_styling(latex_options = c("HOLD_position", "scale_down"), position = "center") %>% 
+  add_header_above(c(" " = 2, "Consumable Goods" = 4, "Non-Consumable Goods" = 4)) 
+
+```
+
+
+```{r, eval = T}
+
+cols_imports<-c("IDN Industry", "USA Industry", rep(c("No. IDN Firms\nin Industry", "Avg. Import Value \n per IDN Firm\nto US Industry (\\$)", "Avg. No. US\nExporters per\nIDN firm", "Avg. Value of\nFirm-to-Firm\nImports (\\$)"), 2))
+
+tables[["cons_BEC"]][["Imports"]] %>% 
+  relocate(matches("yes"), .before = 3) %>% 
+  mutate(
+    industry_local = case_when(
+      industry_local == "MANUF" ~ "Manufacturing",
+      industry_local == "WHL-RT" ~ "Wholesale/Retail",
+      TRUE ~ industry_local
+    ),
+    industry_foreign = case_when(
+      industry_foreign == "MANUF" ~ "Manufacturing",
+      industry_foreign == "WHL-RT" ~ "Wholesale/Retail",
+      TRUE ~ industry_foreign
+    )
+  ) %>% 
+  kable(caption = "Import Dynamics for Consumable Goods: Indonesia Industries Trading with USA Industries", 
+    col.names = linebreak(cols_imports, align = "c"),
+    #format = "latex", 
+    align = c(rep("c", 7)),
+    booktabs = T,
+    escape = FALSE,
+    digits = 2,
+    format.args = list(big.mark = ",")) %>% 
+  kable_styling(latex_options = c("HOLD_position", "scale_down"), position = "center") %>% 
+  add_header_above(c(" " = 2, "Consumable Goods" = 4, "Non-Consumable Goods" = 4)) 
+
+```
+
+
+## Durable Goods
+
+```{r, eval = T}
+
+cols_exports<-c("IDN Industry", "USA Industry", rep(c("No. IDN Firms\nin Industry", "Avg. Export Value \n per IDN Firm\nto US Industry (\\$)", "Avg. No. US\nImporters per\nIDN firm", "Avg. Value of\nFirm-to-Firm\nExports (\\$)"), 2))
+
+tables[["durable_BEC"]][["Exports"]] %>% 
+  relocate(matches("yes"), .before = 3) %>% 
+  mutate(
+    industry_local = case_when(
+      industry_local == "MANUF" ~ "Manufacturing",
+      industry_local == "WHL-RT" ~ "Wholesale/Retail",
+      TRUE ~ industry_local
+    ),
+    industry_foreign = case_when(
+      industry_foreign == "MANUF" ~ "Manufacturing",
+      industry_foreign == "WHL-RT" ~ "Wholesale/Retail",
+      TRUE ~ industry_foreign
+    )
+  ) %>% 
+  kable(caption = "Exports Dynamics for Durable Goods: Indonesia Industries Trading with USA Industries", 
+    col.names = linebreak(cols_exports, align = "c"),
+    #format = "latex", 
+    align = c(rep("c", 7)),
+    booktabs = T,
+    escape = FALSE,
+    digits = 2,
+    format.args = list(big.mark = ",")) %>% 
+  kable_styling(latex_options = c("HOLD_position", "scale_down"), position = "center") %>% 
+  add_header_above(c(" " = 2, "Consumable Goods" = 4, "Non-Consumable Goods" = 4)) 
+
+```
+
+
+```{r, eval = T}
+
+cols_imports<-c("IDN Industry", "USA Industry", rep(c("No. IDN Firms\nin Industry", "Avg. Import Value \n per IDN Firm\nto US Industry (\\$)", "Avg. No. US\nExporters per\nIDN firm", "Avg. Value of\nFirm-to-Firm\nImports (\\$)"), 2))
+
+tables[["durable_BEC"]][["Imports"]] %>% 
+  relocate(matches("yes"), .before = 3) %>% 
+  mutate(
+    industry_local = case_when(
+      industry_local == "MANUF" ~ "Manufacturing",
+      industry_local == "WHL-RT" ~ "Wholesale/Retail",
+      TRUE ~ industry_local
+    ),
+    industry_foreign = case_when(
+      industry_foreign == "MANUF" ~ "Manufacturing",
+      industry_foreign == "WHL-RT" ~ "Wholesale/Retail",
+      TRUE ~ industry_foreign
+    )
+  ) %>% 
+  kable(caption = "Import Dynamics for Durable Goods: Indonesia Industries Trading with USA Industries", 
+    col.names = linebreak(cols_imports, align = "c"),
+    #format = "latex", 
+    align = c(rep("c", 7)),
+    booktabs = T,
+    escape = FALSE,
+    digits = 2,
+    format.args = list(big.mark = ",")) %>% 
+  kable_styling(latex_options = c("HOLD_position", "scale_down"), position = "center") %>% 
+  add_header_above(c(" " = 2, "Durable Goods" = 4, "Non-durable Goods" = 4)) 
+
+```
+
+
+
+## Products in China E-commerce tax list 
+
+```{r, eval = T}
+
+cols_exports<-c("IDN Industry", "USA Industry", rep(c("No. IDN Firms\nin Industry", "Avg. Export Value \n per IDN Firm\nto US Industry (\\$)", "Avg. No. US\nImporters per\nIDN firm", "Avg. Value of\nFirm-to-Firm\nExports (\\$)"), 2))
+
+tables[["China_E_commerce"]][["Exports"]] %>% 
+  relocate(matches("yes"), .before = 3) %>% 
+  mutate(
+    industry_local = case_when(
+      industry_local == "MANUF" ~ "Manufacturing",
+      industry_local == "WHL-RT" ~ "Wholesale/Retail",
+      TRUE ~ industry_local
+    ),
+    industry_foreign = case_when(
+      industry_foreign == "MANUF" ~ "Manufacturing",
+      industry_foreign == "WHL-RT" ~ "Wholesale/Retail",
+      TRUE ~ industry_foreign
+    )
+  ) %>% 
+  kable(caption = "Exports Dynamics for products in China E-commerce tax list: Indonesia Industries Trading with USA Industries", 
+    col.names = linebreak(cols_exports, align = "c"),
+    #format = "latex", 
+    align = c(rep("c", 7)),
+    booktabs = T,
+    escape = FALSE,
+    digits = 2,
+    format.args = list(big.mark = ",")) %>% 
+  kable_styling(latex_options = c("HOLD_position", "scale_down"), position = "center") %>% 
+  add_header_above(c(" " = 2, "China E-commerce Product" = 4, "Non-China E-commerce Product" = 4)) 
+
+```
+
+
+```{r, eval = T}
+
+cols_imports<-c("IDN Industry", "USA Industry", rep(c("No. IDN Firms\nin Industry", "Avg. Import Value \n per IDN Firm\nto US Industry (\\$)", "Avg. No. US\nExporters per\nIDN firm", "Avg. Value of\nFirm-to-Firm\nImports (\\$)"), 2))
+
+tables[["China_E_commerce"]][["Imports"]] %>% 
+  relocate(matches("yes"), .before = 3) %>% 
+  mutate(
+    industry_local = case_when(
+      industry_local == "MANUF" ~ "Manufacturing",
+      industry_local == "WHL-RT" ~ "Wholesale/Retail",
+      TRUE ~ industry_local
+    ),
+    industry_foreign = case_when(
+      industry_foreign == "MANUF" ~ "Manufacturing",
+      industry_foreign == "WHL-RT" ~ "Wholesale/Retail",
+      TRUE ~ industry_foreign
+    )
+  ) %>% 
+  kable(caption = "Import Dynamics for products in China E-commerce tax list: Indonesia Industries Trading with USA Industries", 
+    col.names = linebreak(cols_imports, align = "c"),
+    #format = "latex", 
+    align = c(rep("c", 7)),
+    booktabs = T,
+    escape = FALSE,
+    digits = 2,
+    format.args = list(big.mark = ",")) %>% 
+  kable_styling(latex_options = c("HOLD_position", "scale_down"), position = "center") %>% 
+  add_header_above(c(" " = 2, "China E-commerce Product" = 4, "Non-China E-commerce Product" = 4)) 
+
+```
+
+## e-Bay tradable products
+
+```{r, eval = T}
+
+cols_exports<-c("IDN Industry", "USA Industry", rep(c("No. IDN Firms\nin Industry", "Avg. Export Value \n per IDN Firm\nto US Industry (\\$)", "Avg. No. US\nImporters per\nIDN firm", "Avg. Value of\nFirm-to-Firm\nExports (\\$)"), 2))
+
+tables[["Ebay_tradable"]][["Exports"]] %>% 
+  relocate(matches("yes"), .before = 3) %>% 
+  mutate(
+    industry_local = case_when(
+      industry_local == "MANUF" ~ "Manufacturing",
+      industry_local == "WHL-RT" ~ "Wholesale/Retail",
+      TRUE ~ industry_local
+    ),
+    industry_foreign = case_when(
+      industry_foreign == "MANUF" ~ "Manufacturing",
+      industry_foreign == "WHL-RT" ~ "Wholesale/Retail",
+      TRUE ~ industry_foreign
+    )
+  ) %>% 
+  kable(caption = "Exports Dynamics for e-Bay tradable products: Indonesia Industries Trading with USA Industries", 
+    col.names = linebreak(cols_exports, align = "c"),
+    #format = "latex", 
+    align = c(rep("c", 7)),
+    booktabs = T,
+    escape = FALSE,
+    digits = 2,
+    format.args = list(big.mark = ",")) %>% 
+  kable_styling(latex_options = c("HOLD_position", "scale_down"), position = "center") %>% 
+  add_header_above(c(" " = 2, "e-Bay tradable product" = 4, "Non-e-Bay tradable product" = 4)) 
+
+```
+
+
+```{r, eval = T}
+
+cols_imports<-c("IDN Industry", "USA Industry", rep(c("No. IDN Firms\nin Industry", "Avg. Import Value \n per IDN Firm\nto US Industry (\\$)", "Avg. No. US\nExporters per\nIDN firm", "Avg. Value of\nFirm-to-Firm\nImports (\\$)"), 2))
+
+tables[["Ebay_tradable"]][["Imports"]] %>% 
+  relocate(matches("yes"), .before = 3) %>% 
+  mutate(
+    industry_local = case_when(
+      industry_local == "MANUF" ~ "Manufacturing",
+      industry_local == "WHL-RT" ~ "Wholesale/Retail",
+      TRUE ~ industry_local
+    ),
+    industry_foreign = case_when(
+      industry_foreign == "MANUF" ~ "Manufacturing",
+      industry_foreign == "WHL-RT" ~ "Wholesale/Retail",
+      TRUE ~ industry_foreign
+    )
+  ) %>% 
+  kable(caption = "Import Dynamics for e-Bay tradable products: Indonesia Industries Trading with USA Industries", 
+    col.names = linebreak(cols_imports, align = "c"),
+    #format = "latex", 
+    align = c(rep("c", 7)),
+    booktabs = T,
+    escape = FALSE,
+    digits = 2,
+    format.args = list(big.mark = ",")) %>% 
+  kable_styling(latex_options = c("HOLD_position", "scale_down"), position = "center") %>% 
+  add_header_above(c(" " = 2, "e-Bay tradable product" = 4, "Non-e-Bay tradable product" = 4)) 
+
+```
+
+
+# Bilateral Industry Trade Patterns: Dissagregated by Technology Adoption
+
+```{r, eval = T}
+
+cols_exports<-c("IDN Industry", "USA Industry", rep(c("No. IDN Firms\nin Industry", "Avg. Export Value \n per IDN Firm\nto US Industry (\\$)", "Avg. No. US\nImporters per\nIDN firm", "Avg. Value of\nFirm-to-Firm\nExports (\\$)"), 2))
+
+tables[["ever_pay_or_ecomnod"]][["Exports"]] %>% 
+  relocate(matches("yes"), .before = 3) %>% 
+  select(-contains("NA")) %>% 
+  mutate(
+    industry_local = case_when(
+      industry_local == "MANUF" ~ "Manufacturing",
+      industry_local == "WHL-RT" ~ "Wholesale/Retail",
+      TRUE ~ industry_local
+    ),
+    industry_foreign = case_when(
+      industry_foreign == "MANUF" ~ "Manufacturing",
+      industry_foreign == "WHL-RT" ~ "Wholesale/Retail",
+      TRUE ~ industry_foreign
+    )
+  ) %>% 
+  kable(caption = "Exports Dynamics by Technology Adoption: Indonesia Industries Trading with USA Industries", 
+    col.names = linebreak(cols_exports, align = "c"),
+    #format = "latex", 
+    align = c(rep("c", 7)),
+    booktabs = T,
+    escape = FALSE,
+    digits = 2,
+    format.args = list(big.mark = ",")) %>% 
+  kable_styling(latex_options = c("HOLD_position", "scale_down"), position = "center") %>% 
+  add_header_above(c(" " = 2, "E-commerce/E-payment Adopted" = 4, "E-commerce/E-payment Not Adopted" = 4)) 
+
+```
+
+
+```{r, eval = T}
+
+cols_imports<-c("IDN Industry", "USA Industry", rep(c("No. IDN Firms\nin Industry", "Avg. Import Value \n per IDN Firm\nto US Industry (\\$)", "Avg. No. US\nExporters per\nIDN firm", "Avg. Value of\nFirm-to-Firm\nImports (\\$)"), 2))
+
+tables[["ever_pay_or_ecomnod"]][["Imports"]] %>% 
+  relocate(matches("yes"), .before = 3) %>% 
+  select(-contains("NA")) %>% 
+  mutate(
+    industry_local = case_when(
+      industry_local == "MANUF" ~ "Manufacturing",
+      industry_local == "WHL-RT" ~ "Wholesale/Retail",
+      TRUE ~ industry_local
+    ),
+    industry_foreign = case_when(
+      industry_foreign == "MANUF" ~ "Manufacturing",
+      industry_foreign == "WHL-RT" ~ "Wholesale/Retail",
+      TRUE ~ industry_foreign
+    )
+  ) %>% 
+  kable(caption = "Import Dynamics by Technology Adoption: Indonesia Industries Trading with USA Industries", 
+    col.names = linebreak(cols_imports, align = "c"),
+    #format = "latex", 
+    align = c(rep("c", 7)),
+    booktabs = T,
+    escape = FALSE,
+    digits = 2,
+    format.args = list(big.mark = ",")) %>% 
+  kable_styling(latex_options = c("HOLD_position", "scale_down"), position = "center") %>% 
+  add_header_above(c(" " = 2, "E-commerce/E-payment Adopted" = 4, "E-commerce/E-payment Not Adopted" = 4)) 
+
+```
+
+
+
+
