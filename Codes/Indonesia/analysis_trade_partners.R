@@ -74,12 +74,22 @@ source("../src/functions_foreign_partner_analysis.R")
 ### Aberdeen Foreign ----
 
 # Read matched Aberdeen to Panjiva data for foreign firms trading with IDN
-aberdeen_f_data<-fread("../../Data/Indonesia/raw_data/matched_foreign_firms_indonesia.csv") %>% 
+# aberdeen_f_data<-fread("../../Data/Indonesia/raw_data/matched_foreign_firms_indonesia.csv") %>% 
+#   # Select foreign company ID, foreign country, siteid, Aberdeen firm name, Panjiva firm name, 
+#   # SIC industry, NAICS6 classficiation. 
+#   select(foreign_company_id = our_ID, foreign_country_aberdeen = country_iso3_01, foreign_SITEID = SITEID,
+#          foreign_aberdeen_firm_name = Aberdeen_COMPANY,  foreign_panjiva_firm_name = panjiva_cleaned_name_01,
+#          foreign_SICGRP = SICGRP, foreign_NAICS6_CODE = NAICS6_CODE)
+
+
+
+aberdeen_f_data<-read_xlsx("../../Data/Indonesia/raw_data/matched_foreign_firms_indonesia_v2.xlsx") %>% 
   # Select foreign company ID, foreign country, siteid, Aberdeen firm name, Panjiva firm name, 
   # SIC industry, NAICS6 classficiation. 
   select(foreign_company_id = our_ID, foreign_country_aberdeen = country_iso3_01, foreign_SITEID = SITEID,
          foreign_aberdeen_firm_name = Aberdeen_COMPANY,  foreign_panjiva_firm_name = panjiva_cleaned_name_01,
          foreign_SICGRP = SICGRP, foreign_NAICS6_CODE = NAICS6_CODE)
+
 
 ### Aberdeen Domestic ----
 
@@ -388,7 +398,6 @@ gc()
 
 # Products categories and tech vars to be analyzed
 products_tech<-c("cons_BEC","durable_BEC", "China_E_commerce", "Ebay_tradable", "ever_pay_or_ecomnod")
-products_tech<-c("ever_pay_or_ecomnod")
 
 # Iterate over products to be analyzed (pass variable names as strings)
 for (product_tech_var in products_tech) {
