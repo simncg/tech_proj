@@ -1,0 +1,354 @@
+---
+title: "Analysis of the COVID-19 Shock, Technology and Trade"
+subtitle: "Quality of Panjiva Foreign Partners Data - India and Indonesia"
+author: "Simón Caicedo"
+date: \today
+header-includes:
+  \usepackage{float}
+  \usepackage{placeins}
+  \usepackage{rotating}
+  \usepackage{graphicx}
+  \usepackage{booktabs}
+  \usepackage{caption}
+  \usepackage{longtable}
+  \usepackage{breqn}
+  \usepackage{threeparttable}
+output:
+  pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.pos = 'H')
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning  = FALSE)
+```
+
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE, results='hide'}
+
+# Set Working Directory ----
+fileloc <- dirname(rstudioapi::getSourceEditorContext()$path)
+setwd(fileloc)
+rm(fileloc)
+
+# Libraries to be used ----
+library(tidyverse)
+library(haven)
+library(data.table)
+library(dtplyr)
+library(readxl)
+library(arrow)
+library(ggplot2)
+library(kableExtra)
+library(ggthemes)
+
+
+# Read objects with information about Foreign Panjiva Quality Data
+load("../../Data/processed_data/quality_foreign_data.RData")
+
+```
+
+# 1. India 
+
+The following plot illustrates the proportion of Indian firms with non-missing foreign trade partners in all observations. This proportion is calculated for each year of available data in India (2016-2022). Notably, the lowest proportion values for both Exports and Imports datasets can be observed in 2016 and 2019.
+
+
+```{r, eval = T, fig.width=9, fig.height=4}
+
+exp_quality_IND %>% 
+  filter(foreign_firm_missing == 0) %>% 
+  group_by(year) %>%
+  summarize(total_firms = n(),
+            n_distinct_firms = n_distinct(domestic_company_id),
+            firms_complete = sum(prop_obs == 1, na.rm = TRUE),
+            firms_incomplete = sum(prop_obs != 1, na.rm = TRUE),
+            prop_complete = firms_complete /total_firms) %>% 
+  select(Year = year, Exports = prop_complete) %>% 
+  left_join(imp_quality_IND %>% 
+              filter(foreign_firm_missing == 0) %>% 
+              group_by(year) %>%
+              summarize(total_firms = n(),
+                        firms_complete = sum(prop_obs == 1, na.rm = TRUE),
+                        prop_complete = firms_complete /total_firms) %>% 
+              select(Year = year, Imports = prop_complete),
+            by="Year") %>% 
+  pivot_longer(cols = c(Exports, Imports), 
+               names_to = "data", 
+               values_to = "proportion") %>% 
+  ggplot()+
+  geom_col(aes(x = Year, y = proportion, fill = as.factor(Year)), alpha = 0.75)+
+  facet_wrap(~data)+
+  ggtitle("Proportion of Firms with Non-Missing Foreign Partners Data by Year", 
+          subtitle = "India")+
+  ylab("Proportion")+
+  scale_fill_economist()+
+  theme_minimal()+
+  theme(legend.position  = "None", 
+        plot.title = element_text(hjust = 0.5, face = "bold"), 
+        plot.subtitle = element_text(hjust = 0.5, face = "italic"))+
+  scale_x_continuous(n.breaks = 7)
+
+
+```
+
+Additionally, for each year, we calculate the total number of observations per firm and determine the count of observations with non-missing foreign partners. Subsequently, we compute by firm-year the proportion of observations with non-missing foreign partners. Tables 1 and 2 display the summary statistics (Mean, Min, quantile 5, quantile 25, Median, quantile 75 and Max) of this variable for the exports and imports datasets, respectively.
+
+
+```{r, eval = T}
+
+exp_quality_IND %>% 
+  filter(foreign_firm_missing == 0) %>% 
+  group_by(year) %>% 
+  # Summary Statistics of the Variable Measuring the Proportion of Observations by Firm-Year with Non-Missing Foreign Partner
+  summarize(Mean = mean(prop_obs),
+            Min = min(prop_obs), 
+            p5 = quantile(prop_trade_volume, 0.05),
+            p25 = quantile(prop_obs, 0.25), 
+            Median = median(prop_obs), 
+            p75 = quantile(prop_obs, 0.75), 
+            Max = max(prop_obs)) %>% 
+  # Round values 
+  mutate(across(everything(), ~ round(., 3))) %>% 
+  column_to_rownames("year") %>% 
+  # Create Table
+  kable(caption = "Panjiva Exports India - Summary Statistics of Proportion of Firm Observations with Non-Missing Foreign Partners", 
+        booktabs = T, 
+        linesep = "", 
+        align = c("l",rep("c", 7))) %>% 
+  kable_styling(latex_options = c("HOLD_position"))
+
+
+
+```
+
+
+
+
+```{r, eval = T}
+
+imp_quality_IND %>% 
+  filter(foreign_firm_missing == 0) %>% 
+  group_by(year) %>% 
+  summarize(Mean = mean(prop_obs),
+            Min = min(prop_obs), 
+            p5 = quantile(prop_trade_volume, 0.05),
+            p25 = quantile(prop_obs, 0.25), 
+            Median = median(prop_obs), 
+            p75 = quantile(prop_obs, 0.75), 
+            Max = max(prop_obs)) %>% 
+  # Round values 
+  mutate(across(everything(), ~ round(., 3))) %>% 
+  column_to_rownames("year") %>% 
+  # Create Table
+  kable(caption = "Panjiva Imports India - Summary Statistics of Proportion of Firm Observations with Non-Missing Foreign Partners",
+        booktabs = T, linesep = "", align = c("l",rep("c", 7))) %>% 
+  kable_styling(latex_options = c("HOLD_position"))
+
+
+```
+
+
+As illustrated in Tables 1 and 2, the exports dataset shows an average proportion of non-missing foreign partner observations per firm across all years exceeding 0.8, with a median proportion of 1 for all years, except 2016. Meanwhile, the imports dataset presents an average proportion surpassing 0.94 for 2018, 2020, 2021, and 2022, along with a median proportion of 1 for these years.
+
+
+
+On the other hand, to assess the importance of non-missing foreign partner observations in relation to a firm's total export or import volume for a specific year, we first calculate the annual total export or import volume for each firm. Following that, we compute by firm-year the proportion of the total volume attributable to observations with non-missing foreign partners. Summary statistics for this variable can be found in Tables 3 and 4 for the exports and imports datasets, respectively.
+
+
+```{r, eval=T}
+
+exp_quality_IND %>% 
+  filter(foreign_firm_missing == 0) %>% 
+  group_by(year) %>% 
+  summarize(Mean = mean(prop_trade_volume),
+            Min = min(prop_trade_volume), 
+            p5 = quantile(prop_trade_volume, 0.05),
+            p25 = quantile(prop_trade_volume, 0.25), 
+            Median = median(prop_trade_volume), 
+            p75 = quantile(prop_trade_volume, 0.75), 
+            Max = max(prop_trade_volume)) %>% 
+  # Round values 
+  mutate(across(everything(), ~ round(., 3))) %>% 
+  column_to_rownames("year") %>% 
+  # Create Table
+  kable(caption = "Panjiva Exports India - Summary Statistics of Proportion of Firm Total Exports with Non-Missing Foreign Partners", 
+        booktabs = T, linesep = "", align = c("l",rep("c", 7))) %>% 
+  kable_styling(latex_options = c("HOLD_position"))
+
+
+
+```
+
+
+
+```{r, eval = T}
+
+# Summary Statistics of the Variable Measuring the Proportion of Trade Volume by Firm-Year with Non-Missing Foreign Partner
+imp_quality_IND %>% 
+  filter(foreign_firm_missing == 0) %>% 
+  group_by(year) %>% 
+  summarize(Mean = mean(prop_trade_volume),
+            Min = min(prop_trade_volume), 
+            p5 = quantile(prop_trade_volume, 0.05),
+            p25 = quantile(prop_trade_volume, 0.25), 
+            Median = median(prop_trade_volume), 
+            p75 = quantile(prop_trade_volume, 0.75), 
+            Max = max(prop_trade_volume)) %>% 
+  # Round values 
+  mutate(across(everything(), ~ round(., 3))) %>% 
+  column_to_rownames("year") %>% 
+  # Create Table
+  kable(caption = "Panjiva Imports India - Summary Statistics of Proportion of Firm Total Imports with Non-Missing Foreign Partners",
+        booktabs = T, linesep = "", align = c("l",rep("c", 7))) %>% 
+  kable_styling(latex_options = c("HOLD_position"))
+
+
+  
+```
+
+
+As shown in Tables 3 and 4, for the exports dataset, the average proportion of total trade volume attributed to non-missing foreign partner observations per firm across all years exceeds 0.79, with a median proportion of 1 for all years, except 2016. In the imports dataset, this average proportion surpasses 0.94 for 2018, 2020, 2021, and 2022, and the median proportion is 1 for these years as well.
+
+
+# 2. Indonesia 
+
+The datasets for Indonesia exhibit very few missing values concerning foreign partners. Across all years and in both exports and imports datasets, the proportion of Indonesian firms with non-missing foreign trade partners in all observations exceeds 0.96.
+
+
+```{r, eval = T, fig.width=9, fig.height=5}
+
+exp_quality_IDN %>% 
+  filter(foreign_firm_missing == 0) %>% 
+  group_by(year) %>%
+  summarize(total_firms = n(),
+            firms_complete = sum(prop_obs == 1, na.rm = TRUE),
+            prop_complete = firms_complete /total_firms) %>% 
+  select(Year = year, Exports = prop_complete) %>% 
+  left_join(imp_quality_IDN %>% 
+              filter(foreign_firm_missing == 0) %>% 
+              group_by(year) %>%
+              summarize(total_firms = n(),
+                        firms_complete = sum(prop_obs == 1, na.rm = TRUE),
+                        prop_complete = firms_complete /total_firms) %>% 
+              select(Year = year, Imports = prop_complete),
+            by="Year") %>% 
+  pivot_longer(cols = c(Exports, Imports), 
+               names_to = "data", 
+               values_to = "proportion") %>% 
+  ggplot()+
+  geom_col(aes(x = Year, y = proportion, fill = as.factor(Year)), alpha = 0.75)+
+  facet_wrap(~data)+
+  ggtitle("Proportion of Firms with Non-Missing Foreign Partners Data", 
+          subtitle = "Indonesia")+
+  ylab("Proportion")+
+  scale_fill_economist()+
+  theme_minimal()+
+  theme(legend.position  = "None", 
+        plot.title = element_text(hjust = 0.5, face = "bold"), 
+        plot.subtitle = element_text(hjust = 0.5, face = "italic"))
+  
+
+
+```
+
+
+
+```{r, eval = T}
+
+exp_quality_IDN %>% 
+  filter(foreign_firm_missing == 0) %>% 
+  group_by(year) %>% 
+  # Summary Statistics of the Variable Measuring the Proportion of Observations by Firm-Year with Non-Missing Foreign Partner
+  summarize(Mean = mean(prop_obs),
+            Min = min(prop_obs), 
+            p5 = quantile(prop_trade_volume, 0.05),
+            p25 = quantile(prop_obs, 0.25), 
+            Median = median(prop_obs), 
+            p75 = quantile(prop_obs, 0.75), 
+            Max = max(prop_obs)) %>% 
+  # Round values 
+  mutate(across(everything(), ~ round(., 3))) %>% 
+  column_to_rownames("year") %>% 
+  # Create Table
+  kable(caption = "Panjiva Exports Indonesia - Summary Statistics of Proportion of Firm Observations with Non-Missing Foreign Partners", 
+        booktabs = T, linesep = "", align = c("l",rep("c", 7))) %>% 
+  kable_styling(latex_options = c("HOLD_position"))
+
+
+
+```
+
+
+
+```{r, eval = T}
+
+exp_quality_IDN %>% 
+  filter(foreign_firm_missing == 0) %>% 
+  group_by(year) %>% 
+  summarize(Mean = mean(prop_trade_volume),
+            Min = min(prop_trade_volume), 
+            p5 = quantile(prop_trade_volume, 0.05),
+            p25 = quantile(prop_trade_volume, 0.25), 
+            Median = median(prop_trade_volume), 
+            p75 = quantile(prop_trade_volume, 0.75), 
+            Max = max(prop_trade_volume)) %>% 
+  # Round values 
+  mutate(across(everything(), ~ round(., 3))) %>% 
+  column_to_rownames("year") %>% 
+  # Create Table
+  kable(caption = "Panjiva Exports Indonesia - Summary Statistics of Proportion of Firm Total Exports with Non-Missing Foreign Partners", 
+        booktabs = T, linesep = "", align = c("l",rep("c", 7))) %>% 
+  kable_styling(latex_options = c("HOLD_position"))
+
+
+
+```
+
+
+
+```{r, eval = T}
+
+imp_quality_IDN %>% 
+  filter(foreign_firm_missing == 0) %>% 
+  group_by(year) %>% 
+  summarize(Mean = mean(prop_obs),
+            Min = min(prop_obs), 
+            p5 = quantile(prop_trade_volume, 0.05),
+            p25 = quantile(prop_obs, 0.25), 
+            Median = median(prop_obs), 
+            p75 = quantile(prop_obs, 0.75), 
+            Max = max(prop_obs)) %>% 
+  # Round values 
+  mutate(across(everything(), ~ round(., 3))) %>% 
+  column_to_rownames("year") %>% 
+  # Create Table
+  kable(caption = "Panjiva Imports Indonesia - Summary Statistics of Proportion of Firm Observations with Non-Missing Foreign Partners",
+        booktabs = T, linesep = "", align = c("l",rep("c", 7))) %>% 
+  kable_styling(latex_options = c("HOLD_position"))
+
+
+
+
+# Summary Statistics of the Variable Measuring the Proportion of Trade Volume by Firm-Year with Non-Missing Foreign Partner
+imp_quality_IDN %>% 
+  filter(foreign_firm_missing == 0) %>% 
+  group_by(year) %>% 
+  summarize(Mean = mean(prop_trade_volume),
+            Min = min(prop_trade_volume), 
+            p5 = quantile(prop_trade_volume, 0.05),
+            p25 = quantile(prop_trade_volume, 0.25), 
+            Median = median(prop_trade_volume), 
+            p75 = quantile(prop_trade_volume, 0.75), 
+            Max = max(prop_trade_volume)) %>% 
+  # Round values 
+  mutate(across(everything(), ~ round(., 3))) %>% 
+  column_to_rownames("year") %>% 
+  # Create Table
+  kable(caption = "Panjiva Imports Indonesia - Summary Statistics of Proportion of Firm Total Imports with Non-Missing Foreign Partners",
+        booktabs = T, linesep = "", align = c("l",rep("c", 7))) %>% 
+  kable_styling(latex_options = c("HOLD_position"))
+
+
+  
+```
