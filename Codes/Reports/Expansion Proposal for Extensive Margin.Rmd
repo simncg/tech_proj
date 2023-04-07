@@ -47,7 +47,7 @@ We plan to expand the dataset at the firm-month-HS6 level by using only feasible
 ```{r, eval=T}
 
 # Read where we generate the data for the number of observations 
-source("../India/04_data_model_extensive_margin_n_obs.R", chdir = T)
+source("../India/04_data_model_extensive_margin_n_obs_IND.R", chdir = T)
 
 ```
 
