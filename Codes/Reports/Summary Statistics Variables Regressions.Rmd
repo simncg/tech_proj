@@ -1,0 +1,1247 @@
+---
+title: "Analysis of the COVID-19 Shock, Technology and Trade"
+subtitle: "Summary Statistics of Variables Used in Regressions"
+author: "Simón Caicedo"
+date: \today
+header-includes:
+  \usepackage{float}
+  \usepackage{placeins}
+  \usepackage{rotating}
+  \usepackage{graphicx}
+  \usepackage{booktabs}
+  \usepackage{caption}
+  \usepackage{longtable}
+  \usepackage{breqn}
+  \usepackage{threeparttable}
+output:
+  pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.pos = 'H')
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning  = FALSE)
+
+
+big_number_format<-function(x){format(x, big.mark = ",")}
+
+```
+
+
+```{r}
+
+fileloc <- dirname(rstudioapi::getSourceEditorContext()$path)
+setwd(fileloc)
+rm(fileloc)
+
+# Libraries to be used ----
+source("../src/packages.R")
+library(tibble)
+library(ggpubr)
+
+# Indonesia ----
+
+# Builtwith Data 
+tech_IDN <- read_parquet("../../Data/Indonesia/raw_data/Builtwith_no_drop_long_v2.parquet", 
+                         col_select = c("New_ID_1", "tech")) %>% 
+  rename(company_id = New_ID_1) %>% 
+  filter(tech %in% c("pay_robust", "ecom_nod")) %>% 
+  distinct(company_id)
+
+# Load matched Aberdeen to Panjiva data 
+aberdeen_IDN <- read_xlsx("../../Data/Indonesia/raw_data/matched_data_Indonesia.xlsx") 
+
+# Correspondance 
+IDN_Domestic_Ids_Corresp <- read_xlsx("../../Data/Indonesia/raw_data/IDN_Domestic_Ids_Corresp_update.xlsx")
+
+aberdeen_IDN <-IDN_Domestic_Ids_Corresp  %>% 
+  select(prev_our_domestic_id, new_our_domestic_id ) %>% 
+  distinct() %>% 
+  filter(prev_our_domestic_id  %in% aberdeen_IDN$our_domestic_id) %>% 
+  left_join(aberdeen_IDN,  by = c("prev_our_domestic_id" = "our_domestic_id")) %>% 
+  rename(company_id = new_our_domestic_id) %>% 
+  distinct(company_id)
+
+
+# Panjiva Imports Data (Firm-Month-HS6)
+imports_IDN <-read_csv("../../Data/Indonesia/processed_data/import_summary_by_firm_month_HS_code.csv") %>% 
+  select(company_id, date, date_character,hs6,log_import, import, import_dummy, n_countries_import)%>% 
+  mutate(hs6  = str_pad(hs6 , 6, "left", "0"), 
+         year = year(date)) %>% 
+  mutate(matched_builtwith = company_id %in% tech_IDN$company_id, 
+         matched_aberdeen = company_id %in% aberdeen_IDN$company_id, 
+         matched_both = as.logical(matched_builtwith*matched_aberdeen))
+
+# Panjiva Exports Data (Firm-Month-HS6)
+exports_IDN <-read_csv("../../Data/Indonesia/processed_data/export_summary_by_firm_month_HS_code.csv") %>% 
+  select(company_id, date, date_character,hs6, log_export, export, export_dummy, n_countries_export)%>% 
+  mutate(hs6  = str_pad(hs6 , 6, "left", "0"), 
+         year = year(date)) %>% 
+  mutate(matched_builtwith = company_id %in% tech_IDN$company_id, 
+         matched_aberdeen = company_id %in% aberdeen_IDN$company_id, 
+         matched_both = as.logical(matched_builtwith*matched_aberdeen))
+
+
+# India ----
+
+# Builtwith India 
+tech_IND   <- read_parquet("../../Data/India/raw_data/Builtwith_no_drop_long_v2.parquet", 
+                            col_select = c("our_ID", "tech")) %>% 
+  # For the moment, we are only going to analyze e-payment/e-commerce technologies
+  filter(tech %in% c("payrobust_nod", "ecom_nod")) %>% 
+  rename(company_id = our_ID) %>% 
+  distinct(company_id)
+
+# Firms matched to Aberdeen 
+aberdeen_IND <- read_csv("../../Data/India/raw_data/matched_Aberdeen_to_Panjiva_data_India_v2.csv") %>%
+  rename(company_id = our_ID) %>% 
+  distinct(company_id)
+
+
+# Panjiva Imports Data 
+imports_IND <-fread("../../Data/India/processed_data/import_summaries_by_firm_month_HS_code_complete.csv") %>% 
+  select(company_id = domestic_company_id, year, month, date, date_character,hs6, import, log_import) %>%
+  # filter to analysis period
+  filter(date >= ymd("2018-07-01"),
+         date < ymd("2022-01-01")) %>% 
+  mutate(hs6  = str_pad(as.character(hs6), 6, "left", "0"), 
+         matched_builtwith = company_id %in% tech_IND$company_id, 
+         matched_aberdeen = company_id %in% aberdeen_IND$company_id, 
+         matched_both = as.logical(matched_aberdeen*matched_builtwith)) %>% 
+  as.data.frame()
+
+
+# Panjiva Exports Data 
+exports_IND <-fread("../../Data/India/processed_data/export_summaries_by_firm_month_HS_code_complete.csv") %>% 
+  select(company_id = domestic_company_id, year, month, date, date_character,hs6, export, log_export) %>% 
+  # filter to analysis period
+  filter(date >= ymd("2018-07-01"),
+         date < ymd("2022-01-01"))%>% 
+  mutate(hs6  = str_pad(as.character(hs6) , 6, "left", "0"), 
+         matched_builtwith = company_id %in% tech_IND$company_id, 
+         matched_aberdeen = company_id %in% aberdeen_IND$company_id,
+         matched_both = as.logical(matched_aberdeen*matched_builtwith)) %>% 
+  as.data.frame()
+
+rm(IDN_Domestic_Ids_Corresp)
+
+
+```
+
+
+# Matching Description
+
+The tables in this section display the proportion of transactions or firms per country-year represented by the matched Panjiva-Aberdeen-BuiltWith samples. Please note that these percentages pertain only to the matched Panjiva-Aberdeen-BuiltWith dataset and not to the regressions sample. The regressions sample has other filters, for example, excludes firms that do not fall within the analyzed SIC groups (Wholesale/Retail, Manufacturing, Agriculture, Construction and Mining, Services, Finance, Insurance and Real Estate, and Transport and Utilities) and those with total imports/exports of less than 1000 USD across all years. 
+
+## Total Exports and Imports Matching Rates by Year
+
+```{r}
+
+table_IDN<-imports_IDN %>% 
+  select(year, import, matched_builtwith, matched_aberdeen, matched_both) %>% 
+  mutate(Data = "Panjiva Imports") %>% 
+  group_by(year) %>% 
+  mutate(total_imports = sum(import, na.rm = T)) %>%
+  ungroup() %>% 
+  group_by(year, matched_builtwith) %>% 
+  mutate(tot_imp_match_builtwith = sum(import, na.rm = T), 
+         share_match_builtwith = (tot_imp_match_builtwith/total_imports)*100) %>%
+  ungroup() %>%
+  group_by(year, matched_aberdeen) %>% 
+  mutate(tot_imp_match_aberdeen = sum(import, na.rm = T), 
+         share_match_aberdeen = (tot_imp_match_aberdeen/total_imports)*100) %>% 
+  ungroup() %>% 
+  group_by(year, matched_both) %>% 
+  mutate(tot_imp_match_both = sum(import, na.rm=T), 
+         share_match_both = (tot_imp_match_both/total_imports)*100) %>% 
+  ungroup() %>% 
+  filter(matched_builtwith == T, 
+         matched_aberdeen  == T, 
+         matched_both == T) %>% 
+  distinct(year, .keep_all = T) %>% 
+  select(Data,
+         Year = year,
+         `Total Value` = total_imports,
+         `% Matched Aberdeen` = share_match_aberdeen,
+         `% Matched BuiltWith` = share_match_builtwith, 
+         `% Matched Both` = share_match_both
+         ) %>% 
+  bind_rows(
+      exports_IDN %>% 
+      select(year, export, matched_builtwith, matched_aberdeen, matched_both) %>% 
+      mutate(Data = "Panjiva Exports") %>% 
+      group_by(year) %>% 
+      mutate(total_exports = sum(export, na.rm = T)) %>% 
+      ungroup() %>% 
+      group_by(year, matched_builtwith) %>% 
+      mutate(tot_exp_match_builtwith = sum(export, na.rm = T), 
+             share_match_builtwith = (tot_exp_match_builtwith/total_exports)*100) %>%
+      ungroup() %>%
+      group_by(year, matched_aberdeen) %>% 
+      mutate(tot_exp_match_aberdeen = sum(export, na.rm = T), 
+             share_match_aberdeen = (tot_exp_match_aberdeen/total_exports)*100) %>% 
+      ungroup() %>% 
+      group_by(year, matched_both) %>% 
+      mutate(tot_exp_match_both = sum(export, na.rm = T), 
+             share_match_both = (tot_exp_match_both/total_exports)*100) %>% 
+      ungroup() %>% 
+      filter(matched_builtwith == T, 
+             matched_aberdeen  == T, 
+             matched_both == T) %>% 
+      distinct(year, .keep_all = T) %>% 
+      select(Data,
+             Year = year,
+             `Total Value` = total_exports,
+             `% Matched Aberdeen` = share_match_aberdeen,
+             `% Matched BuiltWith` = share_match_builtwith, 
+             `% Matched Both` = share_match_both
+             )
+  ) %>% 
+  mutate(across(where(is.numeric), round, 2), 
+         across(c(`Total Value`), big_number_format)) %>% 
+  mutate(`Total Value` = paste0("$", `Total Value`))
+
+table_IND<-imports_IND %>% 
+  select(year, import, matched_builtwith, matched_aberdeen, matched_both) %>% 
+  mutate(Data = "Panjiva Imports") %>% 
+  group_by(year) %>% 
+  mutate(total_imports = sum(import, na.rm = T)) %>%
+  ungroup() %>% 
+  group_by(year, matched_builtwith) %>% 
+  mutate(tot_imp_match_builtwith = sum(import, na.rm = T), 
+         share_match_builtwith = (tot_imp_match_builtwith/total_imports)*100) %>%
+  ungroup() %>%
+  group_by(year, matched_aberdeen) %>% 
+  mutate(tot_imp_match_aberdeen = sum(import, na.rm = T), 
+         share_match_aberdeen = (tot_imp_match_aberdeen/total_imports)*100) %>% 
+  ungroup() %>% 
+  group_by(year, matched_both) %>% 
+  mutate(tot_imp_match_both = sum(import, na.rm=T), 
+         share_match_both = (tot_imp_match_both/total_imports)*100) %>% 
+  ungroup() %>% 
+  filter(matched_builtwith == T, 
+         matched_aberdeen  == T, 
+         matched_both == T) %>% 
+  distinct(year, .keep_all = T) %>% 
+  select(Data,
+         Year = year,
+         `Total Value` = total_imports,
+         `% Matched Aberdeen` = share_match_aberdeen,
+         `% Matched BuiltWith` = share_match_builtwith, 
+         `% Matched Both` = share_match_both
+  ) %>% 
+  bind_rows(
+    exports_IND %>% 
+      select(year, export, matched_builtwith, matched_aberdeen, matched_both) %>% 
+      mutate(Data = "Panjiva Exports") %>% 
+      group_by(year) %>% 
+      mutate(total_exports = sum(export, na.rm = T)) %>% 
+      ungroup() %>% 
+      group_by(year, matched_builtwith) %>% 
+      mutate(tot_exp_match_builtwith = sum(export, na.rm = T), 
+             share_match_builtwith = (tot_exp_match_builtwith/total_exports)*100) %>%
+      ungroup() %>%
+      group_by(year, matched_aberdeen) %>% 
+      mutate(tot_exp_match_aberdeen = sum(export, na.rm = T), 
+             share_match_aberdeen = (tot_exp_match_aberdeen/total_exports)*100) %>% 
+      ungroup() %>% 
+      group_by(year, matched_both) %>% 
+      mutate(tot_exp_match_both = sum(export, na.rm = T), 
+             share_match_both = (tot_exp_match_both/total_exports)*100) %>% 
+      ungroup() %>% 
+      filter(matched_builtwith == T, 
+             matched_aberdeen  == T, 
+             matched_both == T) %>% 
+      distinct(year, .keep_all = T) %>% 
+      select(Data,
+             Year = year,
+             `Total Value` = total_exports,
+             `% Matched Aberdeen` = share_match_aberdeen,
+             `% Matched BuiltWith` = share_match_builtwith, 
+             `% Matched Both` = share_match_both
+      )
+  ) %>% 
+  mutate(across(where(is.numeric), round, 2), 
+         across(c(`Total Value`), big_number_format)) %>% 
+  mutate(`Total Value` = paste0("$", `Total Value`))
+
+```
+
+
+```{r, eval=TRUE}
+
+kable(table_IDN %>% select(-Data), 
+    caption = "Indonesia - Panjiva total imports and total exports matching rates to BuiltWith and Aberdeen datasets by year", centering = T, booktabs = T, align = "c") %>%
+  kable_classic() %>%
+  kable_styling(latex_options = "HOLD_position") %>% 
+  pack_rows("Panjiva Imports", 1, 3) %>%
+  pack_rows("Panjiva Exports", 4, 6) %>% 
+  add_footnote(c("Data available for imports from February 2019 to June 2021",
+                 "Data available for exports from February 2019 to September 2021"))
+
+
+
+```
+
+
+```{r, eval=TRUE}
+
+kbl(table_IND %>% select(-Data), 
+    caption = "India - Panjiva total imports and total exports matching rates to BuiltWith and Aberdeen datasets by year", centering = T, booktabs = T, align = "c") %>%
+  kable_classic() %>%
+  kable_styling(latex_options = "HOLD_position") %>% 
+  pack_rows("Panjiva Imports", 1, 4) %>%
+  pack_rows("Panjiva Exports", 5, 8)%>% 
+  add_footnote(c("Data from July 2018 onwards is included."))
+
+
+```
+
+
+
+## Firms Matching Rates by Year
+
+```{r}
+
+table_IDN<-imports_IDN %>% 
+  select(company_id, year, matched_builtwith, matched_aberdeen, matched_both) %>% 
+  distinct(company_id, year, .keep_all = T) %>% 
+  mutate(Data = "Panjiva Imports") %>% 
+  group_by(year) %>% 
+  mutate(n_firms = n()) %>%
+  ungroup() %>% 
+  group_by(year, matched_builtwith) %>% 
+  mutate(n_match_builtwith = sum(matched_builtwith), 
+         share_match_builtwith = (n_match_builtwith/n_firms)*100) %>%
+  ungroup() %>%
+  group_by(year, matched_aberdeen) %>% 
+  mutate(n_match_aberdeen = sum(matched_aberdeen), 
+         share_match_aberdeen = (n_match_aberdeen/n_firms)*100) %>% 
+  ungroup() %>% 
+  group_by(year, matched_both) %>% 
+  mutate(n_match_both = sum(matched_both), 
+         share_match_both = (n_match_both/n_firms)*100) %>% 
+  ungroup() %>% 
+  filter(share_match_builtwith != 0, 
+         share_match_aberdeen != 0, 
+         share_match_both != 0) %>% 
+  distinct(n_firms, share_match_builtwith, share_match_aberdeen, share_match_both, .keep_all = T) %>% 
+  select(Data,
+         Year = year,
+         `Number Firms` = n_firms,
+         `% Matched Aberdeen` = share_match_aberdeen,
+         `% Matched BuiltWith` = share_match_builtwith, 
+         `% Matched Both` = share_match_both
+         ) %>% 
+  bind_rows(
+      exports_IDN %>% 
+      select(company_id, year, matched_builtwith, matched_aberdeen, matched_both) %>% 
+      distinct(company_id, year, .keep_all = T) %>% 
+      mutate(Data = "Panjiva Exports") %>% 
+      group_by(year) %>% 
+      mutate(n_firms = n()) %>% 
+      group_by(year, matched_builtwith) %>% 
+      mutate(n_match_builtwith = sum(matched_builtwith), 
+             share_match_builtwith = (n_match_builtwith/n_firms)*100) %>%
+      ungroup() %>%
+      group_by(year, matched_aberdeen) %>% 
+      mutate(n_match_aberdeen = sum(matched_aberdeen), 
+             share_match_aberdeen = (n_match_aberdeen/n_firms)*100) %>% 
+      ungroup() %>% 
+      group_by(year, matched_both) %>% 
+      mutate(n_match_both = sum(matched_both), 
+             share_match_both = (n_match_both/n_firms)*100) %>% 
+      ungroup() %>% 
+      filter(share_match_builtwith != 0, 
+             share_match_aberdeen != 0, 
+             share_match_both != 0) %>% 
+      distinct(n_firms, share_match_builtwith, share_match_aberdeen, share_match_both, .keep_all = T) %>% 
+      select(Data,
+             Year = year,
+             `Number Firms` = n_firms,
+             `% Matched Aberdeen` = share_match_aberdeen,
+             `% Matched BuiltWith` = share_match_builtwith, 
+             `% Matched Both` = share_match_both
+             )
+  ) %>% 
+  mutate(across(where(is.numeric), round, 2), 
+         across(`Number Firms`, big_number_format))
+
+
+
+table_IND<-imports_IND %>% 
+  select(company_id, year, matched_builtwith, matched_aberdeen, matched_both) %>% 
+  distinct(company_id, year, .keep_all = T) %>% 
+  mutate(Data = "Panjiva Imports") %>% 
+  group_by(year) %>% 
+  mutate(n_firms = n()) %>% 
+  ungroup() %>% 
+  group_by(year, matched_builtwith) %>% 
+  mutate(n_match_builtwith = sum(matched_builtwith), 
+         share_match_builtwith = (n_match_builtwith/n_firms)*100) %>%
+  ungroup() %>%
+  group_by(year, matched_aberdeen) %>% 
+  mutate(n_match_aberdeen = sum(matched_aberdeen), 
+         share_match_aberdeen = (n_match_aberdeen/n_firms)*100) %>% 
+  ungroup() %>% 
+  group_by(year, matched_both) %>% 
+  mutate(n_match_both = sum(matched_both), 
+         share_match_both = (n_match_both/n_firms)*100) %>% 
+  ungroup() %>% 
+  filter(share_match_builtwith != 0, 
+         share_match_aberdeen != 0, 
+         share_match_both != 0) %>% 
+  distinct(n_firms, share_match_builtwith, share_match_aberdeen, share_match_both, .keep_all = T) %>% 
+  select(Data,
+         Year = year,
+         `Number Firms` = n_firms,
+         `% Matched Aberdeen` = share_match_aberdeen,
+         `% Matched BuiltWith` = share_match_builtwith, 
+         `% Matched Both` = share_match_both) %>% 
+  bind_rows(
+      exports_IND %>% 
+      select(company_id, year, matched_builtwith, matched_aberdeen, matched_both) %>% 
+      distinct(company_id, year, .keep_all = T) %>% 
+      mutate(Data = "Panjiva Exports") %>% 
+      group_by(year) %>% 
+      mutate(n_firms = n()) %>% 
+      group_by(year, matched_builtwith) %>% 
+      mutate(n_match_builtwith = sum(matched_builtwith), 
+             share_match_builtwith = (n_match_builtwith/n_firms)*100) %>%
+      ungroup() %>%
+      group_by(year, matched_aberdeen) %>% 
+      mutate(n_match_aberdeen = sum(matched_aberdeen), 
+             share_match_aberdeen = (n_match_aberdeen/n_firms)*100) %>% 
+      ungroup() %>% 
+      group_by(year, matched_both) %>% 
+      mutate(n_match_both = sum(matched_both), 
+             share_match_both = (n_match_both/n_firms)*100) %>% 
+      ungroup() %>% 
+      distinct(n_firms, share_match_builtwith, share_match_aberdeen, share_match_both, .keep_all = T) %>% 
+      filter(share_match_builtwith != 0, 
+             share_match_aberdeen != 0, 
+             share_match_both!= 0) %>% 
+      select(Data,
+             Year = year,
+             `Number Firms` = n_firms,
+             `% Matched Aberdeen` = share_match_aberdeen,
+             `% Matched BuiltWith` = share_match_builtwith, 
+             `% Matched Both` = share_match_both)
+  ) %>% 
+  mutate(across(where(is.numeric), round, 2), 
+         across(`Number Firms`, big_number_format))
+
+
+```
+
+
+```{r, eval=TRUE}
+
+kable(table_IDN %>% select(-Data), 
+    caption = "Indonesia - Panjiva firms matching rates to BuiltWith and Aberdeen datasets by year", centering = T, booktabs = T, align = "c") %>%
+  kable_classic() %>%
+  kable_styling(latex_options = "HOLD_position") %>% 
+  pack_rows("Panjiva Imports", 1, 3) %>%
+  pack_rows("Panjiva Exports", 4, 6)
+
+
+```
+
+
+
+```{r, eval=TRUE}
+
+kbl(table_IND %>% select(-Data), 
+    caption = "India - Panjiva firms matching rates to BuiltWith and Aberdeen datasets by year", centering = T, booktabs = T, align = "c") %>%
+  kable_classic() %>%
+  kable_styling(latex_options = "HOLD_position") %>% 
+  pack_rows("Panjiva Imports", 1, 4) %>%
+  pack_rows("Panjiva Exports", 5, 8)
+
+
+```
+
+## Transactions Matching Rates by Year
+
+```{r, eval = TRUE}
+
+table_IDN<-imports_IDN %>% 
+  select(company_id, year, matched_builtwith, matched_aberdeen, matched_both) %>% 
+  mutate(Data = "Panjiva Imports") %>% 
+  group_by(year) %>% 
+  mutate(n_transactions = n()) %>% 
+  ungroup() %>% 
+  group_by(year, matched_builtwith) %>% 
+  mutate(n_match_builtwith = sum(matched_builtwith), 
+         share_match_builtwith = (n_match_builtwith/n_transactions)*100) %>%
+  ungroup() %>% 
+  group_by(year, matched_aberdeen) %>% 
+  mutate(n_match_aberdeen = sum(matched_aberdeen), 
+         share_match_aberdeen = (n_match_aberdeen/n_transactions)*100) %>%
+  ungroup() %>% 
+  group_by(year, matched_both) %>% 
+  mutate(n_match_both = sum(matched_both), 
+         share_match_both = (n_match_both/n_transactions)*100) %>%
+  ungroup() %>% 
+  distinct(n_transactions, share_match_builtwith, share_match_aberdeen, share_match_both, .keep_all = T) %>% 
+  filter(share_match_builtwith != 0, 
+         share_match_aberdeen != 0, 
+         share_match_both!=0) %>% 
+  select(Data,
+         Year = year,
+         `Number Transactions` = n_transactions,
+         `% Matched Aberdeen` = share_match_aberdeen,
+         `% Matched BuiltWith` = share_match_builtwith,
+         `% Matched Both` = share_match_both
+         ) %>%  
+  bind_rows(exports_IDN %>% 
+              select(company_id, year, matched_builtwith, matched_aberdeen, matched_both) %>%
+              mutate(Data = "Panjiva Exports") %>% 
+              group_by(year) %>% 
+              mutate(n_transactions = n()) %>% 
+              ungroup() %>% 
+              group_by(year, matched_builtwith) %>% 
+              mutate(n_match_builtwith = sum(matched_builtwith), 
+                     share_match_builtwith = (n_match_builtwith/n_transactions)*100) %>%
+              ungroup() %>% 
+              group_by(year, matched_aberdeen) %>% 
+              mutate(n_match_aberdeen = sum(matched_aberdeen), 
+                     share_match_aberdeen = (n_match_aberdeen/n_transactions)*100) %>%
+              ungroup() %>% 
+              group_by(year, matched_both) %>% 
+              mutate(n_match_both = sum(matched_both), 
+                     share_match_both = (n_match_both/n_transactions)*100) %>%
+              ungroup() %>% 
+              distinct(n_transactions, share_match_builtwith, share_match_aberdeen, share_match_both, .keep_all = T) %>% 
+              filter(share_match_builtwith != 0,
+                     share_match_aberdeen != 0,
+                     share_match_both != 0) %>% 
+              select(Data,
+                     Year = year,
+                     `Number Transactions` = n_transactions,
+                     `% Matched Aberdeen` = share_match_aberdeen,
+                     `% Matched BuiltWith` = share_match_builtwith, 
+                     `% Matched Both` = share_match_both)
+            ) %>% 
+  mutate(across(where(is.numeric), round, 2), 
+         across(`Number Transactions`, big_number_format))
+  
+  
+table_IND <- imports_IND %>% 
+  select(company_id, year, matched_builtwith, matched_aberdeen, matched_both) %>% 
+  mutate(Data = "Panjiva Imports") %>% 
+  group_by(year) %>% 
+  mutate(n_transactions = n()) %>% 
+  ungroup() %>% 
+  group_by(year, matched_builtwith) %>% 
+  mutate(n_match_builtwith = sum(matched_builtwith), 
+         share_match_builtwith = (n_match_builtwith/n_transactions)*100) %>%
+  ungroup() %>% 
+  group_by(year, matched_aberdeen) %>% 
+  mutate(n_match_aberdeen = sum(matched_aberdeen), 
+         share_match_aberdeen = (n_match_aberdeen/n_transactions)*100) %>%
+  ungroup() %>% 
+  group_by(year, matched_both) %>% 
+  mutate(n_match_both = sum(matched_both), 
+         share_match_both = (n_match_both/n_transactions)*100) %>%
+  ungroup() %>% 
+  distinct(n_transactions, share_match_builtwith, share_match_aberdeen, share_match_both, .keep_all = T) %>% 
+  filter(share_match_builtwith != 0, 
+         share_match_aberdeen != 0, 
+         share_match_both!=0) %>% 
+  select(Data,
+         Year = year,
+         `Number Transactions` = n_transactions,
+         `% Matched Aberdeen` = share_match_aberdeen,
+         `% Matched BuiltWith` = share_match_builtwith,
+         `% Matched Both` = share_match_both
+         ) %>% 
+  bind_rows(exports_IND %>% 
+              select(company_id, year, matched_builtwith, matched_aberdeen, matched_both) %>% 
+              mutate(Data = "Panjiva Exports") %>% 
+              group_by(year) %>% 
+              mutate(n_transactions = n()) %>% 
+              ungroup() %>% 
+              group_by(year, matched_builtwith) %>% 
+              mutate(n_match_builtwith = sum(matched_builtwith), 
+                     share_match_builtwith = (n_match_builtwith/n_transactions)*100) %>%
+              ungroup() %>% 
+              group_by(year, matched_aberdeen) %>% 
+              mutate(n_match_aberdeen = sum(matched_aberdeen), 
+                     share_match_aberdeen = (n_match_aberdeen/n_transactions)*100) %>%
+              ungroup() %>% 
+              group_by(year, matched_both) %>% 
+              mutate(n_match_both = sum(matched_both), 
+                     share_match_both = (n_match_both/n_transactions)*100) %>%
+              ungroup() %>% 
+              distinct(n_transactions, share_match_builtwith, share_match_aberdeen, share_match_both, .keep_all = T) %>% 
+              filter(share_match_builtwith != 0,
+                     share_match_aberdeen != 0,
+                     share_match_both != 0
+                     
+                     ) %>% 
+              select(Data,
+                     Year = year, 
+                     `Number Transactions` = n_transactions,
+                     `% Matched Aberdeen` = share_match_aberdeen,
+                     `% Matched BuiltWith` = share_match_builtwith, 
+                     `% Matched Both` = share_match_both
+                     )) %>% 
+  mutate(across(where(is.numeric), round, 2), 
+         across(`Number Transactions`, big_number_format))
+
+```
+
+
+
+```{r, eval=TRUE}
+
+kbl(table_IDN %>% select(-Data), 
+    caption = "Indonesia - Panjiva transactions at the Firm-Month-HS6 level matching rates to BuiltWith and Aberdeen datasets by year", centering = T, booktabs = T, align = "c") %>%
+  kable_classic() %>%
+  kable_styling(latex_options = "HOLD_position") %>% 
+  pack_rows("Panjiva Imports", 1, 3) %>%
+  pack_rows("Panjiva Exports", 4, 6)
+
+
+```
+
+
+
+```{r, eval=TRUE}
+
+kbl(table_IND %>% select(-Data), 
+    caption = "India - Panjiva transactions at the Firm-Month-HS6 level matching rates to BuiltWith and Aberdeen datasets by year", centering = T, booktabs = T, align = "c") %>%
+  kable_classic() %>%
+  kable_styling(latex_options = "HOLD_position") %>% 
+  pack_rows("Panjiva Imports", 1, 4) %>%
+  pack_rows("Panjiva Exports", 5, 8)
+
+
+```
+
+
+```{r}
+
+rm(list = ls())
+big_number_format<-function(x){format(x, big.mark = ",")}
+
+
+```
+
+# Regression Samples for Intensive Margin 
+
+## Regression Sample Summary Statistics: Does Tech Adoption Affect Trade Outcomes?
+
+For the matched Panjiva-BuiltWith-Aberdeen dataset, we apply the following additional filters to obtain our regression sample for the model that assesses the impact of tech adoption on trade outcomes:
+
+- Keep firms that belong to any of the analyzed SIC groups (Wholesale/Retail, Manufacturing, Agriculture, Construction and Mining, Services, Finance, Insurance and Real Estate, and Transport and Utilities)
+
+- Drop firms that adopted the E-payment/E-commerce technology before the period of analysis. 
+
+- Keep only firms that had website before and after period of analysis (This can be seen in the BuiltWith dataset).  
+
+
+```{r, eval=T}
+
+pay_ecom_import_data_IDN<-fread("../../Data/Indonesia/processed_data/imports_product_model_IDN.csv")
+pay_ecom_export_data_IDN<-fread("../../Data/Indonesia/processed_data/exports_product_model_IDN.csv")
+
+pay_ecom_import_data_IND<-fread("../../Data/India/processed_data/imports_product_model_IND.csv")
+pay_ecom_export_data_IND<-fread("../../Data/India/processed_data/exports_product_model_IND.csv")
+
+```
+
+
+
+```{r, eval=T}
+
+dep_vars<-
+  # Indonesia
+  pay_ecom_export_data_IDN %>% 
+  as.data.frame() %>% 
+  mutate(export = exp(log_export)) %>% 
+  select(export) %>% 
+  summarize_all(list(Min=min, p25 = ~quantile(., 0.25), Median = median, Mean = mean, p75 = ~quantile(., 0.75), Max = max, SD = sd)) %>% 
+    bind_rows(pay_ecom_import_data_IDN %>% 
+                as.data.frame() %>% 
+                mutate(import = exp(log_import)) %>% 
+                select(import) %>% 
+                summarize_all(list(Min=min, p25 = ~quantile(., 0.25), Median = median, 
+                                   Mean = mean, p75 = ~quantile(., 0.75), Max = max, SD = sd))
+              )%>% 
+    mutate(across(where(is.numeric), round, 2), 
+           across(where(is.numeric), big_number_format), 
+           across(everything(), ~paste0("$", .))) %>% 
+  # India
+    bind_rows(pay_ecom_export_data_IND %>% 
+      as.data.frame() %>% 
+      mutate(export = exp(log_export)) %>% 
+      select(export) %>% 
+      summarize_all(list(Min=min, p25 = ~quantile(., 0.25), Median = median, Mean = mean, p75 = ~quantile(., 0.75), Max = max, SD = sd)) %>% 
+      bind_rows(pay_ecom_import_data_IND %>% 
+                  as.data.frame() %>% 
+                  mutate(import = exp(log_import)) %>% 
+                  select(import) %>% 
+                  summarize_all(list(Min=min, p25 = ~quantile(., 0.25), Median = median, 
+                                     Mean = mean, p75 = ~quantile(., 0.75), Max = max, SD = sd))
+                )%>% 
+      mutate(across(where(is.numeric), round, 2), 
+             across(where(is.numeric), big_number_format), 
+             across(everything(), ~paste0("$", .))) 
+    )
+  
+
+rownames(dep_vars)<-c("Exports", "Imports", "Exports ", "Imports ")
+
+kbl(dep_vars, 
+    caption = "Descriptive Statistics of Value of Imports and Exports - Regression Sample", centering = T, booktabs = T, align = "c") %>%
+  kable_classic() %>%
+  kable_styling(latex_options = "HOLD_position") %>% 
+  pack_rows("Indonesia", 1, 2) %>%
+  pack_rows("India", 3, 4)
+
+```
+
+
+```{r, eval = T}
+
+
+prods_tech<-
+  # Indonesia Exports
+  pay_ecom_export_data_IDN %>% 
+  as.data.frame() %>% 
+  select(tech = pay_or_ecomnod_t_2, Ebay_tradable, China_E_commerce, cons_BEC, durable_BEC) %>% 
+  na.omit() %>% 
+  summarize_all(list(Mean = mean)) %>% 
+  pivot_longer(cols = everything(), 
+               names_to = c("variable", "statistic"),
+               names_pattern = "([A-Za-z_]+)_(Mean)") %>% 
+  select(-statistic) %>% 
+  mutate(across(where(is.numeric), round, 3)) %>% 
+  pivot_wider(names_from = variable, 
+              values_from = value) %>% 
+  bind_rows(
+    # Indonesia Imports
+    pay_ecom_import_data_IDN %>% 
+    as.data.frame() %>% 
+    select(tech = pay_or_ecomnod_t_2, Ebay_tradable, China_E_commerce, cons_BEC, durable_BEC) %>% 
+    na.omit() %>% 
+    summarize_all(list(Mean = mean)) %>% 
+    pivot_longer(cols = everything(), 
+                 names_to = c("variable", "statistic"),
+                 names_pattern = "([A-Za-z_]+)_(Mean)") %>% 
+    select(-statistic) %>% 
+    mutate(across(where(is.numeric), round, 3)) %>% 
+    pivot_wider(names_from = variable, 
+                values_from = value)
+    ) %>% 
+  bind_rows(
+    # India Exports
+    pay_ecom_export_data_IND %>% 
+    as.data.frame() %>% 
+    select(tech = pay_or_ecomnod_t_2, Ebay_tradable, China_E_commerce, cons_BEC, durable_BEC) %>% 
+    na.omit() %>% 
+    summarize_all(list(Mean = mean)) %>% 
+    pivot_longer(cols = everything(), 
+                 names_to = c("variable", "statistic"),
+                 names_pattern = "([A-Za-z_]+)_(Mean)") %>% 
+    select(-statistic) %>% 
+    mutate(across(where(is.numeric), round, 3)) %>% 
+    pivot_wider(names_from = variable, 
+                values_from = value) %>% 
+    bind_rows(
+      # India Imports
+      pay_ecom_import_data_IND %>% 
+      as.data.frame() %>% 
+      select(tech = pay_or_ecomnod_t_2, Ebay_tradable, China_E_commerce, cons_BEC, durable_BEC) %>% 
+      na.omit() %>% 
+      summarize_all(list(Mean = mean)) %>% 
+      pivot_longer(cols = everything(), 
+                   names_to = c("variable", "statistic"),
+                   names_pattern = "([A-Za-z_]+)_(Mean)") %>% 
+      select(-statistic) %>% 
+      mutate(across(where(is.numeric), round, 3)) %>% 
+      pivot_wider(names_from = variable, 
+                  values_from = value)
+      )
+      
+  )
+
+```
+
+
+```{r, eval = T}
+
+prods_tech<-as.data.frame(prods_tech)
+rownames(prods_tech)<-c("Exports", "Imports", "Exports ", "Imports ")
+colnames(prods_tech)<-c("E-payment/E-commerce", "e-Bay tradable", "China E-commerce", "Consumable", "Durable")
+
+kbl(prods_tech, 
+    caption = "Proportion of Observations with Dummy Variables Equal to 1 for E-payment/E-commerce, e-Bay Tradable, China E-commerce, Consumable, and Durable Product Categories - Regression Sample", centering = T, booktabs = T, align = "c") %>%
+  kable_classic() %>%
+  kable_styling(latex_options = "HOLD_position") %>% 
+  pack_rows("Indonesia", 1, 2) %>%
+  pack_rows("India", 3, 4)
+
+
+```
+
+```{r, eval = T}
+
+# It would also be useful to know how many exporting firms or importing firms are part of the sample.
+
+n_firms<-
+  # Indonesia Exports
+  pay_ecom_export_data_IDN %>% 
+  as.data.frame() %>% 
+  distinct(company_id) %>% 
+  summarize(`Exporting Firms` = n()) %>% 
+  # Indonesia Imports 
+  bind_cols(
+   pay_ecom_import_data_IDN %>% 
+    as.data.frame() %>% 
+    distinct(company_id) %>% 
+    summarize(`Importing Firms` = n()) 
+  ) %>% 
+  # India Exports
+  bind_cols(pay_ecom_export_data_IND %>% 
+    as.data.frame() %>% 
+    distinct(company_id) %>% 
+    summarize(`Exporting Fimrs` = n())
+    ) %>% 
+  # India Imports
+   bind_cols(pay_ecom_import_data_IND %>% 
+    as.data.frame() %>% 
+    distinct(company_id) %>% 
+    summarize(`Importing Fimrs` = n())
+  ) %>% 
+  mutate(across(everything(), big_number_format))
+  
+  
+
+
+kbl(n_firms, 
+    caption = "Number of Importing and Exporting Firms - Regression Sample", centering = T, booktabs = T, align = "c") %>%
+  kable_classic() %>%
+  kable_styling(latex_options = "HOLD_position") %>% 
+  add_header_above(c("Indonesia" = 2, "India" = 2))
+
+```
+
+
+## Regression Sample: Does Existing Tech Use Mitigate COVID Impacts?
+
+
+For the matched Panjiva-BuiltWith-Aberdeen dataset, we apply the following additional filters to obtain our regression sample for the model that assesses if tech adoption mitigates COVID impacts:
+
+- Keep firms that belong to any of the analyzed SIC groups (Wholesale/Retail, Manufacturing, Agriculture, Construction and Mining, Services, Finance, Insurance and Real Estate, and Transport and Utilities)
+
+- Keep only firms that had website before and after period of analysis.  
+
+```{r}
+
+rm(list = ls())
+big_number_format<-function(x){format(x, big.mark = ",")}
+
+
+
+```
+
+
+
+```{r, eval=T}
+
+
+import_mitig_data_IDN<-fread("../../Data/Indonesia/processed_data/imports_tech_mitigation_model_IDN.csv") %>% 
+  mutate(month_mean_stringency_index = replace_na(month_mean_stringency_index, 0)) %>% 
+  as.data.frame()
+  
+export_mitig_data_IDN<-fread("../../Data/Indonesia/processed_data/exports_tech_mitigation_model_IDN.csv") %>% 
+  mutate(month_mean_stringency_index = replace_na(month_mean_stringency_index, 0))%>% 
+  as.data.frame()
+
+import_mitig_data_IND<-fread("../../Data/India/processed_data/imports_tech_mitigation_model_IND.csv") %>% 
+  mutate(month_mean_stringency_index = replace_na(month_mean_stringency_index, 0))%>% 
+  as.data.frame()
+
+export_mitig_data_IND<-fread("../../Data/India/processed_data/exports_tech_mitigation_model_IND.csv") %>% 
+  mutate(month_mean_stringency_index = replace_na(month_mean_stringency_index, 0))%>% 
+  as.data.frame()
+
+```
+
+
+
+```{r, eval=T}
+
+dep_vars<-
+  # Indonesia
+  export_mitig_data_IDN %>% 
+  as.data.frame() %>% 
+  mutate(export = exp(log_export)) %>% 
+  select(export) %>% 
+  summarize_all(list(Min=min, p25 = ~quantile(., 0.25), Median = median, Mean = mean, p75 = ~quantile(., 0.75), Max = max, SD = sd)) %>% 
+    bind_rows(import_mitig_data_IDN %>% 
+                as.data.frame() %>% 
+                mutate(import = exp(log_import)) %>% 
+                select(import) %>% 
+                summarize_all(list(Min=min, p25 = ~quantile(., 0.25), Median = median, 
+                                   Mean = mean, p75 = ~quantile(., 0.75), Max = max, SD = sd))
+              )%>% 
+    mutate(across(where(is.numeric), round, 2), 
+           across(where(is.numeric), big_number_format), 
+           across(everything(), ~paste0("$", .))) %>% 
+  # India
+    bind_rows(export_mitig_data_IND %>% 
+      as.data.frame() %>% 
+      mutate(export = exp(log_export)) %>% 
+      select(export) %>% 
+      summarize_all(list(Min=min, p25 = ~quantile(., 0.25), Median = median, Mean = mean, p75 = ~quantile(., 0.75), Max = max, SD = sd)) %>% 
+      bind_rows(import_mitig_data_IND %>% 
+                  as.data.frame() %>% 
+                  mutate(import = exp(log_import)) %>% 
+                  select(import) %>% 
+                  summarize_all(list(Min=min, p25 = ~quantile(., 0.25), Median = median, 
+                                     Mean = mean, p75 = ~quantile(., 0.75), Max = max, SD = sd))
+                )%>% 
+      mutate(across(where(is.numeric), round, 2), 
+             across(where(is.numeric), big_number_format), 
+             across(everything(), ~paste0("$", .))) 
+    )
+  
+
+rownames(dep_vars)<-c("Exports", "Imports", "Exports ", "Imports ")
+
+kbl(dep_vars, 
+    caption = "Descriptive Statistics of Value of Imports and Exports", centering = T, booktabs = T, align = "c") %>%
+  kable_classic() %>%
+  kable_styling(latex_options = "HOLD_position") %>% 
+  pack_rows("Indonesia", 1, 2) %>%
+  pack_rows("India", 3, 4)
+
+```
+
+
+
+```{r, eval = T}
+
+
+prods_tech<-
+  # Indonesia Exports
+  export_mitig_data_IDN %>% 
+  as.data.frame() %>% 
+  select(tech = adopted_pay_or_ecom_before_2019, Ebay_tradable, China_E_commerce, cons_BEC, durable_BEC) %>% 
+  na.omit() %>% 
+  summarize_all(list(Mean = mean)) %>% 
+  pivot_longer(cols = everything(), 
+               names_to = c("variable", "statistic"),
+               names_pattern = "([A-Za-z_]+)_(Mean)") %>% 
+  select(-statistic) %>% 
+  mutate(across(where(is.numeric), round, 3)) %>% 
+  pivot_wider(names_from = variable, 
+              values_from = value) %>% 
+  bind_rows(
+    # Indonesia Imports
+    import_mitig_data_IDN %>% 
+    as.data.frame() %>% 
+    select(tech = adopted_pay_or_ecom_before_2019, Ebay_tradable, China_E_commerce, cons_BEC, durable_BEC) %>% 
+    na.omit() %>% 
+    summarize_all(list(Mean = mean)) %>% 
+    pivot_longer(cols = everything(), 
+                 names_to = c("variable", "statistic"),
+                 names_pattern = "([A-Za-z_]+)_(Mean)") %>% 
+    select(-statistic) %>% 
+    mutate(across(where(is.numeric), round, 3)) %>% 
+    pivot_wider(names_from = variable, 
+                values_from = value)
+    ) %>% 
+  bind_rows(
+    # India Exports
+    export_mitig_data_IND %>% 
+    as.data.frame() %>% 
+    select(tech = adopted_pay_or_ecom_before_2019, Ebay_tradable, China_E_commerce, cons_BEC, durable_BEC) %>% 
+    na.omit() %>% 
+    summarize_all(list(Mean = mean)) %>% 
+    pivot_longer(cols = everything(), 
+                 names_to = c("variable", "statistic"),
+                 names_pattern = "([A-Za-z_]+)_(Mean)") %>% 
+    select(-statistic) %>% 
+    mutate(across(where(is.numeric), round, 3)) %>% 
+    pivot_wider(names_from = variable, 
+                values_from = value) %>% 
+    bind_rows(
+      # India Imports
+      import_mitig_data_IND %>% 
+      as.data.frame() %>% 
+      select(tech = adopted_pay_or_ecom_before_2019, Ebay_tradable, China_E_commerce, cons_BEC, durable_BEC) %>% 
+      na.omit() %>% 
+      summarize_all(list(Mean = mean)) %>% 
+      pivot_longer(cols = everything(), 
+                   names_to = c("variable", "statistic"),
+                   names_pattern = "([A-Za-z_]+)_(Mean)") %>% 
+      select(-statistic) %>% 
+      mutate(across(where(is.numeric), round, 3)) %>% 
+      pivot_wider(names_from = variable, 
+                  values_from = value)
+      )
+      
+  )
+
+```
+
+
+```{r, eval = T}
+
+prods_tech<-as.data.frame(prods_tech)
+rownames(prods_tech)<-c("Exports", "Imports", "Exports ", "Imports ")
+colnames(prods_tech)<-c("Pre-2019\nE-payment/E-commerce", "e-Bay tradable", "China E-commerce", "Consumable", "Durable")
+
+kbl(prods_tech, 
+    caption = "Proportion of Observations with Dummy Variables Equal to 1 for E-payment/E-commerce adopted before 2019, e-Bay Tradable, China E-commerce, Consumable, and Durable Product Categories - Regression Sample", centering = T, booktabs = T, align = "c") %>%
+  kable_classic() %>%
+  kable_styling(latex_options = "HOLD_position") %>% 
+  pack_rows("Indonesia", 1, 2) %>%
+  pack_rows("India", 3, 4)
+
+
+```
+
+
+
+
+```{r, eval=T}
+
+stringency_index<-
+  # Indonesia
+  export_mitig_data_IDN %>% 
+  as.data.frame() %>% 
+  select(month_mean_stringency_index) %>% 
+  summarize_all(list(Min=min, p25 = ~quantile(., 0.25), Median = median, Mean = mean, p75 = ~quantile(., 0.75), Max = max, SD = sd)) %>% 
+    bind_rows(import_mitig_data_IDN %>% 
+                as.data.frame() %>% 
+                select(month_mean_stringency_index) %>% 
+                summarize_all(list(Min=min, p25 = ~quantile(., 0.25), Median = median, 
+                                   Mean = mean, p75 = ~quantile(., 0.75), Max = max, SD = sd))
+              )%>% 
+    mutate(across(where(is.numeric), round, 2)) %>% 
+  # India
+    bind_rows(export_mitig_data_IND %>% 
+      as.data.frame() %>% 
+      select(month_mean_stringency_index) %>% 
+      summarize_all(list(Min=min, p25 = ~quantile(., 0.25), Median = median, Mean = mean, p75 = ~quantile(., 0.75), Max = max, SD = sd)) %>% 
+      bind_rows(import_mitig_data_IND %>% 
+                  as.data.frame() %>% 
+                  select(month_mean_stringency_index) %>% 
+                  summarize_all(list(Min=min, p25 = ~quantile(., 0.25), Median = median, 
+                                     Mean = mean, p75 = ~quantile(., 0.75), Max = max, SD = sd))
+                )%>% 
+      mutate(across(where(is.numeric), round, 2)) 
+    )
+  
+
+rownames(stringency_index)<-c("Exports", "Imports", "Exports ", "Imports ")
+
+kbl(stringency_index, 
+    caption = "Descriptive Statistics of Monthly Average Stringency Index (Filling with 0s before 2020)", centering = T, booktabs = T, align = "c") %>%
+  kable_classic() %>%
+  kable_styling(latex_options = "HOLD_position") %>% 
+  pack_rows("Indonesia", 1, 2) %>%
+  pack_rows("India", 3, 4)
+
+```
+
+
+```{r, eval = T}
+
+# It would also be useful to know how many exporting firms or importing firms are part of the sample.
+
+n_firms<-
+  # Indonesia Exports
+  export_mitig_data_IDN %>% 
+  as.data.frame() %>% 
+  distinct(company_id) %>% 
+  summarize(`Exporting Firms` = n()) %>% 
+  # Indonesia Imports 
+  bind_cols(
+   import_mitig_data_IDN %>% 
+    as.data.frame() %>% 
+    distinct(company_id) %>% 
+    summarize(`Importing Firms` = n()) 
+  ) %>% 
+  # India Exports
+  bind_cols(export_mitig_data_IND %>% 
+    as.data.frame() %>% 
+    distinct(company_id) %>% 
+    summarize(`Exporting Fimrs` = n())
+    ) %>% 
+  # India Imports
+   bind_cols(import_mitig_data_IND %>% 
+    as.data.frame() %>% 
+    distinct(company_id) %>% 
+    summarize(`Importing Fimrs` = n())
+  ) %>% 
+  mutate(across(everything(), big_number_format))
+  
+  
+
+
+kbl(n_firms, 
+    caption = "Number of Importing and Exporting Firms - Regression Sample", centering = T, booktabs = T, align = "c") %>%
+  kable_classic() %>%
+  kable_styling(latex_options = "HOLD_position") %>% 
+  add_header_above(c("Indonesia" = 2, "India" = 2))
+
+```
+
+
+# Regression Samples for Extensive Margin 
+
+
+## Regression Sample Extensive Margin: Does Tech Adoption Affect Trade Outcomes?
+
+
+```{r}
+
+rm(list = ls())
+big_number_format<-function(x){format(x, big.mark = ",")}
+
+
+import_data_IDN<-read_parquet(paste0("../../Data/Indonesia/processed_data/imports_grid_product_model_IDN.parquet"),
+                            col_select = c("Ebay_tradable", "China_E_commerce", "cons_BEC", "durable_BEC",
+                                           "company_id", "hs6", "date_character", "import_dummy",
+                                           "pay_or_ecomnod_t_2"))
+
+
+export_data_IDN<-read_parquet(paste0("../../Data/Indonesia/processed_data/exports_grid_product_model_IDN.parquet"),
+                            col_select = c("Ebay_tradable", "China_E_commerce", "cons_BEC", "durable_BEC",
+                                           "company_id", "hs6", "date_character", "export_dummy",
+                                           "pay_or_ecomnod_t_2"))
+
+
+import_data_IND<-read_parquet("../../Data/India/processed_data/imports_grid_product_model_IND.parquet",
+                            col_select = c("Ebay_tradable", "China_E_commerce", "cons_BEC", "durable_BEC",
+                                           "company_id", "hs6", "date_character", "import_dummy",
+                                           "pay_or_ecomnod_t_2"))
+
+
+export_data_IND<-read_parquet("../../Data/India/processed_data/exports_grid_product_model_IND.parquet",
+                            col_select = c("Ebay_tradable", "China_E_commerce", "cons_BEC", "durable_BEC",
+                                           "company_id", "hs6", "date_character", "export_dummy",
+                                           "pay_or_ecomnod_t_2"))
+
+```
+
+```{r, eval = T}
+
+prop_zeros<-
+  export_data_IDN %>% 
+  summarize(Exports = 1-mean(export_dummy)) %>% 
+  as.data.frame() %>% 
+  bind_cols(
+    import_data_IDN %>% 
+      summarize(Imports = 1-mean(import_dummy)) %>% 
+      as.data.frame()
+  ) %>% 
+  bind_cols(
+    export_data_IND %>% 
+    summarize(Exports = 1-mean(export_dummy)) %>% 
+    as.data.frame() %>% 
+    bind_cols(
+      import_data_IND %>% 
+        summarize(Imports = 1-mean(import_dummy)) %>% 
+        as.data.frame()
+    )
+  ) %>% 
+  mutate(across(where(is.numeric), round, 3))
+
+
+colnames(prop_zeros)<-c("Exports", "Imports", "Exports", "Imports")
+
+ 
+kbl(prop_zeros, 
+    caption = "Proportion of 0s in binary dependent variable in the expanded datasets", centering = T, booktabs = T, align = "c") %>%
+  kable_classic() %>%
+  kable_styling(latex_options = "HOLD_position") %>% 
+  add_header_above(c("Indonesia Expanded Datasets" = 2, "India Expanded Datasets" = 2))
+ 
+  
+
+
+
+
+```
+
+
+## Regression Sample Extensive Margin: Does Existing Tech Use Mitigate COVID Impacts?
+
+
+```{r}
+
+rm(list = ls())
+
+import_data_IDN<-read_parquet("../../Data/Indonesia/processed_data/imports_grid_mitig_model_IDN.parquet",
+                            col_select = c("Ebay_tradable", "China_E_commerce", "cons_BEC", "durable_BEC",
+                                           "company_id", "hs6", "date_character", "import_dummy",
+                                           "pay_or_ecomnod_t_2"))
+
+
+export_data_IDN<-read_parquet("../../Data/Indonesia/processed_data/exports_grid_mitig_model_IDN.parquet",
+                            col_select = c("Ebay_tradable", "China_E_commerce", "cons_BEC", "durable_BEC",
+                                           "company_id", "hs6", "date_character", "export_dummy",
+                                           "pay_or_ecomnod_t_2"))
+
+
+import_data_IND<-read_parquet("../../Data/India/processed_data/imports_grid_mitig_model_IND.parquet",
+                            col_select = c("Ebay_tradable", "China_E_commerce", "cons_BEC", "durable_BEC",
+                                           "company_id", "hs6", "date_character", "import_dummy",
+                                           "pay_or_ecomnod_t_2"))
+
+
+export_data_IND<-read_parquet("../../Data/India/processed_data/exports_grid_mitig_model_IND.parquet",
+                            col_select = c("Ebay_tradable", "China_E_commerce", "cons_BEC", "durable_BEC",
+                                           "company_id", "hs6", "date_character", "export_dummy",
+                                           "pay_or_ecomnod_t_2"))
+
+```
+
+```{r, eval = T}
+
+prop_zeros<-
+  export_data_IDN %>% 
+  summarize(Exports = 1-mean(export_dummy)) %>% 
+  as.data.frame() %>% 
+  bind_cols(
+    import_data_IDN %>% 
+      summarize(Imports = 1-mean(import_dummy)) %>% 
+      as.data.frame()
+  ) %>% 
+  bind_cols(
+    export_data_IND %>% 
+    summarize(Exports = 1-mean(export_dummy)) %>% 
+    as.data.frame() %>% 
+    bind_cols(
+      import_data_IND %>% 
+        summarize(Imports = 1-mean(import_dummy)) %>% 
+        as.data.frame()
+    )
+  ) %>% 
+  mutate(across(where(is.numeric), round, 3))
+
+
+colnames(prop_zeros)<-c("Exports", "Imports", "Exports", "Imports")
+
+ 
+kbl(prop_zeros, 
+    caption = "Proportion of 0s in binary dependent variable in the expanded datasets", centering = T, booktabs = T, align = "c") %>%
+  kable_classic() %>%
+  kable_styling(latex_options = "HOLD_position") %>% 
+  add_header_above(c("Indonesia Expanded Datasets" = 2, "India Expanded Datasets" = 2))
+ 
+  
+
+```
+
+
+

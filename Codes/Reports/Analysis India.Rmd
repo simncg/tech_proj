@@ -62,7 +62,7 @@ For each product category, we present three tables, each of which is estimated w
 
 ```{r}
 
-# Run regressions for products model for Indonesia 
+# Run regressions for products model for India 
 source("../India/05_regressions_product_model_lagged_IND.R", chdir = TRUE)
 
 ```

@@ -45,7 +45,9 @@ library(ggthemes)
 
 
 # Read objects with information about Foreign Panjiva Quality Data
-load("../../Data/processed_data/quality_foreign_data.RData")
+load("../../Data/India/processed_data/quality_foreign_data_IND.RData")     # India 
+load("../../Data/Indonesia/processed_data/quality_foreign_data_IDN.RData") # Indonesia
+load("../../Data/Mexico/processed_data/quality_foreign_data_MEX.RData")    # Mexico
 
 ```
 
@@ -345,10 +347,154 @@ imp_quality_IDN %>%
   mutate(across(everything(), ~ round(., 3))) %>% 
   column_to_rownames("year") %>% 
   # Create Table
-  kable(caption = "Panjiva Imports Indonesia - Summary Statistics of Proportion of Firm Total Imports with Non-Missing Foreign Partners",
+  kable(caption = "Panjiva Imports Mexico - Summary Statistics of Proportion of Firm Total Imports with Non-Missing Foreign Partners",
         booktabs = T, linesep = "", align = c("l",rep("c", 7))) %>% 
   kable_styling(latex_options = c("HOLD_position"))
 
 
   
 ```
+
+# 3. Mexico
+
+The datasets for Mexico exhibit very few missing values concerning foreign partners. In all years, except for 2012-2014, the proportion of Mexican firms with non-missing foreign trade partners in both exports and imports datasets exceeds 0.75 for all observations.
+
+```{r, eval = T, fig.width=9, fig.height=5}
+
+exp_quality_MEX %>% 
+  filter(foreign_firm_missing == 0) %>% 
+  group_by(year) %>%
+  summarize(total_firms = n(),
+            firms_complete = sum(prop_obs == 1, na.rm = TRUE),
+            prop_complete = firms_complete /total_firms) %>% 
+  select(Year = year, Exports = prop_complete) %>% 
+  left_join(imp_quality_MEX %>% 
+              filter(foreign_firm_missing == 0) %>% 
+              group_by(year) %>%
+              summarize(total_firms = n(),
+                        firms_complete = sum(prop_obs == 1, na.rm = TRUE),
+                        prop_complete = firms_complete /total_firms) %>% 
+              select(Year = year, Imports = prop_complete),
+            by="Year") %>% 
+  pivot_longer(cols = c(Exports, Imports), 
+               names_to = "data", 
+               values_to = "proportion") %>% 
+  ggplot()+
+  geom_col(aes(x = as.factor(Year), y = proportion, fill = as.factor(Year)), alpha = 0.75)+
+  facet_wrap(~data)+
+  ggtitle("Proportion of Firms with Non-Missing Foreign Partners Data", 
+          subtitle = "Mexico")+
+  ylab("Proportion")+
+  xlab("Year")+
+  theme_minimal()+
+  theme(legend.position  = "None", 
+        plot.title = element_text(hjust = 0.5, face = "bold"), 
+        plot.subtitle = element_text(hjust = 0.5, face = "italic"))+
+  scale_fill_manual(values = c("#3E647D", "#7B92A8", "#82C0E9", "#2D6D66", "#BFA19C", "#008BBC", "#97B6B0", "#D7D29E", "#1A476F", "#90353B", "#9C8847", "#938DD2" 
+))+
+  scale_y_continuous(n.breaks= 10)
+
+
+```
+
+
+
+```{r, eval = T}
+
+exp_quality_MEX %>% 
+  filter(foreign_firm_missing == 0) %>% 
+  group_by(year) %>% 
+  # Summary Statistics of the Variable Measuring the Proportion of Observations by Firm-Year with Non-Missing Foreign Partner
+  summarize(Mean = mean(prop_obs),
+            Min = min(prop_obs), 
+            p5 = quantile(prop_trade_volume, 0.05),
+            p25 = quantile(prop_obs, 0.25), 
+            Median = median(prop_obs), 
+            p75 = quantile(prop_obs, 0.75), 
+            Max = max(prop_obs)) %>% 
+  # Round values 
+  mutate(across(everything(), ~ round(., 3))) %>% 
+  column_to_rownames("year") %>% 
+  # Create Table
+  kable(caption = "Panjiva Exports Mexico - Summary Statistics of Proportion of Firm Observations with Non-Missing Foreign Partners", 
+        booktabs = T, linesep = "", align = c("l",rep("c", 7))) %>% 
+  kable_styling(latex_options = c("HOLD_position"))
+
+
+
+```
+
+
+
+```{r, eval = T}
+
+exp_quality_MEX %>% 
+  filter(foreign_firm_missing == 0) %>% 
+  group_by(year) %>% 
+  summarize(Mean = mean(prop_trade_volume),
+            Min = min(prop_trade_volume), 
+            p5 = quantile(prop_trade_volume, 0.05),
+            p25 = quantile(prop_trade_volume, 0.25), 
+            Median = median(prop_trade_volume), 
+            p75 = quantile(prop_trade_volume, 0.75), 
+            Max = max(prop_trade_volume)) %>% 
+  # Round values 
+  mutate(across(everything(), ~ round(., 3))) %>% 
+  column_to_rownames("year") %>% 
+  # Create Table
+  kable(caption = "Panjiva Exports Mexico - Summary Statistics of Proportion of Firm Total Exports with Non-Missing Foreign Partners", 
+        booktabs = T, linesep = "", align = c("l",rep("c", 7))) %>% 
+  kable_styling(latex_options = c("HOLD_position"))
+
+
+
+```
+
+
+
+```{r, eval = T}
+
+imp_quality_MEX %>% 
+  filter(foreign_firm_missing == 0) %>% 
+  group_by(year) %>% 
+  summarize(Mean = mean(prop_obs),
+            Min = min(prop_obs), 
+            p5 = quantile(prop_trade_volume, 0.05),
+            p25 = quantile(prop_obs, 0.25), 
+            Median = median(prop_obs), 
+            p75 = quantile(prop_obs, 0.75), 
+            Max = max(prop_obs)) %>% 
+  # Round values 
+  mutate(across(everything(), ~ round(., 3))) %>% 
+  column_to_rownames("year") %>% 
+  # Create Table
+  kable(caption = "Panjiva Imports Mexico - Summary Statistics of Proportion of Firm Observations with Non-Missing Foreign Partners",
+        booktabs = T, linesep = "", align = c("l",rep("c", 7))) %>% 
+  kable_styling(latex_options = c("HOLD_position"))
+
+
+
+
+# Summary Statistics of the Variable Measuring the Proportion of Trade Volume by Firm-Year with Non-Missing Foreign Partner
+imp_quality_MEX %>% 
+  filter(foreign_firm_missing == 0) %>% 
+  group_by(year) %>% 
+  summarize(Mean = mean(prop_trade_volume),
+            Min = min(prop_trade_volume), 
+            p5 = quantile(prop_trade_volume, 0.05),
+            p25 = quantile(prop_trade_volume, 0.25), 
+            Median = median(prop_trade_volume), 
+            p75 = quantile(prop_trade_volume, 0.75), 
+            Max = max(prop_trade_volume)) %>% 
+  # Round values 
+  mutate(across(everything(), ~ round(., 3))) %>% 
+  column_to_rownames("year") %>% 
+  # Create Table
+  kable(caption = "Panjiva Imports Mexico - Summary Statistics of Proportion of Firm Total Imports with Non-Missing Foreign Partners",
+        booktabs = T, linesep = "", align = c("l",rep("c", 7))) %>% 
+  kable_styling(latex_options = c("HOLD_position"))
+
+
+  
+```
+
