@@ -37,6 +37,7 @@ panjiva_import_data <- read_dta("../../Data/Mexico/raw_data/MEX_imports_Monthly_
   lazy_dt() %>% 
   filter(!str_starts(hs8 , "27"), 
          country_iso!= "EUN") %>% 
+  # Collapse data to the firm-month-hs8-foreign country
   group_by(domestic_firm_id, domestic_firm_name, year, month, hs8, country_iso) %>% 
   summarize(import = sum(import)) %>% 
   mutate(hs6 = substr(hs8, 1, 6))
@@ -92,6 +93,7 @@ panjiva_export_data <- read_dta("../../Data/Mexico/raw_data/MEX_exports_Monthly_
   group_by(domestic_firm_id, domestic_firm_name, year, month, hs8, country_iso) %>% 
   summarize(export = sum(export)) %>% 
   mutate(hs6 = substr(hs8, 1, 6)) 
+
 
 ## Collapsing exports to the firm-month-hs6 level -----
 
