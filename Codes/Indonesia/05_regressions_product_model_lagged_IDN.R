@@ -28,9 +28,6 @@
 #source("gen_data_model_products_IDN.R")
 pay_ecom_import_data_IDN<-fread("../../Data/Indonesia/processed_data/imports_product_model_IDN.csv")
 pay_ecom_export_data_IDN<-fread("../../Data/Indonesia/processed_data/exports_product_model_IDN.csv")
-import_tech_mitig<-fread("../../Data/Indonesia/processed_data/imports_tech_mitigation_model_IDN.csv")
-export_tech_mitig<-fread("../../Data/Indonesia/processed_data/exports_tech_mitigation_model_IDN.csv")
-
 
 # Import functions for running model with different products categories specifications
 source("../src/functions_reg_products_model.R")

@@ -17,6 +17,10 @@
 # Read Indonesia data for tech mitigation of COVID ----
 #source("gen_data_model_products_IND.R")
 
+import_tech_mitig<-fread("../../Data/India/processed_data/imports_tech_mitigation_model_IND.csv")
+export_tech_mitig<-fread("../../Data/India/processed_data/exports_tech_mitigation_model_IND.csv")
+
+
 # Functions for running regressions ----
 source("../src/functions_reg_tech_covid_mitigation.R")
 

@@ -229,7 +229,7 @@ pay_ecom_import_data_IND<-import_data %>%
   # Drop firms that adopted e-commerce/e-payments technology before period of analysis
   filter(first_adopted_payrobust != "before july 2018" & 
          first_adopted_ecom != "before july 2018") %>%
-  # Keep firms that had website before covid and are indexed after June 2021
+  # Keep firms that had website before period of analysis and are indexed after 2021
   filter(company_id %in% (tech_data %>%
                             group_by(company_id) %>%
                             summarise(FI_min = min(FI),

@@ -28,9 +28,6 @@
 #source("gen_data_model_products_IND.R")
 pay_ecom_import_data_IND<-fread("../../Data/India/processed_data/imports_product_model_IND.csv")
 pay_ecom_export_data_IND<-fread("../../Data/India/processed_data/exports_product_model_IND.csv")
-import_tech_mitig<-fread("../../Data/India/processed_data/imports_tech_mitigation_model_IND.csv")
-export_tech_mitig<-fread("../../Data/India/processed_data/exports_tech_mitigation_model_IND.csv")
-
 
 # Import functions for running model with different products categories specifications
 source("../src/functions_reg_products_model.R")
