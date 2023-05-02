@@ -1,0 +1,8 @@
+{\def\sym#1{\ifmmode^{#1}\else\(^{#1}\)\fi}\resizebox{\textwidth}{!}{  \begin{tabular}{l*{6}{c}} \hline\hline \toprule & \multicolumn{6}{c}{Dependent Variable: Pre 2019 E-payment or E-commerce $\cdot covid_{it}$} \\ \toprule & \multicolumn{3}{c}{Instrumental Variable (Google)} & \multicolumn{3}{c}{Instrumental Variable (Bing)} \\ \cmidrule(lr){2-4} \cmidrule(lr){5-7}  & Log(1+Lightning Strikes) & Log(1+Download Speed) & Log(1+Upload Speed) & Log(1+Lightning Strikes) & Log(1+Download Speed) & Log(1+Upload Speed)\\ \hline
+\hline \multicolumn{6}{l}{\textbf{COVID variable: Log(1 + Subnational COVID cases)}}\\
+ $ covid_{it} \cdot Z_i $ &0.061563\sym{***}&0.018309\sym{***}&0.018709\sym{***}&0.058472\sym{***}&0.017466\sym{***}&0.017894\sym{***}\\
+&(0.008700)&(0.001841)&(0.001888)&(0.009397)&(0.001861)&(0.001906) \\
+Kleibergen-Paap F-stat&50.07&98.91&98.18&38.71&88.12&88.16\\
+\hline
+Number of Observations&2,566,011&2,564,163&2,564,163&2,504,784&2,369,840&2,369,840\\
+\hline\hline \end{tabular}}}
