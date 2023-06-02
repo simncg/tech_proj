@@ -80,7 +80,53 @@ tech_data <-
          pay_or_ecomnod_t_1 = ifelse((payrobust_t_1 == 1 | ecom_t_1 == 1),1, 0),
          pay_or_ecomnod_t_2 = ifelse((payrobust_t_2 == 1 | ecom_t_2 == 1),1, 0),
          pay_or_ecomnod_t_3 = ifelse((payrobust_t_3 == 1 | ecom_t_3 == 1),1, 0)
-  )
+  )%>% 
+  # Create specific date of adoption (as date) 
+  mutate(
+    date_of_adoption = as.Date(ifelse(max(pay_or_ecomnod) == 1, min(date[pay_or_ecomnod == 1]), NA), origin = "1970-01-01"), 
+    # Create number of months since adoption
+    months_since_adoption = ifelse(is.na(date_of_adoption), 0,
+                                   floor(interval(date_of_adoption, date) / months(1))), 
+    # When the firm has not adopted the technology the months are negative until the month of adoption, but we need to replace them by 0s
+    months_since_adoption = ifelse(months_since_adoption<0, 0, months_since_adoption)
+  ) %>%
+  ungroup() %>% 
+  # Create adopter type variable. This could be old adopter (pre-covid adopter), 
+  # covid adopter (adopter during covid) and never adopter. 
+  mutate(
+    adopter_type = 
+      case_when(
+        date_of_adoption < as.Date("2020-01-01") ~ "old_adopter", 
+        date_of_adoption >= as.Date("2020-01-01") ~ "covid_adopter", 
+        is.na(date_of_adoption)  ~ "never_adopter"
+      ), 
+    # Create covid adopter type variable. This could be covid early adopter (adopter in 2020), 
+    # covid late adopter (adopter after 2020), never adopter and non-covid adopter 
+    # (meaning that adopted the technology before 2020). 
+    covid_adopter_type = 
+      case_when(
+        year(date_of_adoption) == 2020 ~ "covid_early_adopter",
+        date_of_adoption >= as.Date("2021-01-01") ~ "covid_late_adopter",
+        is.na(date_of_adoption) ~ "never_adopter",
+        TRUE ~ "non_covid_adopter"
+      ), 
+    # Create old adopter type variable. This could be adopters before 2016 or in 2016, 
+    # 2017 adopter, 2018 adopter and 2019 adopter. 
+    old_adopter_type = 
+      case_when(
+        # Adopters during 2018 and 2019
+        year(date_of_adoption) == 2019  ~ "2019_adopter",  
+        year(date_of_adoption) == 2018  ~ "2018_adopter", 
+        year(date_of_adoption) == 2017  ~ "2017_adopter", 
+        # Since the data is available only from 2016 onwards, there could be cases of firms that adopted the technology before 2016 but has as adoption date 2016-01-01 (the earliest date in our data).
+        year(date_of_adoption) == 2016  ~ "2016_or_pre_2016_adopter",
+        # Never adopters 
+        is.na(date_of_adoption) ~ "never_adopter",
+        TRUE ~ "non_old_adopter"
+      )
+    
+  ) 
+
 
 
 gc()
