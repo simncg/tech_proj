@@ -25,12 +25,12 @@ fileloc <- dirname(rstudioapi::getSourceEditorContext()$path)
 setwd(fileloc)
 rm(fileloc)
 
-# Load exports data at the firm month level
+# Load exports data 
 export_data_firm_month <-
   read_dta("../../Data/Indonesia/IDN_Exports_Monthly_domestic_level_dropdup.dta") %>%
   filter(!str_starts(hs, "27"))
 
-# Load imports data at the firm month level
+# Load imports data 
 import_data_firm_month <-
   read_dta("../../Data/Indonesia/IDN_Imports_Monthly_domestic_level_dropdup.dta") %>%
   filter(!str_starts(hs, "27"))

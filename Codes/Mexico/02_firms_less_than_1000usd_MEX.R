@@ -14,15 +14,15 @@
 #                                                                           #                                                                                                                                                         #
 #===========================================================================#
 
-# Libraries to be used ----
-source("../src/packages.R")
-library(dtplyr)
-
-
 # Set Working Directory ----
 fileloc <- dirname(rstudioapi::getSourceEditorContext()$path)
 setwd(fileloc)
 rm(fileloc)
+
+
+# Libraries to be used ----
+source("../src/packages.R")
+library(dtplyr)
 
 # Load exports data at the firm month hs level 
 export_data_firm_month <-
@@ -32,7 +32,7 @@ export_data_firm_month <-
          date < ymd("2022-01-01")) %>% 
   rename(company_id = domestic_company_id)
 
-# Load imports data at the firm month hs level hs
+# Load imports data at the firm-month-hs level hs
 import_data_firm_month <-
   read_parquet("../../Data/Mexico/processed_data/import_summaries_by_firm_month_HS_code_complete.parquet")%>% 
   filter(!str_starts(hs6, "27"), 

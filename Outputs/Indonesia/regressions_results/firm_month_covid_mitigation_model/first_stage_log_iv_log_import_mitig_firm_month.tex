@@ -1,0 +1,8 @@
+{\def\sym#1{\ifmmode^{#1}\else\(^{#1}\)\fi}\resizebox{\textwidth}{!}{  \begin{tabular}{l*{6}{c}} \hline\hline \toprule & \multicolumn{6}{c}{Dependent Variable: Pre 2019 E-payment or E-commerce $\cdot covid_t$} \\ \toprule & \multicolumn{3}{c}{Instrumental Variable (Google)} & \multicolumn{3}{c}{Instrumental Variable (Bing)} \\ \cmidrule(lr){2-4} \cmidrule(lr){5-7}  & Log(1+Lightning Strikes) & Log(1+Download Speed) & Log(1+Upload Speed) & Log(1+Lightning Strikes) & Log(1+Download Speed) & Log(1+Upload Speed)\\ \hline
+\hline \multicolumn{6}{l}{\textbf{COVID variable: Monthly Stringency Index}}\\
+ $ covid_t \cdot Z_i $ &0.009411&0.094311\sym{***}&0.060520\sym{***}&-0.003725&0.049973\sym{**}&0.033354\sym{*}\\
+&(0.013068)&(0.022877)&(0.017881)&(0.013076)&(0.023637)&(0.018221) \\
+Kleibergen-Paap F-stat&0.52&17.00&11.46&0.08&4.47&3.35\\
+\hline
+Number of Observations&   87,210&   87,119&   87,119&   87,739&   87,622&   87,622\\
+\hline\hline \end{tabular}}}

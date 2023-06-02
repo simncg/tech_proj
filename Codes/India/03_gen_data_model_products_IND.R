@@ -100,7 +100,8 @@ old_ids<-c("IND38927", "IND41278", "IND6043", "IND23040", "IND46989")     # Old 
 import_less_than_1000usd<-read_csv("../../Data/India/processed_data/import_firms_trade_less_than_1000usd.csv")
 
 import_data <-fread("../../Data/India/processed_data/import_summaries_by_firm_month_HS_code_complete.csv") %>% 
-  select(company_id = domestic_company_id, year, month, date, date_character,hs6, import, log_import, import_dummy) %>% 
+  select(company_id = domestic_company_id, year, month, date, date_character,hs6, import, log_import, import_dummy, 
+         n_countries_import = n_countries, new_source = new_country) %>% 
   # filter to analysis period
   filter(date >= ymd("2018-07-01"),
          date <= ymd("2021-12-31")) %>% 
@@ -121,7 +122,9 @@ export_less_than_1000usd<-read_csv("../../Data/India/processed_data/export_firms
 
 
 export_data <-fread("../../Data/India/processed_data/export_summaries_by_firm_month_HS_code_complete.csv") %>% 
-  select(company_id = domestic_company_id, year, month, date, date_character,hs6, export, log_export, export_dummy) %>% 
+  select(company_id = domestic_company_id, year, month, date, date_character,hs6, export, log_export, export_dummy, 
+         n_countries_export = n_countries, new_destination = new_country
+         ) %>% 
   # filter to analysis period
   filter(date >= ymd("2018-07-01"),
          date <= ymd("2021-12-31")) %>% 
@@ -137,66 +140,7 @@ gc()
 
 
 # Load technology data (only nod variables) ----
-tech_data <- read_parquet("../../Data/India/raw_data/Builtwith_no_drop_long_v2.parquet", 
-                            col_select = c("our_ID", "year", "month", "tech", "value", "FI", "LI")) %>% 
-  # For the moment, we are only going to analyze e-payment/e-commerce technologies
-  filter(tech %in% c("payrobust_nod", "ecom_nod")) %>% 
-  rename(company_id = our_ID) %>% 
-  mutate(date = as.Date(paste0(year, "-", month, "-01")),
-         date_character = as.character(fct_reorder(as.factor(format(date, "%Y-%b")), date))
-         )
-
-gc()
-
-# Add adoption date to tech data, date variables and lags for for adoption of 
-# e-commerce or e-payment technologies
-
-tech_data <- 
-  tech_data %>% 
-  # Identify technology adoption date (first_adopted variable)
-  left_join(
-    tech_data %>% 
-      select(-LI, -FI) %>% 
-      arrange(company_id, tech, year, month) %>% 
-      group_by(company_id, tech) %>%
-      slice(which(value == 1)[1]) %>% 
-      ungroup() %>% 
-      mutate(first_adopted = ifelse(date < as.Date("2018-07-01") , "before july 2018", paste0(year, "_", month)), 
-             first_adopted_2019 = ifelse(date < as.Date("2019-01-01") , "before 2019", paste0(year, "_", month))) %>% 
-      select(company_id, tech, first_adopted, first_adopted_2019), 
-    by = c("company_id", "tech")
-  ) %>% 
-  mutate(# If missing value in adopted date, then technology never adopted by the company 
-    first_adopted = ifelse(is.na(first_adopted), "never adopted", first_adopted), 
-    first_adopted_2019 = ifelse(is.na(first_adopted_2019), "never adopted", first_adopted_2019)
-  ) %>% 
-  select(-year, -month) %>% 
-  # From long to wide to have one row per firm-month and to have tech columns and columns defining their adoption date
-  pivot_wider(
-    names_from = tech, 
-    values_from = c(value, first_adopted, first_adopted_2019)
-  ) %>% 
-  # Rename resulting columns of the pivot_wider, remove prefix "_value" and "_nod" from column names
-  rename_if(str_detect(names(.), "_nod"), ~sub("_nod", "", .)) %>% 
-  rename_if(str_detect(names(.), "value_"), ~sub("value_", "", .)) %>% 
-  arrange(company_id, date) %>% 
-  # Create a variable to identify if firm adopted e-commerce or e-payment before 2019
-  mutate(adopted_pay_or_ecom_before_2019 = first_adopted_2019_payrobust == "before 2019" | first_adopted_2019_ecom == "before 2019") %>% 
-  # Create lags by company for variables of e-commerce and e-payment technologies
-  group_by(company_id) %>% 
-  mutate(across(c(ecom, payrobust), list(t_1 = function(x){lag(x, 1)}, 
-                                         t_2 = function(x){lag(x, 2)}, 
-                                         t_3 = function(x){lag(x, 3)}))) %>% 
-  # Create a variable indicating if e-commerce or e-payment technology is adopted.
-  mutate(pay_or_ecomnod = ifelse((payrobust == 1 | ecom == 1),1, 0 ),
-         # Create lagged variables for adoption of e-commerce or e-payment technologies
-         pay_or_ecomnod_t_1 = ifelse((payrobust_t_1 == 1 | ecom_t_1 == 1),1, 0),
-         pay_or_ecomnod_t_2 = ifelse((payrobust_t_2 == 1 | ecom_t_2 == 1),1, 0),
-         pay_or_ecomnod_t_3 = ifelse((payrobust_t_3 == 1 | ecom_t_3 == 1),1, 0)
-  )
-
-
-gc()
+tech_data <- read_parquet("../../Data/India/processed_data/tech_data_IND.parquet")
 
 
 # Data for regressions of the model that measures if tech adoption affects trade outcomes ----
@@ -216,7 +160,9 @@ pay_ecom_import_data_IND<-import_data %>%
   # Keep firms that are part of analyzed SIC groups
   filter(SICGRP %in% included_SIC_Groups) %>%   
   # Select just the bare minimum variables
-  select(company_id, year, month, date_character, hs6, log_import, import, import_dummy, SITEID, SICGRP, NAICS6_CODE) %>% 
+  select(company_id, year, month, date_character, hs6, log_import, import,
+         new_source, n_countries_import,
+         import_dummy, SITEID, SICGRP, NAICS6_CODE) %>% 
   # Add the HS code classification data with products information 
   left_join(hs_data, by = c('hs6' = 'hs_2017')) %>% 
   # Add the intermediate - capital products classification information
@@ -240,7 +186,8 @@ pay_ecom_import_data_IND<-import_data %>%
   # Order data
   arrange(company_id, hs6, date) %>% 
   # Rename variable related to remote work ISIC
-  rename(mean_remote_work_ISIC = mean_IND, letter_credit_use = LCInt)
+  rename(mean_remote_work_ISIC = mean_IND, 
+         letter_credit_use = LCInt)
 
 
 
@@ -257,7 +204,9 @@ pay_ecom_export_data_IND<-export_data %>%
   # Keep firms that are part of analyzed SIC groups
   filter(SICGRP %in% included_SIC_Groups) %>%   
   # Select just the bare minimum variables
-  select(company_id, year, month, date_character, hs6, log_export, export, export_dummy, SITEID, SICGRP, NAICS6_CODE) %>% 
+  select(company_id, year, month, date_character, hs6, log_export, export,
+         new_destination, n_countries_export,
+         export_dummy, SITEID, SICGRP, NAICS6_CODE) %>% 
   # Add the HS code classification data with products information 
   left_join(hs_data, by = c('hs6' = 'hs_2017')) %>% 
   # Add the intermediate - capital products classification information
@@ -297,7 +246,9 @@ import_tech_mitig<- import_data %>%
   # Keep firms that are part of analyzed SIC groups
   filter(SICGRP %in% included_SIC_Groups) %>%   
   # Select just the bare minimum variables
-  select(company_id, year, month, date, date_character, hs6, log_import, import, import_dummy, SITEID, SICGRP, NAICS6_CODE) %>% 
+  select(company_id, year, month, date, date_character, hs6, log_import, import,
+         new_source, n_countries_import,
+         import_dummy, SITEID, SICGRP, NAICS6_CODE) %>% 
   # Add the HS code classification data with products information 
   left_join(hs_data, by = c('hs6' = 'hs_2017')) %>% 
   # Add the intermediate - capital products classification information
@@ -321,9 +272,9 @@ import_tech_mitig<- import_data %>%
   mutate(Ebay_tradable = as.numeric(Ebay_tradable), 
          adopted_pay_or_ecom_before_2019 = as.numeric(adopted_pay_or_ecom_before_2019)) %>% 
   # Rename some variables
-  rename(mean_remote_work_ISIC = mean_IND, letter_credit_use = LCInt)
-
-
+  rename(mean_remote_work_ISIC = mean_IND, letter_credit_use = LCInt)%>% 
+  # Fill monthly stringency index with 0s in the pre-covid period 
+  mutate(month_mean_stringency_index = ifelse(is.na(month_mean_stringency_index), 0, month_mean_stringency_index))
 
 
 
@@ -336,7 +287,9 @@ export_tech_mitig<- export_data %>%
   # Keep firms that are part of analyzed SIC groups
   filter(SICGRP %in% included_SIC_Groups) %>%   
   # Select just the bare minimum variables
-  select(company_id, year, month, date, date_character, hs6, log_export, export, export_dummy, SITEID, SICGRP, NAICS6_CODE) %>% 
+  select(company_id, year, month, date, date_character, hs6, log_export, export, 
+         new_destination, n_countries_export,
+         export_dummy, SITEID, SICGRP, NAICS6_CODE) %>% 
   # Add the HS code classification data with products information 
   left_join(hs_data, by = c('hs6' = 'hs_2017')) %>% 
   # Add the intermediate - capital products classification information
@@ -360,11 +313,11 @@ export_tech_mitig<- export_data %>%
   mutate(Ebay_tradable = as.numeric(Ebay_tradable), 
          adopted_pay_or_ecom_before_2019 = as.numeric(adopted_pay_or_ecom_before_2019)) %>% 
   # Rename some variables
-  rename(mean_remote_work_ISIC = mean_IND, letter_credit_use = LCInt)
+  rename(mean_remote_work_ISIC = mean_IND, letter_credit_use = LCInt)%>% 
+  # Fill monthly stringency index with 0s in the pre-covid period 
+  mutate(month_mean_stringency_index = ifelse(is.na(month_mean_stringency_index), 0, month_mean_stringency_index))
 
 
-# Save tech data 
-write_parquet(tech_data, "../../Data/India/processed_data/tech_data_IND.parquet")
 
 # Remove no longer needed objects
 rm(export_data, hs_data, import_data, tech_data, aberdeen_data, export_less_than_1000usd, 
@@ -376,6 +329,5 @@ write_csv(pay_ecom_import_data_IND, "../../Data/India/processed_data/imports_pro
 write_csv(pay_ecom_export_data_IND, "../../Data/India/processed_data/exports_product_model_IND.csv")
 write_csv(import_tech_mitig, "../../Data/India/processed_data/imports_tech_mitigation_model_IND.csv")
 write_csv(export_tech_mitig, "../../Data/India/processed_data/exports_tech_mitigation_model_IND.csv")
-
 
 gc()

@@ -23,8 +23,8 @@ source("../src/packages.R")
 # Load HS Code Classification data with products information ----
 hs_data <- read_csv("../../Data/Extra Data/HS_code_classifications.csv")%>% 
   mutate(hs_2017   = str_pad(hs_2017  , 6, "left", "0")) %>% 
-  rename(hs6 = hs_2017, letter_credit_use = LCInt, mean_remote_work_ISIC = mean_IDN) %>% 
-  select(-mean_IND)
+  rename(hs6 = hs_2017, letter_credit_use = LCInt, mean_remote_work_ISIC = mean_IND) %>% 
+  select(-mean_IDN)
 
 
 # Read data with intermediate and capital HS products classification ----
@@ -242,6 +242,8 @@ exports_grid_mitig_IND<-
   left_join(int_cap_HS, by = c("hs6")) %>% 
   # Join mean stringency index data
   left_join(covid_data, by = c("date_character")) %>% 
+  # Fill missing values in monthly stringency index: pre-covid period fill it with 0s
+  mutate(month_mean_stringency_index = ifelse(is.na(month_mean_stringency_index), 0, month_mean_stringency_index)) %>%
   # Order data
   arrange(company_id, date_character, hs6)
 
@@ -296,6 +298,8 @@ imports_grid_mitig_IND<-
   left_join(int_cap_HS, by = c("hs6")) %>% 
   # Join mean stringency index data
   left_join(covid_data, by = c("date_character")) %>% 
+  # Fill missing values in monthly stringency index: pre-covid period fill it with 0s
+  mutate(month_mean_stringency_index = ifelse(is.na(month_mean_stringency_index), 0, month_mean_stringency_index)) %>%
   # Order data
   arrange(company_id, date_character, hs6)
 

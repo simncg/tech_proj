@@ -127,6 +127,57 @@ exports_IND <-fread("../../Data/India/processed_data/export_summaries_by_firm_mo
 rm(IDN_Domestic_Ids_Corresp)
 
 
+
+
+# Mexico ----
+
+# Builtwith India 
+tech_MEX   <- fread("../../Data/Mexico/raw_data/Builtwith_Mexico_no_drop_long.csv") %>% 
+  select(our_ID, tech) %>% 
+  # For the moment, we are only going to analyze e-payment/e-commerce technologies
+  filter(tech %in% c("payrobust_nod", "ecom_nod")) %>% 
+  rename(company_id = our_ID) %>% 
+  distinct(company_id)
+
+# Firms matched to Aberdeen 
+aberdeen_MEX <- read_csv("../../Data/Mexico/raw_data/matched_Aberdeen_to_Panjiva_data_Mexico.csv") %>%
+  rename(company_id = our_ID) %>% 
+  distinct(company_id)
+
+
+# Panjiva Imports Data 
+imports_MEX <-read_parquet("../../Data/Mexico/processed_data/import_summaries_by_firm_month_HS_code_complete.parquet", 
+                           col_select = c("domestic_company_id", "year", "month", "date", 
+                                           "date_character","hs6", "import", "log_import")) %>% 
+  rename(company_id = domestic_company_id) %>%
+  # filter to analysis period
+  filter(date >= ymd("2018-07-01"),
+         date < ymd("2022-01-01")) %>% 
+  mutate(hs6  = str_pad(as.character(hs6), 6, "left", "0"), 
+         matched_builtwith = company_id %in% tech_MEX$company_id, 
+         matched_aberdeen = company_id %in% aberdeen_MEX$company_id, 
+         matched_both = as.logical(matched_aberdeen*matched_builtwith)) %>% 
+  as.data.frame()
+
+
+# Panjiva Exports Data 
+exports_MEX <-read_parquet("../../Data/Mexico/processed_data/export_summaries_by_firm_month_HS_code_complete.parquet", 
+                           col_select = c("domestic_company_id", "year", 'month', "date", 
+                                          "date_character", "hs6", "export", "log_export")) %>% 
+  rename(company_id = domestic_company_id) %>% 
+  # filter to analysis period
+  filter(date >= ymd("2018-07-01"),
+         date < ymd("2022-01-01"))%>% 
+  mutate(hs6  = str_pad(as.character(hs6) , 6, "left", "0"), 
+         matched_builtwith = company_id %in% tech_MEX$company_id, 
+         matched_aberdeen = company_id %in% aberdeen_MEX$company_id,
+         matched_both = as.logical(matched_aberdeen*matched_builtwith)) %>% 
+  as.data.frame()
+
+rm(IDN_Domestic_Ids_Corresp)
+
+
+
 ```
 
 
@@ -266,6 +317,73 @@ table_IND<-imports_IND %>%
          across(c(`Total Value`), big_number_format)) %>% 
   mutate(`Total Value` = paste0("$", `Total Value`))
 
+
+table_MEX<-imports_MEX %>% 
+  select(year, import, matched_builtwith, matched_aberdeen, matched_both) %>% 
+  mutate(Data = "Panjiva Imports") %>% 
+  group_by(year) %>% 
+  mutate(total_imports = sum(import, na.rm = T)) %>%
+  ungroup() %>% 
+  group_by(year, matched_builtwith) %>% 
+  mutate(tot_imp_match_builtwith = sum(import, na.rm = T), 
+         share_match_builtwith = (tot_imp_match_builtwith/total_imports)*100) %>%
+  ungroup() %>%
+  group_by(year, matched_aberdeen) %>% 
+  mutate(tot_imp_match_aberdeen = sum(import, na.rm = T), 
+         share_match_aberdeen = (tot_imp_match_aberdeen/total_imports)*100) %>% 
+  ungroup() %>% 
+  group_by(year, matched_both) %>% 
+  mutate(tot_imp_match_both = sum(import, na.rm=T), 
+         share_match_both = (tot_imp_match_both/total_imports)*100) %>% 
+  ungroup() %>% 
+  filter(matched_builtwith == T, 
+         matched_aberdeen  == T, 
+         matched_both == T) %>% 
+  distinct(year, .keep_all = T) %>% 
+  select(Data,
+         Year = year,
+         `Total Value` = total_imports,
+         `% Matched Aberdeen` = share_match_aberdeen,
+         `% Matched BuiltWith` = share_match_builtwith, 
+         `% Matched Both` = share_match_both
+  ) %>% 
+  bind_rows(
+    exports_MEX %>% 
+      select(year, export, matched_builtwith, matched_aberdeen, matched_both) %>% 
+      mutate(Data = "Panjiva Exports") %>% 
+      group_by(year) %>% 
+      mutate(total_exports = sum(export, na.rm = T)) %>% 
+      ungroup() %>% 
+      group_by(year, matched_builtwith) %>% 
+      mutate(tot_exp_match_builtwith = sum(export, na.rm = T), 
+             share_match_builtwith = (tot_exp_match_builtwith/total_exports)*100) %>%
+      ungroup() %>%
+      group_by(year, matched_aberdeen) %>% 
+      mutate(tot_exp_match_aberdeen = sum(export, na.rm = T), 
+             share_match_aberdeen = (tot_exp_match_aberdeen/total_exports)*100) %>% 
+      ungroup() %>% 
+      group_by(year, matched_both) %>% 
+      mutate(tot_exp_match_both = sum(export, na.rm = T), 
+             share_match_both = (tot_exp_match_both/total_exports)*100) %>% 
+      ungroup() %>% 
+      filter(matched_builtwith == T, 
+             matched_aberdeen  == T, 
+             matched_both == T) %>% 
+      distinct(year, .keep_all = T) %>% 
+      select(Data,
+             Year = year,
+             `Total Value` = total_exports,
+             `% Matched Aberdeen` = share_match_aberdeen,
+             `% Matched BuiltWith` = share_match_builtwith, 
+             `% Matched Both` = share_match_both
+      )
+  ) %>% 
+  mutate(across(where(is.numeric), round, 2), 
+         across(c(`Total Value`), big_number_format)) %>% 
+  mutate(`Total Value` = paste0("$", `Total Value`))
+
+
+
 ```
 
 
@@ -293,11 +411,25 @@ kbl(table_IND %>% select(-Data),
   kable_styling(latex_options = "HOLD_position") %>% 
   pack_rows("Panjiva Imports", 1, 4) %>%
   pack_rows("Panjiva Exports", 5, 8)%>% 
-  add_footnote(c("Data from July 2018 onwards is included."))
+  add_footnote(c("Only data from July 2018 onwards is included."))
 
 
 ```
 
+
+
+```{r, eval=TRUE}
+
+kbl(table_MEX %>% select(-Data), 
+    caption = "Mexico - Panjiva total imports and total exports matching rates to BuiltWith and Aberdeen datasets by year", centering = T, booktabs = T, align = "c") %>%
+  kable_classic() %>%
+  kable_styling(latex_options = "HOLD_position") %>% 
+  pack_rows("Panjiva Imports", 1, 4) %>%
+  pack_rows("Panjiva Exports", 5, 8)%>% 
+  add_footnote(c("Only data from July 2018 onwards is included."))
+
+
+```
 
 
 ## Firms Matching Rates by Year
@@ -433,6 +565,69 @@ table_IND<-imports_IND %>%
          across(`Number Firms`, big_number_format))
 
 
+table_MEX<-imports_MEX %>% 
+  select(company_id, year, matched_builtwith, matched_aberdeen, matched_both) %>% 
+  distinct(company_id, year, .keep_all = T) %>% 
+  mutate(Data = "Panjiva Imports") %>% 
+  group_by(year) %>% 
+  mutate(n_firms = n()) %>% 
+  ungroup() %>% 
+  group_by(year, matched_builtwith) %>% 
+  mutate(n_match_builtwith = sum(matched_builtwith), 
+         share_match_builtwith = (n_match_builtwith/n_firms)*100) %>%
+  ungroup() %>%
+  group_by(year, matched_aberdeen) %>% 
+  mutate(n_match_aberdeen = sum(matched_aberdeen), 
+         share_match_aberdeen = (n_match_aberdeen/n_firms)*100) %>% 
+  ungroup() %>% 
+  group_by(year, matched_both) %>% 
+  mutate(n_match_both = sum(matched_both), 
+         share_match_both = (n_match_both/n_firms)*100) %>% 
+  ungroup() %>% 
+  filter(share_match_builtwith != 0, 
+         share_match_aberdeen != 0, 
+         share_match_both != 0) %>% 
+  distinct(n_firms, share_match_builtwith, share_match_aberdeen, share_match_both, .keep_all = T) %>% 
+  select(Data,
+         Year = year,
+         `Number Firms` = n_firms,
+         `% Matched Aberdeen` = share_match_aberdeen,
+         `% Matched BuiltWith` = share_match_builtwith, 
+         `% Matched Both` = share_match_both) %>% 
+  bind_rows(
+    exports_MEX %>% 
+      select(company_id, year, matched_builtwith, matched_aberdeen, matched_both) %>% 
+      distinct(company_id, year, .keep_all = T) %>% 
+      mutate(Data = "Panjiva Exports") %>% 
+      group_by(year) %>% 
+      mutate(n_firms = n()) %>% 
+      group_by(year, matched_builtwith) %>% 
+      mutate(n_match_builtwith = sum(matched_builtwith), 
+             share_match_builtwith = (n_match_builtwith/n_firms)*100) %>%
+      ungroup() %>%
+      group_by(year, matched_aberdeen) %>% 
+      mutate(n_match_aberdeen = sum(matched_aberdeen), 
+             share_match_aberdeen = (n_match_aberdeen/n_firms)*100) %>% 
+      ungroup() %>% 
+      group_by(year, matched_both) %>% 
+      mutate(n_match_both = sum(matched_both), 
+             share_match_both = (n_match_both/n_firms)*100) %>% 
+      ungroup() %>% 
+      distinct(n_firms, share_match_builtwith, share_match_aberdeen, share_match_both, .keep_all = T) %>% 
+      filter(share_match_builtwith != 0, 
+             share_match_aberdeen != 0, 
+             share_match_both!= 0) %>% 
+      select(Data,
+             Year = year,
+             `Number Firms` = n_firms,
+             `% Matched Aberdeen` = share_match_aberdeen,
+             `% Matched BuiltWith` = share_match_builtwith, 
+             `% Matched Both` = share_match_both)
+  ) %>% 
+  mutate(across(where(is.numeric), round, 2), 
+         across(`Number Firms`, big_number_format))
+
+
 ```
 
 
@@ -457,7 +652,23 @@ kbl(table_IND %>% select(-Data),
   kable_classic() %>%
   kable_styling(latex_options = "HOLD_position") %>% 
   pack_rows("Panjiva Imports", 1, 4) %>%
-  pack_rows("Panjiva Exports", 5, 8)
+  pack_rows("Panjiva Exports", 5, 8)%>% 
+  add_footnote(c("Only data from July 2018 onwards is included."))
+
+
+```
+
+
+
+```{r, eval=TRUE}
+
+kbl(table_MEX %>% select(-Data), 
+    caption = "Mexico - Panjiva firms matching rates to BuiltWith and Aberdeen datasets by year", centering = T, booktabs = T, align = "c") %>%
+  kable_classic() %>%
+  kable_styling(latex_options = "HOLD_position") %>% 
+  pack_rows("Panjiva Imports", 1, 4) %>%
+  pack_rows("Panjiva Exports", 5, 8)%>% 
+  add_footnote(c("Only data from July 2018 onwards is included."))
 
 
 ```
@@ -591,6 +802,73 @@ table_IND <- imports_IND %>%
   mutate(across(where(is.numeric), round, 2), 
          across(`Number Transactions`, big_number_format))
 
+
+
+
+table_MEX <- imports_MEX %>% 
+  select(company_id, year, matched_builtwith, matched_aberdeen, matched_both) %>% 
+  mutate(Data = "Panjiva Imports") %>% 
+  group_by(year) %>% 
+  mutate(n_transactions = n()) %>% 
+  ungroup() %>% 
+  group_by(year, matched_builtwith) %>% 
+  mutate(n_match_builtwith = sum(matched_builtwith), 
+         share_match_builtwith = (n_match_builtwith/n_transactions)*100) %>%
+  ungroup() %>% 
+  group_by(year, matched_aberdeen) %>% 
+  mutate(n_match_aberdeen = sum(matched_aberdeen), 
+         share_match_aberdeen = (n_match_aberdeen/n_transactions)*100) %>%
+  ungroup() %>% 
+  group_by(year, matched_both) %>% 
+  mutate(n_match_both = sum(matched_both), 
+         share_match_both = (n_match_both/n_transactions)*100) %>%
+  ungroup() %>% 
+  distinct(n_transactions, share_match_builtwith, share_match_aberdeen, share_match_both, .keep_all = T) %>% 
+  filter(share_match_builtwith != 0, 
+         share_match_aberdeen != 0, 
+         share_match_both!=0) %>% 
+  select(Data,
+         Year = year,
+         `Number Transactions` = n_transactions,
+         `% Matched Aberdeen` = share_match_aberdeen,
+         `% Matched BuiltWith` = share_match_builtwith,
+         `% Matched Both` = share_match_both
+  ) %>% 
+  bind_rows(exports_MEX %>% 
+              select(company_id, year, matched_builtwith, matched_aberdeen, matched_both) %>% 
+              mutate(Data = "Panjiva Exports") %>% 
+              group_by(year) %>% 
+              mutate(n_transactions = n()) %>% 
+              ungroup() %>% 
+              group_by(year, matched_builtwith) %>% 
+              mutate(n_match_builtwith = sum(matched_builtwith), 
+                     share_match_builtwith = (n_match_builtwith/n_transactions)*100) %>%
+              ungroup() %>% 
+              group_by(year, matched_aberdeen) %>% 
+              mutate(n_match_aberdeen = sum(matched_aberdeen), 
+                     share_match_aberdeen = (n_match_aberdeen/n_transactions)*100) %>%
+              ungroup() %>% 
+              group_by(year, matched_both) %>% 
+              mutate(n_match_both = sum(matched_both), 
+                     share_match_both = (n_match_both/n_transactions)*100) %>%
+              ungroup() %>% 
+              distinct(n_transactions, share_match_builtwith, share_match_aberdeen, share_match_both, .keep_all = T) %>% 
+              filter(share_match_builtwith != 0,
+                     share_match_aberdeen != 0,
+                     share_match_both != 0
+                     
+              ) %>% 
+              select(Data,
+                     Year = year, 
+                     `Number Transactions` = n_transactions,
+                     `% Matched Aberdeen` = share_match_aberdeen,
+                     `% Matched BuiltWith` = share_match_builtwith, 
+                     `% Matched Both` = share_match_both
+              )) %>% 
+  mutate(across(where(is.numeric), round, 2), 
+         across(`Number Transactions`, big_number_format))
+
+
 ```
 
 
@@ -616,10 +894,30 @@ kbl(table_IND %>% select(-Data),
   kable_classic() %>%
   kable_styling(latex_options = "HOLD_position") %>% 
   pack_rows("Panjiva Imports", 1, 4) %>%
-  pack_rows("Panjiva Exports", 5, 8)
+  pack_rows("Panjiva Exports", 5, 8)%>% 
+  add_footnote(c("Only data from July 2018 onwards is included."))
+
 
 
 ```
+
+
+
+
+```{r, eval=TRUE}
+
+kbl(table_MEX %>% select(-Data), 
+    caption = "Mexico - Panjiva transactions at the Firm-Month-HS6 level matching rates to BuiltWith and Aberdeen datasets by year", centering = T, booktabs = T, align = "c") %>%
+  kable_classic() %>%
+  kable_styling(latex_options = "HOLD_position") %>% 
+  pack_rows("Panjiva Imports", 1, 4) %>%
+  pack_rows("Panjiva Exports", 5, 8)%>% 
+  add_footnote(c("Only data from July 2018 onwards is included."))
+
+
+
+```
+
 
 
 ```{r}
@@ -645,11 +943,19 @@ For the matched Panjiva-BuiltWith-Aberdeen dataset, we apply the following addit
 
 ```{r, eval=T}
 
+# Imports and exports datasets of Indonesia used for regressions
 pay_ecom_import_data_IDN<-fread("../../Data/Indonesia/processed_data/imports_product_model_IDN.csv")
 pay_ecom_export_data_IDN<-fread("../../Data/Indonesia/processed_data/exports_product_model_IDN.csv")
 
+# Imports and exports datasets of India used for regressions
 pay_ecom_import_data_IND<-fread("../../Data/India/processed_data/imports_product_model_IND.csv")
 pay_ecom_export_data_IND<-fread("../../Data/India/processed_data/exports_product_model_IND.csv")
+
+
+# Imports and exports datasets of Mexico used for regressions
+pay_ecom_import_data_MEX<-fread("../../Data/Mexico/processed_data/imports_product_model_MEX.csv")
+pay_ecom_export_data_MEX<-fread("../../Data/Mexico/processed_data/exports_product_model_MEX.csv")
+
 
 ```
 
@@ -690,17 +996,35 @@ dep_vars<-
       mutate(across(where(is.numeric), round, 2), 
              across(where(is.numeric), big_number_format), 
              across(everything(), ~paste0("$", .))) 
+    ) %>% 
+  # Mexico
+    bind_rows(pay_ecom_export_data_MEX %>% 
+      as.data.frame() %>% 
+      mutate(export = exp(log_export)) %>% 
+      select(export) %>% 
+      summarize_all(list(Min=min, p25 = ~quantile(., 0.25), Median = median, Mean = mean, p75 = ~quantile(., 0.75), Max = max, SD = sd)) %>% 
+      bind_rows(pay_ecom_import_data_MEX %>% 
+                  as.data.frame() %>% 
+                  mutate(import = exp(log_import)) %>% 
+                  select(import) %>% 
+                  summarize_all(list(Min=min, p25 = ~quantile(., 0.25), Median = median, 
+                                     Mean = mean, p75 = ~quantile(., 0.75), Max = max, SD = sd))
+                )%>% 
+      mutate(across(where(is.numeric), round, 2), 
+             across(where(is.numeric), big_number_format), 
+             across(everything(), ~paste0("$", .))) 
     )
   
 
-rownames(dep_vars)<-c("Exports", "Imports", "Exports ", "Imports ")
+rownames(dep_vars)<-c("Exports", "Imports", "Exports ", "Imports ", "Exports  ", "Imports  ")
 
 kbl(dep_vars, 
     caption = "Descriptive Statistics of Value of Imports and Exports - Regression Sample", centering = T, booktabs = T, align = "c") %>%
   kable_classic() %>%
   kable_styling(latex_options = "HOLD_position") %>% 
   pack_rows("Indonesia", 1, 2) %>%
-  pack_rows("India", 3, 4)
+  pack_rows("India", 3, 4) %>% 
+  pack_rows("Mexico", 5, 6)
 
 ```
 
@@ -767,6 +1091,37 @@ prods_tech<-
                   values_from = value)
       )
       
+  )  %>% 
+  bind_rows(
+    # Mexico Exports
+    pay_ecom_export_data_MEX %>% 
+    as.data.frame() %>% 
+    select(tech = pay_or_ecomnod_t_2, Ebay_tradable, China_E_commerce, cons_BEC, durable_BEC) %>% 
+    na.omit() %>% 
+    summarize_all(list(Mean = mean)) %>% 
+    pivot_longer(cols = everything(), 
+                 names_to = c("variable", "statistic"),
+                 names_pattern = "([A-Za-z_]+)_(Mean)") %>% 
+    select(-statistic) %>% 
+    mutate(across(where(is.numeric), round, 3)) %>% 
+    pivot_wider(names_from = variable, 
+                values_from = value) %>% 
+    bind_rows(
+      # Mexico Imports
+      pay_ecom_import_data_MEX %>% 
+      as.data.frame() %>% 
+      select(tech = pay_or_ecomnod_t_2, Ebay_tradable, China_E_commerce, cons_BEC, durable_BEC) %>% 
+      na.omit() %>% 
+      summarize_all(list(Mean = mean)) %>% 
+      pivot_longer(cols = everything(), 
+                   names_to = c("variable", "statistic"),
+                   names_pattern = "([A-Za-z_]+)_(Mean)") %>% 
+      select(-statistic) %>% 
+      mutate(across(where(is.numeric), round, 3)) %>% 
+      pivot_wider(names_from = variable, 
+                  values_from = value)
+      )
+      
   )
 
 ```
@@ -775,7 +1130,7 @@ prods_tech<-
 ```{r, eval = T}
 
 prods_tech<-as.data.frame(prods_tech)
-rownames(prods_tech)<-c("Exports", "Imports", "Exports ", "Imports ")
+rownames(prods_tech)<-c("Exports", "Imports", "Exports ", "Imports ", "Exports  ", "Imports  ")
 colnames(prods_tech)<-c("E-payment/E-commerce", "e-Bay tradable", "China E-commerce", "Consumable", "Durable")
 
 kbl(prods_tech, 
@@ -783,7 +1138,8 @@ kbl(prods_tech,
   kable_classic() %>%
   kable_styling(latex_options = "HOLD_position") %>% 
   pack_rows("Indonesia", 1, 2) %>%
-  pack_rows("India", 3, 4)
+  pack_rows("India", 3, 4) %>% 
+  pack_rows("Mexico", 5, 6)
 
 
 ```
@@ -797,25 +1153,37 @@ n_firms<-
   pay_ecom_export_data_IDN %>% 
   as.data.frame() %>% 
   distinct(company_id) %>% 
-  summarize(`Exporting Firms` = n()) %>% 
+  summarize(`Exp. Firms` = n()) %>% 
   # Indonesia Imports 
   bind_cols(
    pay_ecom_import_data_IDN %>% 
     as.data.frame() %>% 
     distinct(company_id) %>% 
-    summarize(`Importing Firms` = n()) 
+    summarize(`Imp. Firms` = n()) 
   ) %>% 
   # India Exports
   bind_cols(pay_ecom_export_data_IND %>% 
     as.data.frame() %>% 
     distinct(company_id) %>% 
-    summarize(`Exporting Fimrs` = n())
+    summarize(`Exp. Firms ` = n())
     ) %>% 
   # India Imports
    bind_cols(pay_ecom_import_data_IND %>% 
     as.data.frame() %>% 
     distinct(company_id) %>% 
-    summarize(`Importing Fimrs` = n())
+    summarize(`Imp. Firms ` = n())
+  ) %>% 
+  # Mexico Exports
+  bind_cols(pay_ecom_export_data_MEX %>% 
+    as.data.frame() %>% 
+    distinct(company_id) %>% 
+    summarize(`Exp. Firms  ` = n())
+    ) %>% 
+  # Mexico Imports
+   bind_cols(pay_ecom_import_data_MEX %>% 
+    as.data.frame() %>% 
+    distinct(company_id) %>% 
+    summarize(`Imp. Firms  ` = n())
   ) %>% 
   mutate(across(everything(), big_number_format))
   
@@ -826,7 +1194,7 @@ kbl(n_firms,
     caption = "Number of Importing and Exporting Firms - Regression Sample", centering = T, booktabs = T, align = "c") %>%
   kable_classic() %>%
   kable_styling(latex_options = "HOLD_position") %>% 
-  add_header_above(c("Indonesia" = 2, "India" = 2))
+  add_header_above(c("Indonesia" = 2, "India" = 2, "Mexico" = 2))
 
 ```
 
@@ -853,7 +1221,7 @@ big_number_format<-function(x){format(x, big.mark = ",")}
 
 ```{r, eval=T}
 
-
+# Indonesia exports and imports datasets used in the model that measures if tech adoption mitigates COVID impacts
 import_mitig_data_IDN<-fread("../../Data/Indonesia/processed_data/imports_tech_mitigation_model_IDN.csv") %>% 
   mutate(month_mean_stringency_index = replace_na(month_mean_stringency_index, 0)) %>% 
   as.data.frame()
@@ -862,6 +1230,7 @@ export_mitig_data_IDN<-fread("../../Data/Indonesia/processed_data/exports_tech_m
   mutate(month_mean_stringency_index = replace_na(month_mean_stringency_index, 0))%>% 
   as.data.frame()
 
+# India exports and imports datasets used in the model that measures if tech adoption mitigates COVID impacts
 import_mitig_data_IND<-fread("../../Data/India/processed_data/imports_tech_mitigation_model_IND.csv") %>% 
   mutate(month_mean_stringency_index = replace_na(month_mean_stringency_index, 0))%>% 
   as.data.frame()
@@ -869,6 +1238,16 @@ import_mitig_data_IND<-fread("../../Data/India/processed_data/imports_tech_mitig
 export_mitig_data_IND<-fread("../../Data/India/processed_data/exports_tech_mitigation_model_IND.csv") %>% 
   mutate(month_mean_stringency_index = replace_na(month_mean_stringency_index, 0))%>% 
   as.data.frame()
+
+# Mexico exports and imports datasets used in the model that measures if tech adoption mitigates COVID impacts
+import_mitig_data_MEX<-fread("../../Data/Mexico/processed_data/imports_tech_mitigation_model_MEX.csv") %>% 
+  mutate(month_mean_stringency_index = replace_na(month_mean_stringency_index, 0))%>% 
+  as.data.frame()
+
+export_mitig_data_MEX<-fread("../../Data/Mexico/processed_data/exports_tech_mitigation_model_MEX.csv") %>% 
+  mutate(month_mean_stringency_index = replace_na(month_mean_stringency_index, 0))%>% 
+  as.data.frame()
+
 
 ```
 
@@ -909,17 +1288,35 @@ dep_vars<-
       mutate(across(where(is.numeric), round, 2), 
              across(where(is.numeric), big_number_format), 
              across(everything(), ~paste0("$", .))) 
+    )%>% 
+    # Mexico
+    bind_rows(export_mitig_data_MEX %>% 
+      as.data.frame() %>% 
+      mutate(export = exp(log_export)) %>% 
+      select(export) %>% 
+      summarize_all(list(Min=min, p25 = ~quantile(., 0.25), Median = median, Mean = mean, p75 = ~quantile(., 0.75), Max = max, SD = sd)) %>% 
+      bind_rows(import_mitig_data_MEX %>% 
+                  as.data.frame() %>% 
+                  mutate(import = exp(log_import)) %>% 
+                  select(import) %>% 
+                  summarize_all(list(Min=min, p25 = ~quantile(., 0.25), Median = median, 
+                                     Mean = mean, p75 = ~quantile(., 0.75), Max = max, SD = sd))
+                )%>% 
+      mutate(across(where(is.numeric), round, 2), 
+             across(where(is.numeric), big_number_format), 
+             across(everything(), ~paste0("$", .))) 
     )
   
 
-rownames(dep_vars)<-c("Exports", "Imports", "Exports ", "Imports ")
+rownames(dep_vars)<-c("Exports", "Imports", "Exports ", "Imports ", "Exports  ", "Imports  ")
 
 kbl(dep_vars, 
     caption = "Descriptive Statistics of Value of Imports and Exports", centering = T, booktabs = T, align = "c") %>%
   kable_classic() %>%
   kable_styling(latex_options = "HOLD_position") %>% 
   pack_rows("Indonesia", 1, 2) %>%
-  pack_rows("India", 3, 4)
+  pack_rows("India", 3, 4) %>% 
+  pack_rows("Mexico", 5, 6)
 
 ```
 
@@ -987,6 +1384,37 @@ prods_tech<-
                   values_from = value)
       )
       
+  )%>% 
+  bind_rows(
+    # Mexico Exports
+    export_mitig_data_MEX %>% 
+    as.data.frame() %>% 
+    select(tech = adopted_pay_or_ecom_before_2019, Ebay_tradable, China_E_commerce, cons_BEC, durable_BEC) %>% 
+    na.omit() %>% 
+    summarize_all(list(Mean = mean)) %>% 
+    pivot_longer(cols = everything(), 
+                 names_to = c("variable", "statistic"),
+                 names_pattern = "([A-Za-z_]+)_(Mean)") %>% 
+    select(-statistic) %>% 
+    mutate(across(where(is.numeric), round, 3)) %>% 
+    pivot_wider(names_from = variable, 
+                values_from = value) %>% 
+    bind_rows(
+      # Mexico Imports
+      import_mitig_data_MEX %>% 
+      as.data.frame() %>% 
+      select(tech = adopted_pay_or_ecom_before_2019, Ebay_tradable, China_E_commerce, cons_BEC, durable_BEC) %>% 
+      na.omit() %>% 
+      summarize_all(list(Mean = mean)) %>% 
+      pivot_longer(cols = everything(), 
+                   names_to = c("variable", "statistic"),
+                   names_pattern = "([A-Za-z_]+)_(Mean)") %>% 
+      select(-statistic) %>% 
+      mutate(across(where(is.numeric), round, 3)) %>% 
+      pivot_wider(names_from = variable, 
+                  values_from = value)
+      )
+      
   )
 
 ```
@@ -995,7 +1423,7 @@ prods_tech<-
 ```{r, eval = T}
 
 prods_tech<-as.data.frame(prods_tech)
-rownames(prods_tech)<-c("Exports", "Imports", "Exports ", "Imports ")
+rownames(prods_tech)<-c("Exports", "Imports", "Exports ", "Imports ", "Exports  ", "Imports  ")
 colnames(prods_tech)<-c("Pre-2019\nE-payment/E-commerce", "e-Bay tradable", "China E-commerce", "Consumable", "Durable")
 
 kbl(prods_tech, 
@@ -1003,7 +1431,8 @@ kbl(prods_tech,
   kable_classic() %>%
   kable_styling(latex_options = "HOLD_position") %>% 
   pack_rows("Indonesia", 1, 2) %>%
-  pack_rows("India", 3, 4)
+  pack_rows("India", 3, 4) %>% 
+  pack_rows("Mexico", 5, 6)
 
 
 ```
@@ -1038,17 +1467,32 @@ stringency_index<-
                                      Mean = mean, p75 = ~quantile(., 0.75), Max = max, SD = sd))
                 )%>% 
       mutate(across(where(is.numeric), round, 2)) 
+    )%>% 
+  # Mexico
+    bind_rows(export_mitig_data_MEX %>% 
+      as.data.frame() %>% 
+      select(month_mean_stringency_index) %>% 
+      summarize_all(list(Min=min, p25 = ~quantile(., 0.25), Median = median, Mean = mean, p75 = ~quantile(., 0.75), Max = max, SD = sd)) %>% 
+      bind_rows(import_mitig_data_MEX %>% 
+                  as.data.frame() %>% 
+                  select(month_mean_stringency_index) %>% 
+                  summarize_all(list(Min=min, p25 = ~quantile(., 0.25), Median = median, 
+                                     Mean = mean, p75 = ~quantile(., 0.75), Max = max, SD = sd))
+                )%>% 
+      mutate(across(where(is.numeric), round, 2)) 
     )
   
 
-rownames(stringency_index)<-c("Exports", "Imports", "Exports ", "Imports ")
+rownames(stringency_index)<-c("Exports", "Imports", "Exports ", "Imports ", "Exports  ", "Imports  ")
+
 
 kbl(stringency_index, 
     caption = "Descriptive Statistics of Monthly Average Stringency Index (Filling with 0s before 2020)", centering = T, booktabs = T, align = "c") %>%
   kable_classic() %>%
   kable_styling(latex_options = "HOLD_position") %>% 
   pack_rows("Indonesia", 1, 2) %>%
-  pack_rows("India", 3, 4)
+  pack_rows("India", 3, 4) %>% 
+  pack_rows("Mexico", 5, 6)
 
 ```
 
@@ -1062,25 +1506,37 @@ n_firms<-
   export_mitig_data_IDN %>% 
   as.data.frame() %>% 
   distinct(company_id) %>% 
-  summarize(`Exporting Firms` = n()) %>% 
+  summarize(`Exp. Firms` = n()) %>% 
   # Indonesia Imports 
   bind_cols(
    import_mitig_data_IDN %>% 
     as.data.frame() %>% 
     distinct(company_id) %>% 
-    summarize(`Importing Firms` = n()) 
+    summarize(`Imp. Firms` = n()) 
   ) %>% 
   # India Exports
   bind_cols(export_mitig_data_IND %>% 
     as.data.frame() %>% 
     distinct(company_id) %>% 
-    summarize(`Exporting Fimrs` = n())
+    summarize(`Exp. Firms ` = n())
     ) %>% 
   # India Imports
    bind_cols(import_mitig_data_IND %>% 
     as.data.frame() %>% 
     distinct(company_id) %>% 
-    summarize(`Importing Fimrs` = n())
+    summarize(`Imp. Firms ` = n())
+  ) %>% 
+  # Mexico Exports
+  bind_cols(export_mitig_data_MEX %>% 
+    as.data.frame() %>% 
+    distinct(company_id) %>% 
+    summarize(`Exp. Firms  ` = n())
+    ) %>% 
+  # Mexico Imports
+   bind_cols(import_mitig_data_MEX %>% 
+    as.data.frame() %>% 
+    distinct(company_id) %>% 
+    summarize(`Imp. Firms  ` = n())
   ) %>% 
   mutate(across(everything(), big_number_format))
   
@@ -1091,7 +1547,7 @@ kbl(n_firms,
     caption = "Number of Importing and Exporting Firms - Regression Sample", centering = T, booktabs = T, align = "c") %>%
   kable_classic() %>%
   kable_styling(latex_options = "HOLD_position") %>% 
-  add_header_above(c("Indonesia" = 2, "India" = 2))
+  add_header_above(c("Indonesia" = 2, "India" = 2, "Mexico" = 2))
 
 ```
 
@@ -1108,18 +1564,19 @@ rm(list = ls())
 big_number_format<-function(x){format(x, big.mark = ",")}
 
 
-import_data_IDN<-read_parquet(paste0("../../Data/Indonesia/processed_data/imports_grid_product_model_IDN.parquet"),
+# Extensive margin imports and exports dataset for Indonesia
+import_data_IDN<-read_parquet("../../Data/Indonesia/processed_data/imports_grid_product_model_IDN.parquet",
                             col_select = c("Ebay_tradable", "China_E_commerce", "cons_BEC", "durable_BEC",
                                            "company_id", "hs6", "date_character", "import_dummy",
                                            "pay_or_ecomnod_t_2"))
 
 
-export_data_IDN<-read_parquet(paste0("../../Data/Indonesia/processed_data/exports_grid_product_model_IDN.parquet"),
+export_data_IDN<-read_parquet("../../Data/Indonesia/processed_data/exports_grid_product_model_IDN.parquet",
                             col_select = c("Ebay_tradable", "China_E_commerce", "cons_BEC", "durable_BEC",
                                            "company_id", "hs6", "date_character", "export_dummy",
                                            "pay_or_ecomnod_t_2"))
 
-
+# Extensive margin imports and exports dataset for India
 import_data_IND<-read_parquet("../../Data/India/processed_data/imports_grid_product_model_IND.parquet",
                             col_select = c("Ebay_tradable", "China_E_commerce", "cons_BEC", "durable_BEC",
                                            "company_id", "hs6", "date_character", "import_dummy",
@@ -1131,11 +1588,24 @@ export_data_IND<-read_parquet("../../Data/India/processed_data/exports_grid_prod
                                            "company_id", "hs6", "date_character", "export_dummy",
                                            "pay_or_ecomnod_t_2"))
 
+# Extensive margin imports and exports dataset for Mexico 
+import_data_MEX<-read_parquet("../../Data/Mexico/processed_data/imports_grid_product_model_MEX.parquet",
+                            col_select = c("Ebay_tradable", "China_E_commerce", "cons_BEC", "durable_BEC",
+                                           "company_id", "hs6", "date_character", "import_dummy",
+                                           "pay_or_ecomnod_t_2"))
+
+
+export_data_MEX<-read_parquet("../../Data/Mexico/processed_data/exports_grid_product_model_MEX.parquet",
+                            col_select = c("Ebay_tradable", "China_E_commerce", "cons_BEC", "durable_BEC",
+                                           "company_id", "hs6", "date_character", "export_dummy",
+                                           "pay_or_ecomnod_t_2"))
+
 ```
 
 ```{r, eval = T}
 
 prop_zeros<-
+  # Indonesia
   export_data_IDN %>% 
   summarize(Exports = 1-mean(export_dummy)) %>% 
   as.data.frame() %>% 
@@ -1144,6 +1614,7 @@ prop_zeros<-
       summarize(Imports = 1-mean(import_dummy)) %>% 
       as.data.frame()
   ) %>% 
+  # India
   bind_cols(
     export_data_IND %>% 
     summarize(Exports = 1-mean(export_dummy)) %>% 
@@ -1153,18 +1624,29 @@ prop_zeros<-
         summarize(Imports = 1-mean(import_dummy)) %>% 
         as.data.frame()
     )
+  )%>% 
+  # Mexico
+  bind_cols(
+    export_data_MEX %>% 
+    summarize(Exports = 1-mean(export_dummy)) %>% 
+    as.data.frame() %>% 
+    bind_cols(
+      import_data_MEX %>% 
+        summarize(Imports = 1-mean(import_dummy)) %>% 
+        as.data.frame()
+    )
   ) %>% 
   mutate(across(where(is.numeric), round, 3))
 
 
-colnames(prop_zeros)<-c("Exports", "Imports", "Exports", "Imports")
+colnames(prop_zeros)<-c("Exports", "Imports", "Exports", "Imports", "Exports", "Imports")
 
  
 kbl(prop_zeros, 
     caption = "Proportion of 0s in binary dependent variable in the expanded datasets", centering = T, booktabs = T, align = "c") %>%
   kable_classic() %>%
   kable_styling(latex_options = "HOLD_position") %>% 
-  add_header_above(c("Indonesia Expanded Datasets" = 2, "India Expanded Datasets" = 2))
+  add_header_above(c("Indonesia Expanded Datasets" = 2, "India Expanded Datasets" = 2, "Mexico Expanded Datasets" = 2))
  
   
 
@@ -1192,7 +1674,7 @@ export_data_IDN<-read_parquet("../../Data/Indonesia/processed_data/exports_grid_
                                            "company_id", "hs6", "date_character", "export_dummy",
                                            "pay_or_ecomnod_t_2"))
 
-
+# Extensive margin imports and exports datasets for India for the model that measures if tech adoption affects trade outcomes
 import_data_IND<-read_parquet("../../Data/India/processed_data/imports_grid_mitig_model_IND.parquet",
                             col_select = c("Ebay_tradable", "China_E_commerce", "cons_BEC", "durable_BEC",
                                            "company_id", "hs6", "date_character", "import_dummy",
@@ -1200,6 +1682,18 @@ import_data_IND<-read_parquet("../../Data/India/processed_data/imports_grid_miti
 
 
 export_data_IND<-read_parquet("../../Data/India/processed_data/exports_grid_mitig_model_IND.parquet",
+                            col_select = c("Ebay_tradable", "China_E_commerce", "cons_BEC", "durable_BEC",
+                                           "company_id", "hs6", "date_character", "export_dummy",
+                                           "pay_or_ecomnod_t_2"))
+
+# Extensive margin imports and exports datasets for Mexico for the model that measures if tech adoption affects trade outcomes
+import_data_MEX<-read_parquet("../../Data/Mexico/processed_data/imports_grid_mitig_model_MEX.parquet",
+                            col_select = c("Ebay_tradable", "China_E_commerce", "cons_BEC", "durable_BEC",
+                                           "company_id", "hs6", "date_character", "import_dummy",
+                                           "pay_or_ecomnod_t_2"))
+
+
+export_data_MEX<-read_parquet("../../Data/Mexico/processed_data/exports_grid_mitig_model_MEX.parquet",
                             col_select = c("Ebay_tradable", "China_E_commerce", "cons_BEC", "durable_BEC",
                                            "company_id", "hs6", "date_character", "export_dummy",
                                            "pay_or_ecomnod_t_2"))
@@ -1217,6 +1711,7 @@ prop_zeros<-
       summarize(Imports = 1-mean(import_dummy)) %>% 
       as.data.frame()
   ) %>% 
+  # India
   bind_cols(
     export_data_IND %>% 
     summarize(Exports = 1-mean(export_dummy)) %>% 
@@ -1226,18 +1721,29 @@ prop_zeros<-
         summarize(Imports = 1-mean(import_dummy)) %>% 
         as.data.frame()
     )
-  ) %>% 
+  )  %>% 
+  # Mexico
+  bind_cols(
+    export_data_MEX %>% 
+    summarize(Exports = 1-mean(export_dummy)) %>% 
+    as.data.frame() %>% 
+    bind_cols(
+      import_data_MEX %>% 
+        summarize(Imports = 1-mean(import_dummy)) %>% 
+        as.data.frame()
+    )
+  )%>% 
   mutate(across(where(is.numeric), round, 3))
 
 
-colnames(prop_zeros)<-c("Exports", "Imports", "Exports", "Imports")
+colnames(prop_zeros)<-c("Exports", "Imports", "Exports", "Imports","Exports", "Imports")
 
  
 kbl(prop_zeros, 
     caption = "Proportion of 0s in binary dependent variable in the expanded datasets", centering = T, booktabs = T, align = "c") %>%
   kable_classic() %>%
   kable_styling(latex_options = "HOLD_position") %>% 
-  add_header_above(c("Indonesia Expanded Datasets" = 2, "India Expanded Datasets" = 2))
+  add_header_above(c("Indonesia Expanded Datasets" = 2, "India Expanded Datasets" = 2, "Mexico Expanded Datasets" = 2))
  
   
 

@@ -29,6 +29,11 @@ knitr::opts_chunk$set(warning  = FALSE)
 
 ```{r}
 
+# Set Working Directory ----
+fileloc <- dirname(rstudioapi::getSourceEditorContext()$path)
+setwd(fileloc)
+rm(fileloc)
+
 library(data.table)
 library(arrow)
 library(dplyr)
@@ -61,7 +66,7 @@ setDT(pay_ecom_export_data_IND)
 ## Create plot of technology adoption for imports dataset ---- 
 imp_firms_sample_IND <- unique(pay_ecom_import_data_IND[, company_id])
 import_tech_IND <- tech_data_IND[company_id %in% imp_firms_sample_IND] %>% 
-  filter(date >= ymd("2018-06-01"), 
+  filter(date >= ymd("2018-07-01"), 
          date < ymd("2022-01-01"))
 
 import_tech_IND %>% 
@@ -84,6 +89,9 @@ import_tech_IND %>%
         legend.position = "bottom", 
         axis.text.x = element_text(angle = 30, size = 6))+
   scale_x_date(date_breaks = "3 months", date_labels = "%Y-%m")
+
+
+ggsave("India_Imports_Tech_Adoption.pdf", width = 8, height = 6)
   
   
 ```
@@ -93,7 +101,7 @@ import_tech_IND %>%
 ## Create plot of technology adoption for imports dataset ----
 exp_firms_sample_IND <- unique(pay_ecom_export_data_IND[, company_id])
 export_tech_IND <- tech_data_IND[company_id %in% exp_firms_sample_IND] %>% 
-  filter(date >= ymd("2018-06-01"), 
+  filter(date >= ymd("2018-07-01"), 
          date < ymd("2022-01-01"))
 
 export_tech_IND %>% 
@@ -118,6 +126,9 @@ export_tech_IND %>%
         axis.text.x = element_text(angle = 30, size = 6))+
   scale_x_date(date_breaks = "3 months", date_labels = "%Y-%m")
   
+
+ggsave("India_Exports_Tech_Adoption.pdf", width = 8, height = 6)
+
 
 ```
 
@@ -144,7 +155,7 @@ setDT(pay_ecom_export_data_IDN)
 ## Create plot of technology adoption for imports dataset ---- 
 imp_firms_sample_IDN <- unique(pay_ecom_import_data_IDN[, company_id])
 import_tech_IDN <- tech_data_IDN[company_id %in% imp_firms_sample_IDN] %>% 
-  filter(date >= ymd("2019-01-01"), 
+  filter(date >= ymd("2019-02-01"), 
          date <= ymd("2021-06-01"))
 
 import_tech_IDN %>% 
@@ -168,18 +179,24 @@ import_tech_IDN %>%
         plot.subtitle = element_text(hjust = 0.5, face = "italic"), 
         axis.text.x = element_text(angle = 30, size = 6))+
   scale_x_date(date_breaks = "3 months", date_labels = "%Y-%m")
+
+
+ggsave("Indonesia_Imports_Tech_Adoption.pdf", width = 8, height = 6)
+
   
 
 ```
 
 
+
+
 ```{r, eval = T, fig.width=6, fig.height=4}
 
-## Create plot of technology adoption for imports dataset ----
+## Create plot of technology adoption for exports dataset ----
 exp_firms_sample_IDN <- unique(pay_ecom_export_data_IDN[, company_id])
 export_tech_IDN <- tech_data_IDN[company_id %in% exp_firms_sample_IDN] %>% 
-  filter(date >= ymd("2019-01-01"), 
-         date <= ymd("2021-09-01"))
+  filter(date >= ymd("2019-02-01"), 
+         date <= ymd("2022-01-01"))
 
 export_tech_IDN %>% 
   group_by(date) %>% 
@@ -201,6 +218,104 @@ export_tech_IDN %>%
         plot.subtitle = element_text(hjust = 0.5, face = "italic"), 
         axis.text.x = element_text(angle = 30, size = 6))+
   scale_x_date(date_breaks = "3 months", date_labels = "%Y-%m")
+  
+
+ggsave("Indonesia_Exports_Tech_Adoption.pdf", width = 8, height = 6)
+
+
+```
+
+
+
+
+# 3. Mexico
+
+```{r, fig.width=6, fig.height=4}
+
+## Technology data ---- 
+tech_data_MEX <- read_parquet("../../Data/Mexico/processed_data/tech_data_MEX.parquet", 
+                          col_select = c("company_id", "date", "ecom", "payrobust", "pay_or_ecomnod"))
+
+# Matched Panjiva-Aberdeen-Builtwith dataset (only regression sample) -----
+pay_ecom_import_data_MEX <- fread("../../Data/Mexico/processed_data/imports_product_model_MEX.csv", 
+                                  select = "company_id")
+
+pay_ecom_export_data_MEX <- fread("../../Data/Mexico/processed_data/exports_product_model_MEX.csv", 
+                                  select = "company_id")
+
+# Set as data.table
+setDT(tech_data_MEX)
+setDT(pay_ecom_import_data_MEX)
+setDT(pay_ecom_export_data_MEX)
+
+## Create plot of technology adoption for imports dataset ---- 
+imp_firms_sample_MEX <- unique(pay_ecom_import_data_MEX[, company_id])
+import_tech_MEX <- tech_data_MEX[company_id %in% imp_firms_sample_MEX] %>% 
+  filter(date >= ymd("2018-07-01"), 
+         date < ymd("2022-01-01"))
+
+import_tech_MEX %>% 
+  group_by(date) %>% 
+  summarize(`E-commerce` = mean(ecom), 
+            `E-payment` = mean(payrobust), 
+            `E-commerce or E-payment` = mean(pay_or_ecomnod)) %>% 
+  pivot_longer(cols = c(`E-commerce`, `E-payment`, `E-commerce or E-payment`), 
+               names_to =  "tech", 
+               values_to = "share_of_firms") %>% 
+  ggplot()+
+  geom_line(aes(x = date, y = share_of_firms, color = tech))+
+  ylab("Share of firms")+
+  xlab("Date")+
+  ggtitle("Mexico - Imports")+
+  labs(color = "", 
+       caption = "")+
+  theme_minimal()+
+  theme(legend.position =  "bottom", 
+        plot.title = element_text(hjust = 0.5, face = "bold"), 
+        plot.subtitle = element_text(hjust = 0.5, face = "italic"), 
+        axis.text.x = element_text(angle = 30, size = 6))+
+  scale_x_date(date_breaks = "3 months", date_labels = "%Y-%m")
+
+
+ggsave("Mexico_Imports_Tech_Adoption.pdf", width = 8, height = 6)
+
+  
+
+```
+
+
+```{r, eval = T, fig.width=6, fig.height=4}
+
+## Create plot of technology adoption for exports dataset ----
+exp_firms_sample_MEX <- unique(pay_ecom_export_data_MEX[, company_id])
+export_tech_MEX <- tech_data_MEX[company_id %in% exp_firms_sample_MEX] %>% 
+  filter(date >= ymd("2018-07-01"), 
+         date <= ymd("2022-01-01"))
+
+export_tech_MEX %>% 
+  group_by(date) %>% 
+  summarize(`E-commerce` = mean(ecom), 
+            `E-payment` = mean(payrobust), 
+            `E-commerce or E-payment` = mean(pay_or_ecomnod)) %>% 
+  pivot_longer(cols = c(`E-commerce`, `E-payment`, `E-commerce or E-payment`), 
+               names_to =  "tech", 
+               values_to = "share_of_firms") %>% 
+  ggplot()+
+  geom_line(aes(x = date, y = share_of_firms, color = tech))+
+  ylab("Share of firms")+
+  xlab("Date")+
+  ggtitle("Mexico - Exports")+
+  labs(color = "")+
+  theme_minimal()+
+  theme(legend.position = "bottom", 
+        plot.title = element_text(hjust = 0.5, face = "bold"), 
+        plot.subtitle = element_text(hjust = 0.5, face = "italic"), 
+        axis.text.x = element_text(angle = 30, size = 6))+
+  scale_x_date(date_breaks = "3 months", date_labels = "%Y-%m")
+
+
+ggsave("Mexico_Exports_Tech_Adoption.pdf", width = 8, height = 6)
+
   
 
 ```

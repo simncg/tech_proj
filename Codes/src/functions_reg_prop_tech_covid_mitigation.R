@@ -690,6 +690,9 @@ prop_reg_models_tech_covid_definitive<-function(country_name, coef_labels){
                              col_select = c("company_id", "hs6", "date_character","import_dummy", "adopted_pay_or_ecom_before_2019", 
                                             "month_mean_stringency_index", "Ebay_tradable", "China_E_commerce", "cons_BEC", "durable_BEC"))
   
+  import_data<-as.data.table(import_data)
+  
+  
   import_data[, (vars) := lapply(.SD, function(x) 1 * x), .SDcols = vars]
   
   
@@ -739,6 +742,9 @@ prop_reg_models_tech_covid_definitive<-function(country_name, coef_labels){
   export_data <-read_parquet(paste0("../../Data/", country_name, "/processed_data/exports_grid_mitig_model_", abbr, ".parquet"), 
                              col_select = c("company_id", "hs6", "date_character","export_dummy", "adopted_pay_or_ecom_before_2019", 
                                             "month_mean_stringency_index", "Ebay_tradable", "China_E_commerce", "cons_BEC", "durable_BEC"))
+  
+  export_data<-as.data.table(export_data)
+  
   
   export_data[, (vars) := lapply(.SD, function(x) 1 * x), .SDcols = vars]
   

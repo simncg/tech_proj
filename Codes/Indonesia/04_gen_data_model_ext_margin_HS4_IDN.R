@@ -244,6 +244,8 @@ exports_grid_mitig_IDN<-
   left_join(int_cap_HS, by = c("hs6")) %>% 
   # Join mean stringency index data
   left_join(covid_data, by = c("date_character")) %>% 
+  # Fill missing values in monthly stringency index: pre-covid period fill it with 0s
+  mutate(month_mean_stringency_index = ifelse(is.na(month_mean_stringency_index), 0, month_mean_stringency_index)) %>%
   # Order data
   arrange(company_id, date_character, hs6)
 
@@ -298,6 +300,8 @@ imports_grid_mitig_IDN<-
   left_join(int_cap_HS, by = c("hs6")) %>% 
   # Join mean stringency index data
   left_join(covid_data, by = c("date_character")) %>% 
+  # Fill missing values in monthly stringency index: pre-covid period fill it with 0s
+  mutate(month_mean_stringency_index = ifelse(is.na(month_mean_stringency_index), 0, month_mean_stringency_index)) %>%
   # Order data
   arrange(company_id, date_character, hs6)
 

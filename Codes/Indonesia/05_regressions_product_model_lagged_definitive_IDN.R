@@ -83,12 +83,29 @@ coef_labels<-c(pay_or_ecomnod="E-payment or E-commerce",
                
 )
 
-# Regressions with 2 lags (t-2) in technology variable
-models_definitive_IDN_t_2 <- reg_models_definitive("pay_or_ecomnod_t_2", 
-                                                   import_data = pay_ecom_import_data_IDN,
-                                                   export_data = pay_ecom_export_data_IDN, 
-                                                   coef_labels = coef_labels, 
-                                                   country_name = "Indonesia")
+
+# Regressions with 2 lags (t-2) in technology variable for log. exports and log.imports ----
+log_imp_exp_IDN <- reg_models_definitive(tech_var  = "pay_or_ecomnod_t_2", 
+                                         dep_var_import = "log_import", 
+                                         dep_var_export = "log_export",
+                                         import_data = pay_ecom_import_data_IDN,
+                                         export_data = pay_ecom_export_data_IDN,
+                                         country_name = "Indonesia",
+                                         coef_labels = coef_labels, 
+                                         dep_var_labels = c("Log.Import", "Log.Export")
+)
 
 
-gc()
+
+
+# Regressions with 2 lags (t-2) in technology variable for number destinations/number sources ----
+no_source_dest_IDN <- reg_models_definitive(tech_var  = "pay_or_ecomnod_t_2", 
+                                            dep_var_import = "n_countries_import", 
+                                            dep_var_export = "n_countries_export",
+                                            import_data = pay_ecom_import_data_IDN,
+                                            export_data = pay_ecom_export_data_IDN,
+                                            country_name = "Indonesia",
+                                            coef_labels = coef_labels, 
+                                            dep_var_labels = c("No. Sources", "No. Destinations")
+)
+

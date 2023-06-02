@@ -1,11 +1,11 @@
 *=============================================================================
 * Date:    April 2023
-* Project: Analysis of the COVID-19 Shock, Technology and Trade in India,   
+* Project: Analysis of the COVID-19 Shock, Technology and Trade in Indonesia,   
 *          Indonesia and Mexico. 
 *
 * Author:  Simón Caicedo 
 *
-* Description: This do-file runs the IV analysis for India for the model that 
+* Description: This do-file runs the IV analysis for Indonesia for the model that 
 *              measures if tech adoption mitigates COVID impacts.
 *                 
 * Inputs: 
@@ -29,18 +29,17 @@ global path_outputs  "$path/Outputs"                                            
 
 
 /*--------------------------------------------------------------------------
- 1. Read IV data for India     
+ 1. Read IV data for Indonesia     
  ---------------------------------------------------------------------------*/
  
-* Use India data at the firm-month-HS6 level 
-import delimited "$path_data/India/raw_data/IV_data_based_on_Panjiva_data.csv", clear varnames(1)
-rename our_id company_id
+* Use Indonesia data at the firm-month-HS6 level 
+import delimited "$path_data/Indonesia/raw_data/IV_data_based_on_Panjiva_data.csv", clear varnames(1)
 keep company_id bing_lightning_at_firm bing_ookla_d_speed_at_firm bing_ookla_u_speed_at_firm google_lightning_at_firm google_ookla_d_speed_at_firm google_ookla_u_speed_at_firm
 * Convert NAs (missing values) to missing values in stata format
 foreach var of varlist bing* google*{
 	replace `var' = "." if `var' == "NA"
 	destring `var', replace 
-	replace `var' = log(1 + `var')  
+	*replace `var' = log(1 + `var')  
 }
 
 tempfile iv_data
@@ -48,17 +47,22 @@ save `iv_data', replace
 
 
 /*--------------------------------------------------------------------------
- 2. Read covid variables for India     
+ 2. Read covid variables for Indonesia     
  ---------------------------------------------------------------------------*/
  
-* Use India data at the firm-month-HS6 level 
-import delimited "$path_data/India/raw_data/monthly_covid_measures_India.csv", clear varnames(1)
-rename month_year date
+import delimited "$path_data/Indonesia/raw_data/monthly_covid_measures_Indonesia.csv", clear varnames(1)
 
-foreach var of varlist month_mean_stringency_index - month_mean_confirmed_cases{
-	replace `var' = "." if `var' == "NA"
-	destring `var', replace
-}
+
+* Format date variable to match with the date variable in the imports/exports dataset
+generate date_new = date(date, "MDY")
+format date_new %tdCCYY-NN-DD
+gen date_new_1 = string(date_new, "%tdCCYY-NN-DD")
+drop date date_new
+rename date_new_1 date
+order date, first
+
+
+* We are going to use only the month_mean_stringency_index
 
 * Save in temporary file
 tempfile covid_data
@@ -79,20 +83,12 @@ foreach data of local imp_exp {
 	}
 		
 	/*--------------------------------------------------------------------------
-		3. Read trade data for India     
+		3. Read trade data for Indonesia     
 	---------------------------------------------------------------------------*/
-	* Use India data at the firm-month-HS6 level 
-	import delimited "$path_data/India/processed_data/`data'_tech_mitigation_model_IND.csv", clear
-		
-		
-	keep company_id year month date date_character hs6 `y' ebay_tradable cons_bec china_e_commerce durable_bec adopted_pay_or_ecom_before_2019
-
-	foreach var of varlist ebay_tradable cons_bec china_e_commerce durable_bec {
-		replace `var' = "1" if `var' == "TRUE"
-		replace `var' = "0" if `var' == "FALSE"
-		replace `var' = "." if `var' == "NA" 
-		destring `var', replace
-	}
+	* Use Indonesia data at the firm-month level 
+	import delimited "$path_data/Indonesia/processed_data/`data'_tech_mitigation_reg_firm_month_IDN.csv", clear
+					
+	keep company_id year month date date_character `y' adopted_pay_or_ecom_before_2019
 
 
 	/*--------------------------------------------------------------------------
@@ -105,12 +101,13 @@ foreach data of local imp_exp {
 	* Merge covid variables
 	merge m:1 date using `covid_data', keep(1 3) nogen
 	
+	* Fill missing values in covid variables (pre-covid period) with 0s 
 	foreach var of varlist month_* {
 		replace `var' = 0 if missing(`var')
 	}
 	
 	/*--------------------------------------------------------------------------
-	 5. IV Regressions (No Product Categories)
+	 5. IV Regressions at the firm-month level
 	 ---------------------------------------------------------------------------*/
 	* Rename to avoid long names in estimates store
 	rename google_lightning_at_firm ltg    // lightning strikes google
@@ -129,7 +126,7 @@ foreach data of local imp_exp {
 	* Run regressions for model that measures if tech adoption affects trade outcomes 
 	foreach iv of varlist  ltg dspg uspg ltb dspb uspb  {	
 		gen `iv'covid = `iv'*sti  
-		eststo `y'`iv'covid: ivreghdfe `y' (techcovid = `iv'covid), absorb(date company_id hs6) cluster(company_id hs6) savefirst savefprefix(f`y'`iv') 	
+		eststo `y'`iv'covid: ivreghdfe `y' (techcovid = `iv'covid), absorb(date company_id) cluster(company_id) savefirst savefprefix(f`y'`iv') 	
 				
 		estadd scalar f_fs = `e(widstat)': f`y'`iv'techcovid // Save first-stage f
 				
@@ -152,7 +149,7 @@ foreach y of local dep_vars {
 	
 	* Creating tex file with the table for first stage
 	cap file close fh 
-	file open fh using "$path_outputs/India/regressions_results/tech_mitigation_covid_model/first_stage_log_iv_`y'_mitig.tex", write replace  // Opening latex file for first stage
+	file open fh using "$path_outputs/Indonesia/regressions_results/firm_month_covid_mitigation_model/first_stage_log_iv_`y'_mitig_firm_month.tex", write replace  // Opening latex file for first stage
 
 	file write fh "{\def\sym#1{\ifmmode^{#1}\else\(^{#1}\)\fi}\resizebox{\textwidth}{!}{  \begin{tabular}{l*{6}{c}} \hline\hline \toprule & \multicolumn{6}{c}{Dependent Variable: Pre 2019 E-payment or E-commerce $\cdot covid_t$} \\ \toprule & \multicolumn{3}{c}{Instrumental Variable (Google)} & \multicolumn{3}{c}{Instrumental Variable (Bing)} \\ \cmidrule(lr){2-4} \cmidrule(lr){5-7}  & Log(1+Lightning Strikes) & Log(1+Download Speed) & Log(1+Upload Speed) & Log(1+Lightning Strikes) & Log(1+Download Speed) & Log(1+Upload Speed)\\ \hline" _n // Header of the table
 	
@@ -217,7 +214,7 @@ foreach y of local dep_vars {
 	
 	* Creating tex file with the table for first stage
 	cap file close fh 
-	file open fh using "$path_outputs/India/regressions_results/tech_mitigation_covid_model/second_stage_log_iv_`y'_mitig.tex", write replace  // Opening latex file for first stage
+	file open fh using "$path_outputs/Indonesia/regressions_results/firm_month_covid_mitigation_model/second_stage_log_iv_`y'_mitig_firm_month.tex", write replace  // Opening latex file for first stage
 	
 	if("`y'" == "log_import"){
 		local y_label "Log. Imports" 
@@ -278,5 +275,3 @@ foreach y of local dep_vars {
 		
 }
 	
-		
-

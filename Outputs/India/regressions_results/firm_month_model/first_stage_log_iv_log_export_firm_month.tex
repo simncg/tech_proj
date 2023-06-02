@@ -1,0 +1,16 @@
+{\def\sym#1{\ifmmode^{#1}\else\(^{#1}\)\fi}\resizebox{\textwidth}{!}{  \begin{tabular}{l*{6}{c}} \hline\hline \toprule & \multicolumn{6}{c}{Dependent Variable: E-payment or E-commerce (t-2)} \\ \toprule & \multicolumn{3}{c}{Instrumental Variable (Google)} & \multicolumn{3}{c}{Instrumental Variable (Bing)} \\ \cmidrule(lr){2-4} \cmidrule(lr){5-7}  & Log(1+Lightning Strikes) & Log(1+Download Speed) & Log(1+Upload Speed) & Log(1+Lightning Strikes) & Log(1+Download Speed) & Log(1+Upload Speed)\\ \hline
+\hline \multicolumn{6}{l}{\textbf{COVID variable: Log(COVID Cases)}}\\
+ $ covid_{t-2} \cdot Z_i $ &0.001083\sym{***}&0.001727\sym{***}&0.001267\sym{***}&0.001067\sym{***}&0.001131\sym{***}&0.000907\sym{**}\\
+&(0.000305)&(0.000389)&(0.000351)&(0.000301)&(0.000433)&(0.000354) \\
+Kleibergen-Paap F-stat&12.57&19.71&13.00&12.54&6.82&6.56\\
+\hline \multicolumn{6}{l}{\textbf{COVID variable: Monthly Stringency Index}}\\
+ $ covid_{t-2} \cdot Z_i $ &0.000137\sym{***}&0.000212\sym{***}&0.000153\sym{***}&0.000134\sym{***}&0.000136\sym{**}&0.000110\sym{**}\\
+&(0.000040)&(0.000051)&(0.000046)&(0.000039)&(0.000056)&(0.000046) \\
+Kleibergen-Paap F-stat&11.98&17.27&10.93&11.87&5.88&5.80\\
+\hline \multicolumn{6}{l}{\textbf{COVID variable: Workplace Closure Dummy}}\\
+ $ covid_{t-2} \cdot Z_i $ &0.011510\sym{***}&0.018072\sym{***}&0.013184\sym{***}&0.011346\sym{***}&0.011656\sym{**}&0.009339\sym{**}\\
+&(0.003230)&(0.004130)&(0.003734)&(0.003185)&(0.004579)&(0.003744) \\
+Kleibergen-Paap F-stat&12.70&19.15&12.47&12.69&6.48&6.22\\
+\hline
+Number of Observations&  438,577&  438,137&  438,137&  428,078&  401,892&  401,892\\
+\hline\hline \end{tabular}}}

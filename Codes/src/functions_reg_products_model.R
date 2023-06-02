@@ -6,14 +6,13 @@
 #                                                                             #
 # Author:  Simon Caicedo - DECTI - The World Bank                             #
 #                                                                             #
-# Script:  regressions_products_model_IDN.R                                   #
 #                                                                             #
 # This program creates functions for running regressions for the model        #
 # with different products categories specifications (eBay tradable, China     #
 # e-commerce, BEC  classification, Time-Sensitivity, capital-intermediate     #
 # goods classification) interacted with a var technology (ecommerce/e-payment)#
 # with a lagged structure. This code is necessary for creating the Rmarkdown  #
-# "" that contains regression results.                                        #
+# that contains regression results.                                           #
 #                                                                             #                                                                          
 #                                                                             #
 #                                                                             #                                                                                                                                                  #
@@ -32,6 +31,224 @@ gm <- list(
   list("raw" = "r.squared", "clean" = "R-squared", "fmt" = f1),
   list("raw" = "adj.r.squared", "clean" = "Adj.R-squared", "fmt"=f1)
 )
+
+
+
+# Function for running regressions technology for definitive products to be used: e-bay tradable, China e-commerce, durable and consumable products ----
+reg_models_definitive<-function(tech_var, dep_var_import, dep_var_export,
+                                import_data, export_data, country_name, coef_labels, 
+                                dep_var_labels){
+  
+  n_lags <- parse_number(tech_var)
+  
+  
+  paybustorecom_import_0 <- feols(as.formula(paste0(dep_var_import, "~", tech_var, "| 
+                                    company_id + hs6+ date_character")),
+                                  cluster = c("company_id", "hs6"),
+                                  data = import_data)
+  
+  paybustorecom_import_1 <- feols(as.formula(paste0(dep_var_import, "~", tech_var, "+ Ebay_tradable:", tech_var, "|
+                                    company_id + hs6+ date_character")), 
+                                  cluster = c("company_id", "hs6"),
+                                  data = import_data )
+  
+  paybustorecom_import_2 <- feols(as.formula(paste0(dep_var_import, "~", tech_var, "+ China_E_commerce:", tech_var, "|
+                                    company_id + hs6+ date_character")), 
+                                  cluster = c("company_id", "hs6"),
+                                  data = import_data)
+  
+  paybustorecom_import_3 <- feols(as.formula(paste0(dep_var_import, "~", tech_var, "+ cons_BEC:", tech_var, "|
+                                    company_id + hs6+ date_character")), 
+                                  cluster = c("company_id", "hs6"),
+                                  data = import_data )
+  
+  paybustorecom_import_4 <- feols(as.formula(paste0(dep_var_import, "~", tech_var, "+ durable_BEC:", tech_var, "|
+                                    company_id + hs6+ date_character")), 
+                                  cluster = c("company_id", "hs6"),
+                                  data = import_data )
+  
+  
+  
+  paybustorecom_export_0 <- feols(as.formula(paste(dep_var_export, "~", tech_var, "| 
+                                    company_id + hs6+ date_character")), 
+                                  cluster = c("company_id", "hs6"),
+                                  data = export_data)
+  
+  paybustorecom_export_1 <- feols(as.formula(paste0(dep_var_export, "~", tech_var, "+ Ebay_tradable:", tech_var, "| 
+                                    company_id + hs6+ date_character")),
+                                  cluster = c("company_id", "hs6"),
+                                  data = export_data )
+  
+  paybustorecom_export_2 <- feols(as.formula(paste(dep_var_export, "~", tech_var, "+ China_E_commerce:", tech_var, "| 
+                                    company_id + hs6+ date_character")),
+                                  cluster = c("company_id", "hs6"),
+                                  data = export_data )
+  
+  paybustorecom_export_3 <- feols(as.formula(paste(dep_var_export, "~", tech_var, "+ cons_BEC:", tech_var, "|
+                                    company_id + hs6+ date_character")), 
+                                  cluster = c("company_id", "hs6"),
+                                  data = export_data )
+  
+  paybustorecom_export_4 <- feols(as.formula(paste(dep_var_export, "~", tech_var, "+ durable_BEC:", tech_var, "| 
+                                    company_id + hs6+ date_character")), 
+                                  cluster = c("company_id", "hs6"),
+                                  data = export_data )
+  
+  # List with models (Log exports and log imports)
+  models_definitive<-list(paybustorecom_import_0, paybustorecom_export_0,
+                          paybustorecom_import_1, paybustorecom_export_1,
+                          paybustorecom_import_2, paybustorecom_export_2,
+                          paybustorecom_import_3, paybustorecom_export_3,
+                          paybustorecom_import_4, paybustorecom_export_4)
+  
+  # Assign dependent variable name to models names
+  names(models_definitive)<-rep(dep_var_labels, length(models_definitive)/2)
+  
+  # Create Fixed Efects data frame to add them to tables
+  FE<-as.data.frame(matrix(c("Firm FE", rep("Yes", length(models_definitive)), 
+                             "Product FE", rep("Yes", length(models_definitive)),
+                             "Month FE", rep("Yes", length(models_definitive))), 
+                           nrow = 3, byrow=T)) 
+  
+  
+  if(dep_var_export == "new_destination" & dep_var_import == "new_source"){
+    list_notes<-list("Clustered-standard errors at the firm-product level", 
+                     "A new source/new destination is defined with respect to baseline year 2017", 
+                     "The regressions for new source/destination are estimated using a subset of firms that had transactions in 2017 as well.")
+    
+    format_se_coef <- function(x) format(round(x, 6), nsmall = 2, scientific = FALSE)
+    
+    
+  } else{
+    list_notes<-list("Clustered-standard errors at the firm-product level")
+    
+    format_se_coef <- f1
+    
+  }
+  
+  
+  
+  # Produce table with models summary  
+  table<-modelsummary(models_definitive,
+                      coef_rename = coef_labels, 
+                      gof_map = gm, 
+                      stars = c('*' = .1, '**' = .05, '***'= 0.01), 
+                      add_rows = FE, 
+                      output = "latex", 
+                      align = paste(c("l", rep("c", length(models_definitive))), sep="", collapse=""), 
+                      notes = list_notes, 
+                      fmt = format_se_coef, 
+                      title = paste0(country_name," - Regression Results for ",  dep_var_labels[1] , " and ", dep_var_labels[2], ": e-Bay tradable, China e-commerce, Consumable and Durable products. ", 
+                                     n_lags, "-Lag in technology variable")) |>
+    add_header_above(c(" " = 1, "Dependent Variables" = length(models_definitive))) %>%
+    kable_styling(latex_options = c("HOLD_position", "scale_down")) 
+  
+  
+  return(list(models_definitive, table))
+  
+}
+
+
+
+
+# reg_models_definitive<-function(tech_var, import_data, export_data, country_name, coef_labels){
+#   
+#   n_lags <- parse_number(tech_var)
+#   
+#   
+#   # Dependent variable: Log of imports 
+#   paybustorecom_import_0 <- feols(as.formula(paste0("log_import ~", tech_var, "| 
+#                                     company_id + hs6+ date_character")),
+#                                   cluster = c("company_id", "hs6"),
+#                                   data = import_data)
+#   
+#   paybustorecom_import_1 <- feols(as.formula(paste0("log_import ~", tech_var, "+ Ebay_tradable:", tech_var, "|
+#                                     company_id + hs6+ date_character")), 
+#                                   cluster = c("company_id", "hs6"),
+#                                   data = import_data )
+#   
+#   paybustorecom_import_2 <- feols(as.formula(paste0("log_import ~", tech_var, "+ China_E_commerce:", tech_var, "|
+#                                     company_id + hs6+ date_character")), 
+#                                   cluster = c("company_id", "hs6"),
+#                                   data = import_data)
+#   
+#   paybustorecom_import_3 <- feols(as.formula(paste0("log_import ~", tech_var, "+ cons_BEC:", tech_var, "|
+#                                     company_id + hs6+ date_character")), 
+#                                   cluster = c("company_id", "hs6"),
+#                                   data = import_data )
+#   
+#   paybustorecom_import_4 <- feols(as.formula(paste0("log_import ~", tech_var, "+ durable_BEC:", tech_var, "|
+#                                     company_id + hs6+ date_character")), 
+#                                   cluster = c("company_id", "hs6"),
+#                                   data = import_data )
+#   
+#   
+#   
+#   # Dependent variable: Log of Exports 
+#   paybustorecom_export_0 <- feols(as.formula(paste("log_export ~", tech_var, "| 
+#                                     company_id + hs6+ date_character")), 
+#                                   cluster = c("company_id", "hs6"),
+#                                   data = export_data)
+#   
+#   paybustorecom_export_1 <- feols(as.formula(paste0("log_export ~", tech_var, "+ Ebay_tradable:", tech_var, "| 
+#                                     company_id + hs6+ date_character")),
+#                                   cluster = c("company_id", "hs6"),
+#                                   data = export_data )
+#   
+#   paybustorecom_export_2 <- feols(as.formula(paste("log_export ~", tech_var, "+ China_E_commerce:", tech_var, "| 
+#                                     company_id + hs6+ date_character")),
+#                                   cluster = c("company_id", "hs6"),
+#                                   data = export_data )
+#   
+#   paybustorecom_export_3 <- feols(as.formula(paste("log_export ~", tech_var, "+ cons_BEC:", tech_var, "|
+#                                     company_id + hs6+ date_character")), 
+#                                   cluster = c("company_id", "hs6"),
+#                                   data = export_data )
+#   
+#   paybustorecom_export_4 <- feols(as.formula(paste("log_export ~", tech_var, "+ durable_BEC:", tech_var, "| 
+#                                     company_id + hs6+ date_character")), 
+#                                   cluster = c("company_id", "hs6"),
+#                                   data = export_data )
+#   
+#   # List with models (Log exports and log imports)
+#   models_definitive<-list(paybustorecom_import_0, paybustorecom_export_0,
+#                           paybustorecom_import_1, paybustorecom_export_1,
+#                           paybustorecom_import_2, paybustorecom_export_2,
+#                           paybustorecom_import_3, paybustorecom_export_3,
+#                           paybustorecom_import_4, paybustorecom_export_4)
+#   
+#   # Assign dependent variable name to models names
+#   names(models_definitive)<-rep(c("Log.Imports", "Log.Exports"), length(models_definitive)/2)
+#   
+#   # Create Fixed Efects data frame to add them to tables
+#   FE<-as.data.frame(matrix(c("Firm FE", rep("Yes", length(models_definitive)), 
+#                              "Product FE", rep("Yes", length(models_definitive)),
+#                              "Month FE", rep("Yes", length(models_definitive))), 
+#                            nrow = 3, byrow=T)) 
+#   
+#   
+#   # Produce table with models summary  
+#   table<-modelsummary(models_definitive,
+#                       coef_rename = coef_labels, 
+#                       gof_map = gm, 
+#                       stars = c('*' = .1, '**' = .05, '***'= 0.01), 
+#                       add_rows = FE, 
+#                       output = "latex", 
+#                       align = paste(c("l", rep("c", length(models_definitive))), sep="", collapse=""), 
+#                       notes = "Clustered-standard errors at the firm-product level.", 
+#                       fmt = f1, 
+#                       title = paste0(country_name," - Regression Results for Log. Imports and Log. Exports: e-Bay tradable, China e-commerce, Consumable and Durable products. ", 
+#                                      n_lags, "-Lag in technology variable")) |>
+#     add_header_above(c(" " = 1, "Dependent Variables" = length(models_definitive))) %>%
+#     kable_styling(latex_options = c("HOLD_position", "scale_down")) 
+#   
+#   
+#   return(list(models_definitive, table))
+#   
+# }
+# 
+
+
 
 
 # Function for running regressions technology with ebay and china e-commerce with a specific technology ----
@@ -593,104 +810,6 @@ reg_models_cap_int<-function(tech_var, import_data, export_data, country_name, c
 
 
 
-
-
-# Function for running regressions technology for definitive products to be used: e-bay tradable, China e-commerce, durable and consumable products ----
-reg_models_definitive<-function(tech_var, import_data, export_data, country_name, coef_labels){
-  
-  n_lags <- parse_number(tech_var)
-  
-  
-  # Dependent variable: Log of imports 
-  paybustorecom_import_0 <- feols(as.formula(paste0("log_import ~", tech_var, "| 
-                                    company_id + hs6+ date_character")),
-                                  cluster = c("company_id", "hs6"),
-                                  data = import_data)
-  
-  paybustorecom_import_1 <- feols(as.formula(paste0("log_import ~", tech_var, "+ Ebay_tradable:", tech_var, "|
-                                    company_id + hs6+ date_character")), 
-                                  cluster = c("company_id", "hs6"),
-                                  data = import_data )
-  
-  paybustorecom_import_2 <- feols(as.formula(paste0("log_import ~", tech_var, "+ China_E_commerce:", tech_var, "|
-                                    company_id + hs6+ date_character")), 
-                                  cluster = c("company_id", "hs6"),
-                                  data = import_data)
-  
-  paybustorecom_import_3 <- feols(as.formula(paste0("log_import ~", tech_var, "+ cons_BEC:", tech_var, "|
-                                    company_id + hs6+ date_character")), 
-                                  cluster = c("company_id", "hs6"),
-                                  data = import_data )
-  
-  paybustorecom_import_4 <- feols(as.formula(paste0("log_import ~", tech_var, "+ durable_BEC:", tech_var, "|
-                                    company_id + hs6+ date_character")), 
-                                  cluster = c("company_id", "hs6"),
-                                  data = import_data )
-  
-  
-  
-  # Dependent variable: Log of Exports 
-  paybustorecom_export_0 <- feols(as.formula(paste("log_export ~", tech_var, "| 
-                                    company_id + hs6+ date_character")), 
-                                  cluster = c("company_id", "hs6"),
-                                  data = export_data)
-  
-  paybustorecom_export_1 <- feols(as.formula(paste0("log_export ~", tech_var, "+ Ebay_tradable:", tech_var, "| 
-                                    company_id + hs6+ date_character")),
-                                  cluster = c("company_id", "hs6"),
-                                  data = export_data )
-  
-  paybustorecom_export_2 <- feols(as.formula(paste("log_export ~", tech_var, "+ China_E_commerce:", tech_var, "| 
-                                    company_id + hs6+ date_character")),
-                                  cluster = c("company_id", "hs6"),
-                                  data = export_data )
-  
-  paybustorecom_export_3 <- feols(as.formula(paste("log_export ~", tech_var, "+ cons_BEC:", tech_var, "|
-                                    company_id + hs6+ date_character")), 
-                                  cluster = c("company_id", "hs6"),
-                                  data = export_data )
-  
-  paybustorecom_export_4 <- feols(as.formula(paste("log_export ~", tech_var, "+ durable_BEC:", tech_var, "| 
-                                    company_id + hs6+ date_character")), 
-                                  cluster = c("company_id", "hs6"),
-                                  data = export_data )
-  
-  # List with models (Log exports and log imports)
-  models_definitive<-list(paybustorecom_import_0, paybustorecom_export_0,
-                          paybustorecom_import_1, paybustorecom_export_1,
-                          paybustorecom_import_2, paybustorecom_export_2,
-                          paybustorecom_import_3, paybustorecom_export_3,
-                          paybustorecom_import_4, paybustorecom_export_4)
-  
-  # Assign dependent variable name to models names
-  names(models_definitive)<-rep(c("Log.Imports", "Log.Exports"), length(models_definitive)/2)
-  
-  # Create Fixed Efects data frame to add them to tables
-  FE<-as.data.frame(matrix(c("Firm FE", rep("Yes", length(models_definitive)), 
-                             "Product FE", rep("Yes", length(models_definitive)),
-                             "Month FE", rep("Yes", length(models_definitive))), 
-                           nrow = 3, byrow=T)) 
-  
-  
-  # Produce table with models summary  
-  table<-modelsummary(models_definitive,
-                      coef_rename = coef_labels, 
-                      gof_map = gm, 
-                      stars = c('*' = .1, '**' = .05, '***'= 0.01), 
-                      add_rows = FE, 
-                      output = "latex", 
-                      align = paste(c("l", rep("c", length(models_definitive))), sep="", collapse=""), 
-                      notes = "Clustered-standard errors at the firm-product level.", 
-                      fmt = f1, 
-                      title = paste0(country_name," - Regression Results for Log. Imports and Log. Exports: e-Bay tradable, China e-commerce, Consumable and Durable products. ", 
-                                     n_lags, "-Lag in technology variable")) |>
-    add_header_above(c(" " = 1, "Dependent Variables" = length(models_definitive))) %>%
-    kable_styling(latex_options = c("HOLD_position", "scale_down")) 
-  
-  
-  return(list(models_definitive, table))
-  
-}
 
 
 

@@ -13,10 +13,12 @@
 #                                                                           #                                                                                                                                                             #
 #===========================================================================#
 
+# Set Working Directory ----
+fileloc <- dirname(rstudioapi::getSourceEditorContext()$path)
+setwd(fileloc)
+rm(fileloc)
 
 # Read Indonesia data for tech mitigation of COVID ----
-#source("gen_data_model_products_IDN.R")
-
 import_tech_mitig<-fread("../../Data/Indonesia/processed_data/imports_tech_mitigation_model_IDN.csv")
 export_tech_mitig<-fread("../../Data/Indonesia/processed_data/exports_tech_mitigation_model_IDN.csv")
 
@@ -50,8 +52,22 @@ coef_labels<-c("adopted_pay_or_ecom_before_2019:month_mean_stringency_index"="E-
 )
 
 
-models_tech_covid_definitive_IDN<-reg_models_tech_covid_definitive(import_tech_mitig, 
-                                                                   export_tech_mitig, 
-                                                                   "Indonesia", 
-                                                                   coef_labels)
+# Regressions for log imports and log exports -----
+log_imp_exp_covid_IDN<-reg_models_tech_covid_definitive(import_data = import_tech_mitig, 
+                                                        export_data = export_tech_mitig, 
+                                                        country_name = "Indonesia", 
+                                                        coef_labels = coef_labels, 
+                                                        dep_var_import = "log_import", 
+                                                        dep_var_export = "log_export", 
+                                                        dep_var_labels = c("Log.Import", "Log.Export")
+)
 
+# Regressions for number of sources and number of destinations -----
+no_source_dest_covid_IDN<-reg_models_tech_covid_definitive(import_data = import_tech_mitig, 
+                                                           export_data = export_tech_mitig, 
+                                                           country_name = "Indonesia", 
+                                                           coef_labels = coef_labels, 
+                                                           dep_var_import = "n_countries_import", 
+                                                           dep_var_export = "n_countries_export", 
+                                                           dep_var_labels = c("No. Sources", "No. Destinations")
+)

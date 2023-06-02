@@ -8,7 +8,7 @@
 #                                                                           #
 #                                                                           #
 # This program creates different summary statistics to understand the       #
-# quality of the foreign Panjiva data.                                      # 
+# quality of the foreign Panjiva data for India and Indonesia.                                      # 
 #                                                                           #
 #                                                                           #           -                                                                                                                                                  #
 #===========================================================================#

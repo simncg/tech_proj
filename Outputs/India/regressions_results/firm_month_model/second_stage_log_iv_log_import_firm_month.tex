@@ -1,0 +1,13 @@
+{\def\sym#1{\ifmmode^{#1}\else\(^{#1}\)\fi}\resizebox{\textwidth}{!}{  \begin{tabular}{l*{6}{c}} \hline\hline \toprule & \multicolumn{6}{c}{Dependent Variable: Log. Imports } \\ \toprule & \multicolumn{3}{c}{Instrumental Variable (Google)} & \multicolumn{3}{c}{Instrumental Variable (Bing)} \\ \cmidrule(lr){2-4} \cmidrule(lr){5-7}  & Log(1+Lightning Strikes) & Log(1+Download Speed) & Log(1+Upload Speed) & Log(1+Lightning Strikes) & Log(1+Download Speed) & Log(1+Upload Speed)\\ \hline
+\hline \multicolumn{6}{l}{\textbf{COVID variable: Log(COVID Cases)}}\\
+E-payment or E-commerce (t-2)&-1.400&-2.844\sym{***}&-2.637\sym{***}&-2.604&-3.009\sym{**}&-3.238\sym{**}\\
+&(1.297)&(0.909)&(0.886)&(2.744)&(1.373)&(1.378) \\
+\hline \multicolumn{6}{l}{\textbf{COVID variable: Monthly Stringency Index}}\\
+E-payment or E-commerce (t-2)&-1.155&-3.051\sym{***}&-2.773\sym{***}&-1.259&-3.135\sym{**}&-3.392\sym{**}\\
+&(1.307)&(0.996)&(0.957)&(2.154)&(1.483)&(1.481) \\
+\hline \multicolumn{6}{l}{\textbf{COVID variable: Workplace Closure Dummy}}\\
+E-payment or E-commerce (t-2)&-1.313&-2.904\sym{***}&-2.647\sym{***}&-2.187&-3.200\sym{**}&-3.423\sym{**}\\
+&(1.271)&(0.936)&(0.898)&(2.526)&(1.453)&(1.451) \\
+\hline
+Number of Observations&  367,510&  366,990&  366,990&  360,163&  341,542&  341,542\\
+\hline\hline \end{tabular}}}
