@@ -128,8 +128,6 @@ tech_data <-
   ) 
 
 
-
-
 # Save tech data 
 write_parquet(tech_data, "../../Data/Mexico/processed_data/tech_data_MEX.parquet")
 

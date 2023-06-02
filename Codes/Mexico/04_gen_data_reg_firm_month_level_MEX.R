@@ -90,7 +90,8 @@ export_data <-read_parquet("../../Data/Mexico/processed_data/export_summaries_by
                            col_select = c("domestic_company_id", "year", "month", "date", "date_character", 
                                           "export", "log_export", "export_dummy", "new_country", "n_countries", 
                                           "n_hs6_products")) %>% 
-  rename(company_id = domestic_company_id, new_destination = new_country, n_countries_export = n_countries) %>% 
+  rename(company_id = domestic_company_id, new_destination = new_country,
+         n_countries_export = n_countries) %>% 
   # filter to analysis period
   filter(date >= ymd("2018-07-01"),
          date <= ymd("2021-12-31")) %>% 
