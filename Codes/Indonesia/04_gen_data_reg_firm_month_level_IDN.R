@@ -161,7 +161,7 @@ pay_ecom_import_data_IDN<-import_data %>%
   # Keep firms that are part of analyzed SIC groups
   filter(SICGRP %in% included_SIC_Groups) %>%   
   # Select just the bare minimum variables
-  select(company_id, date_character, year, month, log_import, import_dummy, 
+  select(company_id, date_character, year, month, import, log_import, import_dummy, 
          n_countries_import, n_hs6_products, 
          SITEID, SICGRP, NAICS6_CODE) %>% 
   # Add the builtwith technology data 
@@ -196,7 +196,7 @@ pay_ecom_export_data_IDN<-export_data %>%
   # Keep firms that are part of analyzed SIC groups
   filter(SICGRP %in% included_SIC_Groups) %>%   
   # Select just the bare minimum variables
-  select(company_id,date_character, year, month, log_export, export_dummy,
+  select(company_id,date_character, year, month, export, log_export, export_dummy,
          n_countries_export, n_hs6_products,
          SITEID, SICGRP, NAICS6_CODE) %>% 
   # Add the builtwith technology data 
@@ -232,15 +232,15 @@ import_tech_mitig<- import_data %>%
   # Keep firms that are part of analyzed SIC groups
   filter(SICGRP %in% included_SIC_Groups) %>%   
   # Select just the bare minimum variables
-  select(company_id, date, year, month, date_character, log_import, import_dummy,
+  select(company_id, date, year, month, date_character, import, log_import, import_dummy,
          n_countries_import, n_hs6_products,
          SITEID, SICGRP, NAICS6_CODE) %>% 
   # Add COVID data to have stringency index 
   mutate(date = as.Date(date)) %>% 
   left_join(covid_data, by= c("date" = "month_year")) %>% 
   # Join tech data
-  left_join(tech_data %>% 
-              select(company_id, date_character, adopted_pay_or_ecom_before_2019), 
+  left_join(tech_data  %>% 
+              select(-LI, -FI, -date), 
             by = c('company_id', "date_character")) %>% 
   # Keep firms that had website before february 2019 and are indexed after end 2021
   filter(company_id %in% (tech_data %>%
@@ -269,7 +269,7 @@ export_tech_mitig<- export_data %>%
   # Keep firms that are part of analyzed SIC groups
   filter(SICGRP %in% included_SIC_Groups) %>%   
   # Select just the bare minimum variables
-  select(company_id, date, year, month, date_character, log_export, export_dummy,
+  select(company_id, date, year, month, date_character, export, log_export, export_dummy,
          n_countries_export, n_hs6_products, 
          SITEID, SICGRP, NAICS6_CODE) %>% 
   # Add COVID data to have stringency index 
@@ -277,7 +277,7 @@ export_tech_mitig<- export_data %>%
   left_join(covid_data, by= c("date" = "month_year")) %>% 
   # Join tech data
   left_join(tech_data %>% 
-              select(company_id, date_character, adopted_pay_or_ecom_before_2019), 
+              select(-LI, -FI,  -date), 
             by = c('company_id', "date_character")) %>% 
   # Keep firms that had website before july 2018 and are indexed after September 2021
   filter(company_id %in% (tech_data %>%
