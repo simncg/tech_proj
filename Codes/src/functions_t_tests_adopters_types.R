@@ -16,7 +16,29 @@
 #=============================================================================#
 
 # Function to prepare data for running t-tests -----
-prep_data_t_tests<-function(import_data, export_data){
+prep_data_t_tests<-function(import_data, export_data, var_adopter_types){
+  
+  if(!is.data.frame(import_data)) {
+    stop("Import data should be a data.frame")
+  }
+  
+  if(!is.data.frame(export_data)) {
+    stop("Export data should be a data.frame")
+  }
+  
+  required_cols <- c("date", "company_id", var_adopter_types, "export", "n_hs6_products", "n_countries_export")
+  if(!all(required_cols %in% names(export_data))) {
+    stop(paste("The exports data frame does not have the required columns: ", paste(required_cols, collapse=", ")))
+  }
+  
+  required_cols <- c("date", "company_id", var_adopter_types, "import", "n_hs6_products", "n_countries_import")
+  if(!all(required_cols %in% names(import_data))) {
+    stop(paste("The imports data frame does not have the required columns: ", paste(required_cols, collapse=", ")))
+  }
+  
+  # var_adopter_types is the name of the variable that contains the adopter types, it must be 
+  # covid_adopter_type, adopter_type, old_adopter_type
+  var_adopter_types <- rlang::sym(var_adopter_types)
   
   # Create average value of imports trade variables by firm in two periods: before covid (pre-2020) and during covid (Jan 2020 onwards) -----
   imp_vars_summary<-
@@ -34,7 +56,7 @@ prep_data_t_tests<-function(import_data, export_data){
     ) %>% 
     # Average values by firm and period 
     summarize(
-      adopter_type = first(adopter_type), # Keep adopter type
+      adopter_type = first({{var_adopter_types}}), # Keep adopter type variable
       mean_import = mean(import),
       mean_n_hs6_products_import = mean(n_hs6_products), 
       mean_n_countries_import = mean(n_countries_import), 
@@ -59,7 +81,7 @@ prep_data_t_tests<-function(import_data, export_data){
     ) %>% 
     # Average values by firm and period 
     summarize(
-      adopter_type = first(adopter_type), # Keep adopter type
+      adopter_type = first({{var_adopter_types}}), # Keep adopter type variable
       mean_export = mean(export),
       mean_n_hs6_products_export = mean(n_hs6_products), 
       mean_n_countries_export = mean(n_countries_export), 
@@ -76,6 +98,11 @@ prep_data_t_tests<-function(import_data, export_data){
 # Function to run t-test in the pre-covid and covid periods for two different
 # type of adopters for a specific variable 
 t_test_adopter_types<-function(var, adopter_types, data){
+  
+  if(!is.character(adopter_types) | length(adopter_types) != 2) {
+    stop("Adopter types should be a vector of two character elements.")
+  }
+  
   
   # Pre-Covid period data
   data_pre_covid <- data %>% 
@@ -107,7 +134,8 @@ t_test_adopter_types<-function(var, adopter_types, data){
 
 
 # Run t-tests 
-run_t_tests<-function(imp_vars_summary, exp_vars_summary, adopter_types = c("covid_adopter", "old_adopter")){
+run_t_tests<-function(imp_vars_summary, exp_vars_summary, 
+                      adopter_types = c("covid_adopter", "old_adopter")){
   
   # Empty list of t-tests...to be filled 
   t_test_list<-list(list(), list())
@@ -131,8 +159,9 @@ run_t_tests<-function(imp_vars_summary, exp_vars_summary, adopter_types = c("cov
       
       # Perform t-test for a specific var
       t_test_list[[j]][[i]]<-t_test_adopter_types(var = var, 
-                                                 adopter_types = adopter_types, 
-                                                 data = data)
+                                                  adopter_types = adopter_types, 
+                                                  data = data)
+      
     }
     # Add names of variables 
     names(t_test_list[[j]])<-vars
@@ -235,7 +264,7 @@ table_t_tests<-function(t_test_list, adopter_types = c("covid_adopter", "old_ado
     kable_styling(latex_options = "HOLD_position") %>% 
     pack_rows(paste0("Panel A: Pre-Covid Period ", pre_covid_period_label), 1, 8) %>%
     pack_rows(paste0("Panel B: Covid Period ", covid_period_label), 9, 16) %>% 
-    add_footnote(c("Note: Mean variables in the first column denote the average value for the respective variables for each firm within the specific panel period. 'Total Import Volume' and 'Total Export Volume' variables indicate the cumulative trade volume for each firm during the specific panel period."), 
+    add_footnote(c("Note: Mean variables in the first column denote the average value for the respective variables for each firm within the specific panel period. 'Total Import Volume' and 'Total Export Volume' variables indicate the cumulative trade volume for each firm during the specific panel period. Significance levels: *** p<0.01, ** p<0.05, * p<0.1."), 
                  threeparttable = T, notation = "none")
   
   
@@ -255,7 +284,7 @@ table_t_tests<-function(t_test_list, adopter_types = c("covid_adopter", "old_ado
 #' @param export_data A data.frame containing the export data.
 #' @param adopter_types A character vector of length 2 with the names of the adopter types. For example, c("covid_adopter", "old_adopter"). Default is c("covid_adopter", "old_adopter").
 #' @param country A character string specifying the country. Countries could be "India", "Mexico", and "Indonesia".
-#'
+#' @param var_adopter_types A character string specifying the name of the variable that contains the adopter types to be analyzed. These variables could be adopter_type (that contains the categories "old_adopter", "covid_adopter", "never_adopter"), covid_adopter_type (that contains the categories "covid_early_adopter",  "covid_late_adopter", "never_adopter", "non_covid_adopter") or old_adopter_type that contains several categories such as "2016_or_pre_2016-adopter", "2017_adopter
 #' @return A summary table with t-test results for the specified adopter types.
 #'
 #' @examples
@@ -267,11 +296,12 @@ table_t_tests<-function(t_test_list, adopter_types = c("covid_adopter", "old_ado
 # Function for running t-tests and producing final table with results of t-tests. This function incorporates all functions above
 conduct_t_tests_and_create_table<- function(import_data,
                                             export_data, 
+                                            var_adopter_types,
                                             adopter_types,
                                             country) {
   
   # Step 1: Prepare data
-  list_data = prep_data_t_tests(import_data, export_data)
+  list_data = prep_data_t_tests(import_data, export_data, var_adopter_types)
   
   # Step 2: Run t-tests
   t_test_list = run_t_tests(list_data[[1]], list_data[[2]], adopter_types)
