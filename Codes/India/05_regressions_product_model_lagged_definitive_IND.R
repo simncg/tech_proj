@@ -100,14 +100,14 @@ coef_labels<-c(pay_or_ecomnod="E-payment or E-commerce",
 
 # Regressions with 2 lags (t-2) in technology variable for log. exports and log.imports ----
 log_imp_exp_IND <- reg_models_definitive(tech_var  = "pay_or_ecomnod_t_2", 
-                                                   dep_var_import = "log_import", 
-                                                   dep_var_export = "log_export",
-                                                   import_data = pay_ecom_import_data_IND,
-                                                   export_data = pay_ecom_export_data_IND,
-                                                   country_name = "India",
-                                                   coef_labels = coef_labels, 
-                                                   dep_var_labels = c("Log.Import", "Log.Export")
-                                                   )
+                                         dep_var_import = "log_import", 
+                                         dep_var_export = "log_export",
+                                         import_data = pay_ecom_import_data_IND,
+                                         export_data = pay_ecom_export_data_IND,
+                                         country_name = "India",
+                                         coef_labels = coef_labels, 
+                                         dep_var_labels = c("Log.Import", "Log.Export")
+                                         )
 
 
 

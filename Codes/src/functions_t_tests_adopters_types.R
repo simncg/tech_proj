@@ -261,7 +261,7 @@ table_t_tests<-function(t_test_list, adopter_types = c("covid_adopter", "old_ado
                            str_to_title(str_replace_all(adopter_types[2], "_", " ")), 
                            " During Pre-Covid and Covid Periods"), 
           centering = T, booktabs = T, align = "lccc") %>%
-    kable_styling(latex_options = "HOLD_position") %>% 
+    kable_styling(latex_options = c("HOLD_position")) %>% 
     pack_rows(paste0("Panel A: Pre-Covid Period ", pre_covid_period_label), 1, 8) %>%
     pack_rows(paste0("Panel B: Covid Period ", covid_period_label), 9, 16) %>% 
     add_footnote(c("Note: Mean variables in the first column denote the average value for the respective variables for each firm within the specific panel period. 'Total Import Volume' and 'Total Export Volume' variables indicate the cumulative trade volume for each firm during the specific panel period. Significance levels: *** p<0.01, ** p<0.05, * p<0.1."), 

@@ -36,7 +36,7 @@ tech_data <- read_parquet("../../Data/India/raw_data/Builtwith_no_drop_long_v2.p
 
 gc()
 
-# Add adoption date to tech data, date variables and lags for for adoption of 
+# Add adoption date to tech data, date variables and lags for adoption of 
 # e-commerce or e-payment technologies
 
 tech_data <- 

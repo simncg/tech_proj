@@ -159,7 +159,7 @@ p_exp<-ggplot(data = exp_adopters_type_summary[!(exp_adopters_type_summary$adopt
 
 
 # Join plots of importers and exporters
-title <- textGrob("Technology Adopter Types Among Mexicon Importers and Exporters", gp=gpar(fontface="bold", fontsize=14), hjust = 0.5)
+title <- textGrob("Technology Adopter Types Among Mexican Importers and Exporters", gp=gpar(fontface="bold", fontsize=14), hjust = 0.5)
 
 final_plot_MEX<-grid.arrange(p_exp, p_imp, ncol=2, top = title)
 

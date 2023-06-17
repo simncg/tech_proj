@@ -1,0 +1,13 @@
+{\def\sym#1{\ifmmode^{#1}\else\(^{#1}\)\fi}\resizebox{\textwidth}{!}{  \begin{tabular}{l*{6}{c}} \hline\hline \toprule & \multicolumn{6}{c}{Dependent Variable: Log. Exports } \\ \toprule & \multicolumn{3}{c}{Instrumental Variable (Google)} & \multicolumn{3}{c}{Instrumental Variable (Bing)} \\ \cmidrule(lr){2-4} \cmidrule(lr){5-7}  & Log(1+Lightning Strikes) & Log(1+Download Speed) & Log(1+Upload Speed) & Log(1+Lightning Strikes) & Log(1+Download Speed) & Log(1+Upload Speed)\\ \hline
+\hline \multicolumn{6}{l}{\textbf{COVID variable: Log(1+COVID Cases)}}\\
+E-payment or E-commerce (t-2)&-0.003&-3.578&-2.233&-0.292&-1.591&-1.671\sym{*}\\
+&(0.907)&(4.782)&(3.386)&(2.097)&(0.986)&(0.969) \\
+\hline \multicolumn{6}{l}{\textbf{COVID variable: Monthly Stringency Index}}\\
+E-payment or E-commerce (t-2)&-0.256&-3.878&-2.266&-0.452&-1.764&-1.753\sym{*}\\
+&(0.958)&(6.181)&(4.265)&(2.100)&(1.079)&(1.034) \\
+\hline \multicolumn{6}{l}{\textbf{COVID variable: Workplace Closure Dummy}}\\
+E-payment or E-commerce (t-2)&-0.057&-3.743&-2.262&-0.419&-1.687\sym{*}&-1.733\sym{*}\\
+&(0.928)&(5.446)&(3.791)&(2.096)&(1.017)&(0.992) \\
+\hline
+Number of Observations&1,891,108&1,890,258&1,890,258&1,852,421&1,743,038&1,743,038\\
+\hline\hline \end{tabular}}}

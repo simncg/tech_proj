@@ -199,7 +199,7 @@ pay_ecom_import_data_IDN<-import_data %>%
   # Keep firms that are part of analyzed SIC groups
   filter(SICGRP %in% included_SIC_Groups) %>%   
   # Select just the bare minimum variables
-  select(company_id, date_character, hs6, log_import, import_dummy, 
+  select(company_id, date_character, hs6, log_import, import, import_dummy, 
          SITEID, SICGRP, NAICS6_CODE, n_countries_import) %>% 
   # Add the HS code classification data with products information 
   left_join(hs_data, by = c('hs6' = 'hs_2017')) %>% 
@@ -240,7 +240,7 @@ pay_ecom_export_data_IDN<-export_data %>%
   # Keep firms that are part of analyzed SIC groups
   filter(SICGRP %in% included_SIC_Groups) %>%   
   # Select just the bare minimum variables
-  select(company_id,date_character, hs6, log_export, export_dummy, 
+  select(company_id,date_character, hs6, log_export, export, export_dummy, 
          SITEID, SICGRP, NAICS6_CODE, n_countries_export) %>% 
   # Add the HS code classification data with products information 
   left_join(hs_data, by = c('hs6' = 'hs_2017')) %>% 
@@ -281,7 +281,7 @@ import_tech_mitig<- import_data %>%
   # Keep firms that are part of analyzed SIC groups
   filter(SICGRP %in% included_SIC_Groups) %>%   
   # Select just the bare minimum variables
-  select(company_id, date, date_character, hs6, log_import, import_dummy,
+  select(company_id, date, date_character, hs6, log_import, import, import_dummy,
          n_countries_import,
          SITEID, SICGRP, NAICS6_CODE) %>% 
   # Add the HS code classification data with products information 
@@ -292,8 +292,8 @@ import_tech_mitig<- import_data %>%
   mutate(date = as.Date(date)) %>% 
   left_join(covid_data, by= c("date" = "month_year")) %>% 
   # Join tech data
-  left_join(tech_data %>% 
-              select(company_id, date_character, adopted_pay_or_ecom_before_2019), 
+  left_join(tech_data  %>% 
+              select(-LI, -FI, -date), 
             by = c('company_id', "date_character")) %>% 
   # Keep firms that had website before february 2019 and are indexed after end 2021
   filter(company_id %in% (tech_data %>%
@@ -325,7 +325,7 @@ export_tech_mitig<- export_data %>%
   # Keep firms that are part of analyzed SIC groups
   filter(SICGRP %in% included_SIC_Groups) %>%   
   # Select just the bare minimum variables
-  select(company_id, date, date_character, hs6, log_export, export_dummy,
+  select(company_id, date, date_character, hs6, log_export, export, export_dummy,
          n_countries_export, 
          SITEID, SICGRP, NAICS6_CODE) %>% 
   # Add the HS code classification data with products information 
@@ -336,8 +336,8 @@ export_tech_mitig<- export_data %>%
   mutate(date = as.Date(date)) %>% 
   left_join(covid_data, by= c("date" = "month_year")) %>% 
   # Join tech data
-  left_join(tech_data %>% 
-              select(company_id, date_character, adopted_pay_or_ecom_before_2019), 
+  left_join(tech_data  %>% 
+              select(-LI, -FI, -date), 
             by = c('company_id', "date_character")) %>% 
   # Keep firms that had website before july 2018 and are indexed after September 2021
   filter(company_id %in% (tech_data %>%

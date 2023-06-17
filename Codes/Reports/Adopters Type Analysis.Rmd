@@ -28,7 +28,6 @@ big_number_format<-function(x){format(x, big.mark = ",")}
 
 ```
 
-
 ```{r, include=FALSE}
 
 fileloc <- dirname(rstudioapi::getSourceEditorContext()$path)
@@ -40,13 +39,121 @@ source("../src/packages.R")
 
 ```
 
-```{r, fig.width=8, fig.height=4}
+E-payment/E-commerce adopter firms can be categorized into distinct categories based on the specific date in which the firm adopted the technology. Specifically, an adopter firm can be categorized into one of two primary, each of which is further divided into several subcategories that are also determined by the data in which the firm adopted the technology:
+
+1.  **COVID Adopters**: This category includes firms that adopted the e-payment/e-commerce technology from 2020 onwards. The subcategories within this group are as follows:
+
+    -   COVID Early Adopters: This subcategory includes firms that adopted the technology during the year 2020.
+
+    -   COVID Late Adopters: This subcategory includes firms that adopted the technology after the year 2020
+
+2.  **Old Adopters:** This category comprises firms that adopted e-payment/e-commerce technology prior to 2020. Within this category, the firms can also be subcategorized into the following groups:
+
+    -   2019 Adopters: This subcategory is for firms that adopted the technology during the year 2019.
+
+    -   2018 Adopters: This subcategory is for firms that adopted the technology during the year 2018.
+
+    -   2017 Adopters: This subcategory is for firms that adopted the technology during the year 2017.
+
+    -   Pre 2017 Adopters: Since the BuiltWith dataset is only available from 2016 onwards, this subcategory includes both the adopters during 2016 and thse tat adopted the technology before 2016.
+
+
+To better understand the differences between the two major types of adopters -- 'old adopters' and 'Covid adopters' -- we compare the average trade characteristics of these groups for two distinct time periods: before 2020 (pre-Covid period) and from 2020 onwards (Covid period). The trade variables compared include the average export/import value, average number of destinations/sources, average number of distinct HS6 exported/imported products, and the total import/export volume for each firm during these periods.
+
+We start by calculating the average of each characteristic for each firm within the two periods. This results in two averages per firm for each characteristic - one average for the pre-covid period and one average for the period from 2020 onwards (covid period). 
+
+Next, we conduct a t-test to compare the pre-Covid period and Covid period averages of these characteristics between the two types of adopters. Specifically, we compare the average characteristics of old adopters against those of covid adopters for both time periods. In essence, we're comparing the average characteristics of the two types of adopters before 2020 and repeating the same comparison for the period from 2020 onwards. 
+
+We apply the same t-test methodology to compare adopters within specific categories. Specifically, within the 'Covid adopters' group, we compare the average characteristics of 'Early Covid adopters' against those of 'Late Covid adopters'.
+
+In the same vein, within the 'old adopters' category, we draw a comparison between two distinct groups of adopters. The first group includes firms that adopted the technology before 2017, and the second group consists of firms that adopted the technology during the 2017-2019 period. This method allows us to discern the contrasts within the adopter categories themselves.
+
+**Note**: The sample employed for these t-tests is identical to the one used to run the regressions for the model assessing whether technology adoption mitigates the impacts of Covid. 
+
+# India
+
+```{r, fig.width=9, fig.height=6}
 
 # Produce plot showing different adopters types 
 # Run t-tests for Indian firms and produce table of results.
 source("../India/analysis_tech_adopters_types_IND.R", chdir = T)
 
-# This will show the plot
+
+```
+
+
+```{r}
+
+# Covid vs Old Adopters - t-tests for India 
+t_tests_old_covid_adopters_IND[[1]]
+
+
+```
+
+
+```{r}
+
+# Covid Early vs Covid Late Adopters - t-tests for India 
+t_tests_covid_early_late_adopters_IND[[1]]
+
+
+```
+
+
+```{r}
+
+# Pre 2017 vs 2017 to 2019 Adopters - t-tests for India 
+t_tests_old_adopters_IND[[1]]
+
+
+```
+
+# Mexico
+
+```{r, fig.width=9, fig.height=6}
+
+# Produce plot showing different adopters types 
+# Run t-tests for Mexican firms and produce table of results.
+source("../Mexico/analysis_tech_adopters_types_MEX.R", chdir = T)
+
+
+```
+
+
+```{r}
+
+# Covid vs Old Adopters - t-tests for Mexico 
+t_tests_old_covid_adopters_MEX[[1]]
+
+
+```
+
+
+```{r}
+
+# Covid Early vs Covid Late Adopters - t-tests for Mexico 
+t_tests_covid_early_late_adopters_MEX[[1]]
+
+
+```
+
+
+```{r}
+
+# Pre 2017 vs 2017 to 2019 Adopters - t-tests for Mexico 
+t_tests_old_adopters_MEX[[1]]
+
+
+```
+
+# Indonesia
+
+```{r, fig.width=9, fig.height=6}
+
+# Produce plot showing different adopters types 
+# Run t-tests for Indonesian firms and produce table of results.
+source("../Indonesia/analysis_tech_adopters_types_IDN.R", chdir = T)
+
 
 ```
 
@@ -54,7 +161,27 @@ source("../India/analysis_tech_adopters_types_IND.R", chdir = T)
 
 ```{r}
 
-# This will show the table with t-tests results for India
-t_tests_table_IND[[1]]
+# Covid vs Old Adopters - t-tests for Indonesia 
+t_tests_old_covid_adopters_IDN[[1]]
+
+
+```
+
+
+```{r}
+
+# Covid Early vs Covid Late Adopters - t-tests for Indonesia 
+t_tests_covid_early_late_adopters_IDN[[1]]
+
+
+```
+
+Since BuiltWith for Indonesia is only available from 2017 onwards, to compare adopters within the 'old adopters' category, we draw a comparison between firms that adopted the technology before 2018, and firms that adopted the technology during the 2018-2019 period.
+
+```{r}
+
+# Pre 2018 vs 2018 to 2019 Adopters - t-tests for Indonesia 
+t_tests_old_adopters_IDN[[1]]
+
 
 ```

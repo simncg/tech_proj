@@ -62,7 +62,7 @@ included_SIC_Groups <- c('AG-M-C', # Agricultural, Construction and Mining
                          "SVCS",   # Services
                          "F-I-RE", # Finance Insurance, Real Estate 
                          "TR-UTL", # Transport & Utilities
-                         "WHL-RT"  # Wholesale-retaol
+                         "WHL-RT"  # Wholesale-retail
 )
 
 
@@ -258,7 +258,7 @@ import_tech_mitig<- import_data %>%
   left_join(covid_data, by= c("date" = "month_year")) %>% 
   # Join tech data
   left_join(tech_data %>% 
-              select(company_id, date_character, adopted_pay_or_ecom_before_2019), 
+              select(-LI, -FI, -date), 
             by = c('company_id', "date_character")) %>% 
   # Keep firms that had website before july 2018 and are indexed after end 2021
   filter(company_id %in% (tech_data %>%
@@ -299,7 +299,7 @@ export_tech_mitig<- export_data %>%
   left_join(covid_data, by= c("date" = "month_year")) %>% 
   # Join tech data
   left_join(tech_data %>% 
-              select(company_id, date_character, adopted_pay_or_ecom_before_2019), 
+              select(-LI, -FI, -date), 
             by = c('company_id', "date_character")) %>% 
   # Keep firms that had website before july 2018 and are indexed after end 2021
   filter(company_id %in% (tech_data %>%

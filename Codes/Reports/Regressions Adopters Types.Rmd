@@ -1,0 +1,173 @@
+---
+title: "Analysis of the COVID-19 Shock, Technology and Trade"
+subtitle: "Regressions for Technology Adopters Types in the Pre-Covid period"
+author: "Simón Caicedo"
+date: \today
+header-includes:
+  \usepackage{float}
+  \usepackage{placeins}
+  \usepackage{rotating}
+  \usepackage{graphicx}
+  \usepackage{booktabs}
+  \usepackage{caption}
+  \usepackage{longtable}
+  \usepackage{breqn}
+output:
+  pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.pos = 'H')
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning  = FALSE)
+```
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE, results='hide'}
+
+# Set Working Directory ----
+fileloc <- dirname(rstudioapi::getSourceEditorContext()$path)
+setwd(fileloc)
+rm(fileloc)
+
+
+# modelsummary package options----
+options("modelsummary_format_numeric_latex" = "plain")
+
+
+# Libraries to be used ----
+source("../src/packages.R")
+
+```
+
+
+
+```{r}
+
+# India - regressions of tech adopters types
+source("../India/regressions_tech_adopters_types_IND.R", chdir = TRUE)
+
+
+# Mexico - regressions of tech adopters types
+source("../Mexico/regressions_tech_adopters_types_MEX.R", chdir = TRUE)
+
+
+# Indonesia - regressions of tech adopters types
+source("../Indonesia/regressions_tech_adopters_types_IDN.R", chdir = TRUE)
+
+
+```
+
+We have calculated the total export/import value for each firm-product throughout the pre-COVID period. Specifically, this period spans from July 2018 to December 2019 for Mexico and India, and from February 2019 to December 2019 for Indonesia. Following this data collection, we carried out various sets of regressions which will be explained in the upcoming sections.
+
+## COVID Adopters and Old Adopters vs Never Adopters
+
+In this case, the regression sample includes firms that are Covid Adopters, Old Adopters and Never Adopters. The following regressions is estimated: 
+
+$$y_{ip} = \alpha_0 + \alpha_1CovidAdopter_{i} + \alpha_2OldAdopter_{i} + FE_p + \epsilon_{ip}$$
+Where the baseline category is Never Adopter.
+
+```{r, eval=TRUE}
+
+table_reg_all_adopters_IND
+
+```
+
+```{r, eval=TRUE}
+
+table_reg_all_adopters_IDN
+
+```
+
+
+```{r, eval=TRUE}
+
+table_reg_all_adopters_MEX
+
+```
+
+## COVID Adopters vs Old Adopters
+
+In this case, we only include in our regression sample firms that are either Covid Adopters or Old Adopters. The estimated regression is:
+
+$$y_{ip} = \alpha_0 + \alpha_1CovidAdopter_{i} +  FE_p + \epsilon_{ip}$$
+
+
+```{r, eval = TRUE}
+
+table_reg_old_covid_adopters_IND
+
+```
+
+
+```{r, eval = TRUE}
+
+table_reg_old_covid_adopters_IDN
+
+```
+
+
+
+```{r, eval = TRUE}
+
+table_reg_old_covid_adopters_MEX
+
+```
+
+## COVID Early Adopters vs COVID Late Adopters
+
+In this case, we only include in our regression sample firms that are Covid Adopters. Within this category we have two categories: Covid early adopters and Covid late adopters. The estimated regression is:
+
+$$y_{ip} = \alpha_0 + \alpha_1CovidEarlyAdopter_{i} +  FE_p + \epsilon_{ip}$$
+And the baseline category is Covid Late Adopter. 
+
+
+```{r, eval=TRUE}
+
+table_reg_covid_adopters_IND
+
+```
+
+
+```{r, eval=TRUE}
+
+table_reg_covid_adopters_IDN
+
+```
+
+
+
+```{r, eval=TRUE}
+
+table_reg_covid_adopters_MEX
+
+```
+
+## Old Adopters
+
+Finally, we estimate a regression where we only include Old Adopters. Within this category, the firms can be classified into pre-2017 adopter, 2017-adopter, 2018-adopter and 2019-adopter. The baseline category is pre-2017 adopter. 
+
+$$y_{ip} = \alpha_0 + \alpha_1 2017Adopter_{i} +  \alpha_2 2018Adopter_{i} + \alpha_3 2019Adopter_{i} + FE_p + \epsilon_{ip}$$
+Since Indonesia only has BuiltWith data since 2017, the estimated regression for that country is: 
+
+$$y_{ip} = \alpha_0 + \alpha_1 2018Adopter_{i} + \alpha_3 2019Adopter_{i} + FE_p + \epsilon_{ip}$$
+And the baseline category is pre-2018 adopter. 
+
+```{r, eval=TRUE}
+
+table_reg_old_adopters_IND
+
+```
+
+```{r, eval=TRUE}
+
+table_reg_old_adopters_IDN
+
+```
+
+```{r, eval=TRUE}
+
+table_reg_old_adopters_MEX
+
+```
+

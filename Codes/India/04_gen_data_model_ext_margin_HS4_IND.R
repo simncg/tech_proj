@@ -92,7 +92,8 @@ covid_data <- OxCGRT_timeseries_stringency_index %>%
 # Read tech data ---- 
 tech_data_IND<-read_parquet("../../Data/India/processed_data/tech_data_IND.parquet", 
                             col_select = c("company_id", "date", "date_character", "pay_or_ecomnod_t_1",
-                                           "pay_or_ecomnod_t_2", "pay_or_ecomnod_t_3", "adopted_pay_or_ecom_before_2019"))
+                                           "pay_or_ecomnod_t_2", "pay_or_ecomnod_t_3", "adopted_pay_or_ecom_before_2019", 
+                                           "months_since_adoption", "adopter_type", "covid_adopter_type","old_adopter_type"))
 
 
 # Grids for model that measures if tech adoption affects trade outcomes ---- 

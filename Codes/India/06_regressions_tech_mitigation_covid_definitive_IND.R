@@ -61,7 +61,8 @@ log_imp_exp_covid_IND<-reg_models_tech_covid_definitive(import_data = import_tec
                                                         coef_labels = coef_labels, 
                                                         dep_var_import = "log_import", 
                                                         dep_var_export = "log_export", 
-                                                        dep_var_labels = c("Log.Import", "Log.Export")
+                                                        dep_var_labels = c("Log.Import", "Log.Export"), 
+                                                        indep_var = "adopted_pay_or_ecom_before_2019"
                                                         )
 
 # Regressions for number of sources and number of destinations -----
@@ -71,7 +72,8 @@ no_source_dest_covid_IND<-reg_models_tech_covid_definitive(import_data = import_
                                                         coef_labels = coef_labels, 
                                                         dep_var_import = "n_countries_import", 
                                                         dep_var_export = "n_countries_export", 
-                                                        dep_var_labels = c("No. Sources", "No. Destinations")
+                                                        dep_var_labels = c("No. Sources", "No. Destinations"), 
+                                                        indep_var = "adopted_pay_or_ecom_before_2019"
                                                         )
 # Regressions for new source/new destination -----
 new_source_dest_covid_IND<-reg_models_tech_covid_definitive(import_data = import_tech_mitig, 
@@ -80,5 +82,6 @@ new_source_dest_covid_IND<-reg_models_tech_covid_definitive(import_data = import
                                                         coef_labels = coef_labels, 
                                                         dep_var_import = "new_source", 
                                                         dep_var_export = "new_destination", 
-                                                        dep_var_labels = c("New Source", "New Destination")
+                                                        dep_var_labels = c("New Source", "New Destination"), 
+                                                        indep_var = "adopted_pay_or_ecom_before_2019"
                                                         )

@@ -43,7 +43,8 @@ coef_labels<-c("adopted_pay_or_ecom_before_2019:month_mean_stringency_index"="E-
 
 
 models_tech_covid_definitive_IDN<-prop_reg_models_tech_covid_definitive("Indonesia", 
-                                                                        coef_labels)
+                                                                        coef_labels, 
+                                                                        indep_var = "adopted_pay_or_ecom_before_2019")
 
 # 
 # THE FOLLOWING CODE IS FOR RUNNING THE REGRESSIONS FOR ALL PRODUCTS CATEGORIES

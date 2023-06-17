@@ -117,9 +117,8 @@ tech_data <-
         # Adopters during 2018 and 2019
         year(date_of_adoption) == 2019  ~ "2019_adopter",  
         year(date_of_adoption) == 2018  ~ "2018_adopter", 
-        year(date_of_adoption) == 2017  ~ "2017_adopter", 
-        # Since the data is available only from 2016 onwards, there could be cases of firms that adopted the technology before 2016 but has as adoption date 2016-01-01 (the earliest date in our data).
-        year(date_of_adoption) == 2016  ~ "2016_or_pre_2016_adopter",
+        # Since the data is available only from 2017 onwards, there could be cases of firms that adopted the technology before 2017 but has as adoption date 2016-01-01 (the earliest date in our data).
+        year(date_of_adoption) == 2017  ~ "2017_or_pre_2017_adopter", 
         # Never adopters 
         is.na(date_of_adoption) ~ "never_adopter",
         TRUE ~ "non_old_adopter"
