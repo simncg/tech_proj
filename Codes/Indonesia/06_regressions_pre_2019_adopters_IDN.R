@@ -93,7 +93,7 @@ coef_labels<-c(
   "month_mean_stringency_index:adopter_2018"="2018-Adopter × Monthly Avg. Stringency Index",
   
   "month_mean_stringency_index:cons_BEC" = "Monthly Avg. Stringency Index × Consumable",
-  "pre_2019_adopter:month_mean_stringency_index:cons_BEC" = "Pre-2018 Adopter × Monthly Avg. Stringency Index × Consumable",
+  "pre_2018_adopter:month_mean_stringency_index:cons_BEC" = "Pre-2018 Adopter × Monthly Avg. Stringency Index × Consumable",
   "month_mean_stringency_index:cons_BEC:adopter_2018" = "2018-Adopter × Monthly Avg. Stringency Index × Consumable",
   
   "month_mean_stringency_index:China_E_commerce" = "Monthly Avg. Stringency Index × China e-commerce",

@@ -98,7 +98,7 @@ tech_data <-
       case_when(
         date_of_adoption < as.Date("2020-01-01") ~ "old_adopter", 
         date_of_adoption >= as.Date("2020-01-01") ~ "covid_adopter", 
-        is.na(date_of_adoption)  ~ "never_adopter"
+        is.na(date_of_adoption) | year(date_of_adoption) == 2022  ~ "never_adopter" # Those firms that adopt the technology in 2022 are classified as never adopters because they do not adopt the technology during our period of analysis
       ), 
     # Create covid adopter type variable. This could be covid early adopter (adopter in 2020), 
     # covid late adopter (adopter after 2020), never adopter and non-covid adopter 
@@ -106,8 +106,8 @@ tech_data <-
     covid_adopter_type = 
       case_when(
         year(date_of_adoption) == 2020 ~ "covid_early_adopter",
-        date_of_adoption >= as.Date("2021-01-01") ~ "covid_late_adopter",
-        is.na(date_of_adoption) ~ "never_adopter",
+        date_of_adoption >= as.Date("2021-01-01") & date_of_adoption <= as.Date("2021-12-01") ~ "covid_late_adopter",
+        is.na(date_of_adoption) | year(date_of_adoption) == 2022 ~ "never_adopter",
         TRUE ~ "non_covid_adopter"
       ), 
     # Create old adopter type variable. This could be adopters before 2016 or in 2016, 
@@ -120,7 +120,7 @@ tech_data <-
         # Since the data is available only from 2017 onwards, there could be cases of firms that adopted the technology before 2017 but has as adoption date 2016-01-01 (the earliest date in our data).
         year(date_of_adoption) == 2017  ~ "2017_or_pre_2017_adopter", 
         # Never adopters 
-        is.na(date_of_adoption) ~ "never_adopter",
+        is.na(date_of_adoption) | year(date_of_adoption) == 2022 ~ "never_adopter",
         TRUE ~ "non_old_adopter"
       )
     

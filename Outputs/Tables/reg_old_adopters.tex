@@ -1,0 +1,31 @@
+\begin{table}[H]
+
+\caption{Regression Results for Old Adopters - Pre-Covid Period.}
+\centering
+\resizebox{\linewidth}{!}{
+\begin{threeparttable}
+\begin{tabular}[t]{lcccccc}
+\toprule
+\multicolumn{1}{c}{ } & \multicolumn{2}{c}{India} & \multicolumn{2}{c}{Mexico} & \multicolumn{2}{c}{Indonesia} \\
+\cmidrule(l{3pt}r{3pt}){2-3} \cmidrule(l{3pt}r{3pt}){4-5} \cmidrule(l{3pt}r{3pt}){6-7}
+  & Log. Imports & Log. Exports & Log. Imports  & Log. Exports  & Log. Imports   & Log. Exports  \\
+\midrule
+2017-Adopter & -0.052 & 0.132 & -0.004 & 0.488* &  & \\
+ & (0.155) & (0.144) & (0.165) & (0.268) &  & \\
+2018-Adopter & -0.172 & 0.252** & -0.089 & 0.392* & -0.295 & -0.043\\
+ & (0.130) & (0.103) & (0.162) & (0.234) & (0.298) & (0.630)\\
+2019-Adopter & -0.106 & 0.225 & -0.108 & 0.021 & -0.199 & -0.373\\
+ & (0.135) & (0.145) & (0.162) & (0.251) & (0.144) & (0.434)\\
+\midrule
+Num. Obs. & 71,409 & 48,745 & 70,647 & 14,747 & 25,819 & 4,255\\
+R-squared & 0.218 & 0.207 & 0.19 & 0.305 & 0.263 & 0.507\\
+Product FE & Yes & Yes & Yes & Yes & Yes & Yes\\
+\bottomrule
+\multicolumn{7}{l}{\rule{0pt}{1em}* p $<$ 0.1, ** p $<$ 0.05, *** p $<$ 0.01}\\
+\end{tabular}
+\begin{tablenotes}
+\item \textit{Note: } 
+\item The baseline category includes pre-2017 adopters for India and Mexico, and pre-2018 adopters for Indonesia. The regression sample only includes the pre-Covid period. Clustered standard errors at the firm level
+\end{tablenotes}
+\end{threeparttable}}
+\end{table}

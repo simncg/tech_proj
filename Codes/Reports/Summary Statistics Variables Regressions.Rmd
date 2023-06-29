@@ -66,7 +66,7 @@ aberdeen_IDN <-IDN_Domestic_Ids_Corresp  %>%
 
 # Panjiva Imports Data (Firm-Month-HS6)
 imports_IDN <-read_csv("../../Data/Indonesia/processed_data/import_summary_by_firm_month_HS_code.csv") %>% 
-  select(company_id, date, date_character,hs6,log_import, import, import_dummy, n_countries_import)%>% 
+  select(company_id, date, date_character,hs6,log_import, import, import_dummy)%>% 
   mutate(hs6  = str_pad(hs6 , 6, "left", "0"), 
          year = year(date)) %>% 
   mutate(matched_builtwith = company_id %in% tech_IDN$company_id, 
@@ -75,7 +75,7 @@ imports_IDN <-read_csv("../../Data/Indonesia/processed_data/import_summary_by_fi
 
 # Panjiva Exports Data (Firm-Month-HS6)
 exports_IDN <-read_csv("../../Data/Indonesia/processed_data/export_summary_by_firm_month_HS_code.csv") %>% 
-  select(company_id, date, date_character,hs6, log_export, export, export_dummy, n_countries_export)%>% 
+  select(company_id, date, date_character,hs6, log_export, export, export_dummy)%>% 
   mutate(hs6  = str_pad(hs6 , 6, "left", "0"), 
          year = year(date)) %>% 
   mutate(matched_builtwith = company_id %in% tech_IDN$company_id, 
