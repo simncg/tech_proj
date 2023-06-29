@@ -1,0 +1,27 @@
+\begin{table}[H]
+
+\caption{Regression Results for COVID Adopters - Pre-Covid Period.}
+\centering
+\resizebox{\linewidth}{!}{
+\begin{threeparttable}
+\begin{tabular}[t]{lcccccc}
+\toprule
+\multicolumn{1}{c}{ } & \multicolumn{2}{c}{India} & \multicolumn{2}{c}{Mexico} & \multicolumn{2}{c}{Indonesia} \\
+\cmidrule(l{3pt}r{3pt}){2-3} \cmidrule(l{3pt}r{3pt}){4-5} \cmidrule(l{3pt}r{3pt}){6-7}
+  & Log. Imports & Log. Exports & Log. Imports  & Log. Exports  & Log. Imports   & Log. Exports  \\
+\midrule
+COVID Early Adopter & -0.005 & -0.107 & 0.034 & -0.165 & -0.080 & 0.138\\
+ & (0.129) & (0.102) & (0.169) & (0.251) & (0.189) & (0.469)\\
+\midrule
+Num. Obs. & 43,299 & 28,647 & 31,048 & 6,928 & 15,783 & 2,437\\
+R-squared & 0.258 & 0.262 & 0.259 & 0.398 & 0.337 & 0.614\\
+Product FE & Yes & Yes & Yes & Yes & Yes & Yes\\
+\bottomrule
+\multicolumn{7}{l}{\rule{0pt}{1em}* p $<$ 0.1, ** p $<$ 0.05, *** p $<$ 0.01}\\
+\end{tabular}
+\begin{tablenotes}
+\item \textit{Note: } 
+\item The baseline category is COVID late adopters. The regression sample only includes the pre-Covid period. Clustered standard errors at the firm level
+\end{tablenotes}
+\end{threeparttable}}
+\end{table}
