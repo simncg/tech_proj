@@ -49,26 +49,26 @@ tech_data <-
       slice(which(value == 1)[1]) %>% 
       ungroup() %>% 
       mutate(first_adopted = ifelse(date < as.Date("2019-02-01"), "before february 2019", paste0(year, "_", month)),
-             first_adopted_2019 = ifelse(date < as.Date("2019-01-01") , "before 2019", paste0(year, "_", month))) %>% 
-      select(company_id, tech, first_adopted, first_adopted_2019), 
+             first_adopted_2020 = ifelse(date < as.Date("2020-01-01") , "before 2020", paste0(year, "_", month))) %>% 
+      select(company_id, tech, first_adopted, first_adopted_2020), 
     by = c("company_id", "tech")
   ) %>% 
   mutate(# If missing value in adopted date, then technology never adopted by the company 
     first_adopted = ifelse(is.na(first_adopted), "never adopted", first_adopted), 
-    first_adopted_2019 = ifelse(is.na(first_adopted_2019), "never adopted", first_adopted_2019)
+    first_adopted_2020 = ifelse(is.na(first_adopted_2020), "never adopted", first_adopted_2020)
   ) %>% 
   select(-year, -month) %>% 
   # From long to wide to have one row per firm-month and to have tech columns and columns defining their adoption date
   pivot_wider(
     names_from = tech, 
-    values_from = c(value, first_adopted, first_adopted_2019)
+    values_from = c(value, first_adopted, first_adopted_2020)
   ) %>% 
   # Rename resulting columns of the pivot_wider, remove prefix "_value" and "_nod" from column names
   rename_if(str_detect(names(.), "_nod"), ~sub("_nod", "", .)) %>% 
   rename_if(str_detect(names(.), "value_"), ~sub("value_", "", .)) %>% 
   arrange(company_id, date) %>% 
-  # Create a variable to identify if firm adopted e-commerce or e-payment before 2019
-  mutate(adopted_pay_or_ecom_before_2019 = first_adopted_2019_payrobust == "before 2019" | first_adopted_2019_ecom == "before 2019") %>% 
+  # Create a variable to identify if firm adopted e-commerce or e-payment before 2020
+  mutate(adopted_pay_or_ecom_before_2020 = first_adopted_2020_payrobust == "before 2020" | first_adopted_2020_ecom == "before 2020") %>% 
   # Create lags by company for variables of e-commerce and e-payment technologies
   group_by(company_id) %>% 
   mutate(across(c(ecom, payrobust), list(t_1 = function(x){lag(x, 1)}, 
