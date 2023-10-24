@@ -2,7 +2,7 @@
 # Date:    December 2022                                                    #
 #                                                                           #
 # Project: E-commerce and Trade during Crisis Times: Firm-level             #
-#          Evidence from India, Indonesia and Mexico                        #                  #
+#          Evidence from India, Indonesia and Mexico                        #                  
 #                                                                           #
 #                                                                           #
 #                                                                           #
@@ -19,7 +19,7 @@ rm(fileloc)
 # Libraries to be used ----
 source("../src/packages.R")
 
-# Import function to run existing tech regression (intensive margin) for a specific type of product
+# Import function to run existing tech regression (intensive and extensive margin) for a specific type of product
 source("../src/functions_existing_tech_reg.R")
 
 
