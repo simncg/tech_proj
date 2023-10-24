@@ -289,7 +289,7 @@ export_tech_mitig<- export_data %>%
 
 # Remove no longer needed objects
 rm(export_data, hs_data, import_data, tech_data, export_less_than_1000usd, 
-   int_cap_HS, included_SIC_Groups, import_less_than_1000usd, covid_data, 
+   int_cap_HS, import_less_than_1000usd, covid_data, 
    OxCGRT_timeseries_stringency_index, courier_firms)
 
 # Save data ---- 
