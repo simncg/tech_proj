@@ -21,51 +21,6 @@ rm(fileloc)
 # Load libraries ----
 source("../src/packages.R")
 
-# SIC Groups to analyze ----
-included_SIC_Groups <- c('AG-M-C', # Agricultural, Construction and Mining
-                         "MANUF",  # Manufacturing
-                         "SVCS",   # Services
-                         "F-I-RE", # Finance Insurance, Real Estate 
-                         "TR-UTL", # Transport & Utilities
-                         "WHL-RT"  # Wholesale-retail
-)
-
-# Load Aberdeen data ----
-aberdeen_data <- arrow::read_parquet("../../Data/Indonesia/raw_data/master_file_builtwith_updated.parquet",
-                                     col_select = c("In_aberdeen","company_id","date", "date_character", 
-                                                    "number_of_employees", "NAICS6_CODE", "SIC_group")) %>% 
-  rename(EMPLE = number_of_employees) %>% 
-  distinct(company_id, .keep_all = T) %>% 
-  filter(In_aberdeen) %>%  
-  select(-In_aberdeen, -date, -date_character)
-
-
-
-
-# Load additional data of Aberdeen (to add more variables obtained from Aberdeen)
-aberdeen_data_2 <- read_xlsx("../../Data/Indonesia/raw_data/matched_data_Indonesia.xlsx") 
-
-# Correspondance table of IDs for Aberdeen of Indonesia
-IDN_Domestic_Ids_Corresp <- read_xlsx("../../Data/Indonesia/raw_data/IDN_Domestic_Ids_Corresp_update.xlsx")
-
-# Use correspondance, get SITEID and Aberdeen Company Name
-aberdeen_data_2 <-IDN_Domestic_Ids_Corresp  %>% 
-  select(prev_our_domestic_id, new_our_domestic_id ) %>% 
-  distinct() %>% 
-  filter(prev_our_domestic_id  %in% aberdeen_data_2$our_domestic_id) %>% 
-  left_join(aberdeen_data_2,  by = c("prev_our_domestic_id" = "our_domestic_id")) %>% 
-  rename(company_id = new_our_domestic_id) %>% 
-  distinct(company_id, .keep_all = T) %>% 
-  select(company_id, SITEID, Aberdeen_COMPANY)
-
-# Join both datasets with Aberdeen data
-aberdeen_data<-left_join(aberdeen_data, aberdeen_data_2, by = "company_id") %>% 
-  relocate(company_id, SIC_group, SITEID) %>% 
-  rename(SICGRP = SIC_group)
-
-rm(aberdeen_data_2)
-
-
 # Read data with stringency index, which measures severity of government restrictions ----
 OxCGRT_timeseries_stringency_index <- readxl::read_excel("../../Data/Extra Data/OxCGRT_timeseries_all.xlsx", sheet ="stringency_index"   )
 
@@ -139,6 +94,46 @@ export_data <- read_csv("../../Data/Indonesia/processed_data/export_summary_by_f
          -less_than_1000USD_export_2019)
 
 
+
+# Identify GVC firms: We define a GVC firm as a firm that imported and exported during the 2019 ----
+GVC_firms<-
+  # Use exports data
+  export_data %>% 
+  # Filter by year 2019
+  filter(year(date) == 2019) %>% 
+  # Distinct in terms of firms IDs to identify companies that exported during this year
+  distinct(company_id) %>% 
+  # Join with firms that imported during 2019
+  inner_join(
+    # Use imports data
+    import_data %>% 
+      # Filter by year 2010
+      filter(year(date) == 2019) %>% 
+      # Distinct in terms of firms IDs to identify companies that imported during this year
+      distinct(company_id),
+    by = "company_id"
+  ) %>% 
+  mutate(GVC_firm = 1)
+
+
+# Filter for GVC firms in exports data
+export_data<- 
+  export_data %>% 
+  # Left join GVC firm identifier
+  left_join(GVC_firms, by = "company_id") %>% 
+  # Keep only observations of GVC firms
+  filter(GVC_firm == 1)
+
+# Filter for GVC firms in imports data
+import_data<-
+  import_data %>% 
+  # Left join GVC firm identifier
+  left_join(GVC_firms, by = "company_id") %>% 
+  # Keep only observations of GVC firms
+  filter(GVC_firm == 1)
+
+
+
 # Read technology data for Indonesia ----
 
 tech_data<- read_parquet("../../Data/Indonesia/processed_data/tech_data_IDN.parquet")
@@ -154,16 +149,9 @@ tech_data<- read_parquet("../../Data/Indonesia/processed_data/tech_data_IDN.parq
 
 # Imports data 
 pay_ecom_import_data_IDN<-import_data %>% 
-  # Join information from Aberdeen to have SIC group and NAICS6 Code
-  left_join(aberdeen_data %>% 
-              select(company_id, SITEID, SICGRP, NAICS6_CODE),
-            by = c("company_id")) %>% 
-  # Keep firms that are part of analyzed SIC groups
-  filter(SICGRP %in% included_SIC_Groups) %>%   
   # Select just the bare minimum variables
   select(company_id, date_character, year, month, import, log_import, import_dummy, 
-         n_countries_import, n_hs6_products, 
-         SITEID, SICGRP, NAICS6_CODE) %>% 
+         n_countries_import, n_hs6_products) %>% 
   # Add the builtwith technology data 
   left_join(tech_data %>% 
               select(-LI, -FI),
@@ -172,14 +160,6 @@ pay_ecom_import_data_IDN<-import_data %>%
   # Drop firms that adopted e-commerce/e-payments technology before period of analysis
   filter(first_adopted_payrobust != "before february 2019" & 
            first_adopted_ecom != "before february 2019") %>%
-  # Keep firms that had website before february 2019 and are indexed after June 2021
-  filter(company_id %in% (tech_data %>%
-                            group_by(company_id) %>%
-                            summarise(FI_min = min(FI),
-                                      LI_max = max(LI)) %>%
-                            filter(FI_min <  ymd("2019-02-01"),
-                                   LI_max >  ymd("2021-06-01")) %>%
-                            pull(company_id))) %>%
   # Order data
   arrange(company_id, date)
 
@@ -189,16 +169,9 @@ gc()
 
 # Exports data 
 pay_ecom_export_data_IDN<-export_data %>% 
-  # Join information from Aberdeen to have SIC group and NAICS6 Code
-  left_join(aberdeen_data %>% 
-              select(company_id, SITEID, SICGRP, NAICS6_CODE),
-            by = c("company_id")) %>% 
-  # Keep firms that are part of analyzed SIC groups
-  filter(SICGRP %in% included_SIC_Groups) %>%   
   # Select just the bare minimum variables
   select(company_id,date_character, year, month, export, log_export, export_dummy,
-         n_countries_export, n_hs6_products,
-         SITEID, SICGRP, NAICS6_CODE) %>% 
+         n_countries_export, n_hs6_products) %>% 
   # Add the builtwith technology data 
   left_join(tech_data %>% 
               select(-LI, -FI),
@@ -206,14 +179,6 @@ pay_ecom_export_data_IDN<-export_data %>%
   # Drop firms that adopted e-commerce/e-payments technology before period of analysis
   filter(first_adopted_payrobust != "before february 2019" & 
            first_adopted_ecom != "before february 2019") %>%
-  # Keep firms that had website before february 2019 and are indexed after September 2021
-  filter(company_id %in% (tech_data %>%
-                            group_by(company_id) %>%
-                            summarise(FI_min = min(FI),
-                                      LI_max = max(LI)) %>%
-                            filter(FI_min <  ymd("2019-02-01"),
-                                   LI_max >  ymd("2021-09-01")) %>%
-                            pull(company_id))) %>%
   # Order data
   arrange(company_id, date) 
 
@@ -225,16 +190,9 @@ gc()
 
 # Imports data
 import_tech_mitig<- import_data %>% 
-  # Join information from Aberdeen to have SIC group and NAICS6 Code
-  left_join(aberdeen_data %>% 
-              select(company_id, SITEID, SICGRP, NAICS6_CODE),
-            by = c("company_id")) %>% 
-  # Keep firms that are part of analyzed SIC groups
-  filter(SICGRP %in% included_SIC_Groups) %>%   
   # Select just the bare minimum variables
   select(company_id, date, year, month, date_character, import, log_import, import_dummy,
-         n_countries_import, n_hs6_products,
-         SITEID, SICGRP, NAICS6_CODE) %>% 
+         n_countries_import, n_hs6_products) %>% 
   # Add COVID data to have stringency index 
   mutate(date = as.Date(date)) %>% 
   left_join(covid_data, by= c("date" = "month_year")) %>% 
@@ -242,16 +200,8 @@ import_tech_mitig<- import_data %>%
   left_join(tech_data  %>% 
               select(-LI, -FI, -date), 
             by = c('company_id', "date_character")) %>% 
-  # Keep firms that had website before february 2019 and are indexed after end 2021
-  filter(company_id %in% (tech_data %>%
-                            group_by(company_id) %>%
-                            summarise(FI_min = min(FI),
-                                      LI_max = max(LI)) %>%
-                            filter(FI_min <  ymd("2019-02-01"),
-                                   LI_max >  ymd("2021-06-01")) %>%
-                            pull(company_id))) %>%
   # Modify existing variables
-  mutate(adopted_pay_or_ecom_before_2019 = as.numeric(adopted_pay_or_ecom_before_2019)) %>% 
+  mutate(adopted_pay_or_ecom_before_2020 = as.numeric(adopted_pay_or_ecom_before_2020)) %>% 
   # Fill monthly stringency index with 0s in the pre-covid period 
   mutate(month_mean_stringency_index = ifelse(is.na(month_mean_stringency_index), 0, month_mean_stringency_index))
 
@@ -262,16 +212,9 @@ import_tech_mitig<- import_data %>%
 
 # Exports data
 export_tech_mitig<- export_data %>% 
-  # Join information from Aberdeen to have SIC group and NAICS6 Code
-  left_join(aberdeen_data %>% 
-              select(company_id, SITEID, SICGRP, NAICS6_CODE),
-            by = c("company_id")) %>% 
-  # Keep firms that are part of analyzed SIC groups
-  filter(SICGRP %in% included_SIC_Groups) %>%   
   # Select just the bare minimum variables
   select(company_id, date, year, month, date_character, export, log_export, export_dummy,
-         n_countries_export, n_hs6_products, 
-         SITEID, SICGRP, NAICS6_CODE) %>% 
+         n_countries_export, n_hs6_products) %>% 
   # Add COVID data to have stringency index 
   mutate(date = as.Date(date)) %>% 
   left_join(covid_data, by= c("date" = "month_year")) %>% 
@@ -279,24 +222,16 @@ export_tech_mitig<- export_data %>%
   left_join(tech_data %>% 
               select(-LI, -FI,  -date), 
             by = c('company_id', "date_character")) %>% 
-  # Keep firms that had website before july 2018 and are indexed after September 2021
-  filter(company_id %in% (tech_data %>%
-                            group_by(company_id) %>%
-                            summarise(FI_min = min(FI),
-                                      LI_max = max(LI)) %>%
-                            filter(FI_min <  ymd("2019-02-01"),
-                                   LI_max >  ymd("2021-09-01")) %>%
-                            pull(company_id))) %>%
   # Modify existing variables
-  mutate(adopted_pay_or_ecom_before_2019 = as.numeric(adopted_pay_or_ecom_before_2019)) %>% 
+  mutate(adopted_pay_or_ecom_before_2020 = as.numeric(adopted_pay_or_ecom_before_2020)) %>% 
   # Fill monthly stringency index with 0s in the pre-covid period 
   mutate(month_mean_stringency_index = ifelse(is.na(month_mean_stringency_index), 0, month_mean_stringency_index))
 
 
 # Remove no longer needed objects
-rm(export_data, import_data, tech_data, aberdeen_data, exports_less_than_1000usd, 
-   included_SIC_Groups, imports_less_than_1000usd, covid_data, 
-   OxCGRT_timeseries_stringency_index, IDN_Domestic_Ids_Corresp)
+rm(export_data, import_data, tech_data, exports_less_than_1000usd,
+   imports_less_than_1000usd, covid_data, 
+   OxCGRT_timeseries_stringency_index)
 
 # Save data ---- 
 write_csv(pay_ecom_import_data_IDN, "../../Data/Indonesia/processed_data/imports_reg_firm_month_IDN.csv")
