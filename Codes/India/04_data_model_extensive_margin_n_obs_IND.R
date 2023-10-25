@@ -11,7 +11,7 @@
 # expansion of the dataset for the extensive margin is based on the HS4 code#
 # approach: blown-up dataset where the data will be at the HS6-firm-month or#
 # quarter level, but we won't use every HS6 possible, just a set of feasible#
-# HS6 products for each firm based on the HS4 code or the NAICS4 code       #
+# HS6 products for each firm based on the HS4 code                          #
 #                                                                           #
 #                                                                           #                                                                                                                                                  #
 #===========================================================================#
@@ -44,9 +44,8 @@ hs4_n_prods<-hs_data %>%
 exports_data_IND<- fread("../../Data/India/processed_data/exports_product_model_IND.csv") %>% 
   arrange(company_id, date, hs6) %>% 
   mutate(hs6  = str_pad(hs6, 6, "left", "0"), 
-         hs4 = substr(hs6, 1, 4), 
-         NAICS4 = substr(NAICS6_CODE, 1, 4)) %>% 
-  relocate(date, hs6, hs4, company_id, NAICS4) %>% 
+         hs4 = substr(hs6, 1, 4)) %>% 
+  relocate(date, hs6, hs4, company_id) %>% 
   # Convert date variable to date type
   mutate(date = as.Date(date))
 
@@ -62,7 +61,7 @@ exp_firm_hs4<-exports_data_IND %>%
   mutate(n_hs4 = n()) %>% 
   ungroup() %>% 
          # Possible number of observations in the blown-up dataset if we use months 
-  # The process to identify the number of observations that we will have in this export (import) dataset is the following: First, we count the number of distinct HS6 products by HS4 code to have a dataset at the HS4 level- *Table 1*. Second, using the regression sample^[firms that didn't have the technology in 2019 for the model that measures if tech adoption affects trade outcomes, firms in the SIC industries analyzed, firms that had website before period of analysis and are indexed after period of analysis and keeping only period of analysis.], we collapse the export or import data by HS4 (summing trade values across time) to have a dataset at the firm-HS4 level - *Table 2*. We then join the *Table 2* and *Table 1* to have a dataset at the firm-hs4 level with columns *Firm*, *HS4*, *Number of HS6 products in the HS4*, *Total value of exports of the HS4*. Third, in this dataset at the firm-HS4 level, we multiply the number of HS6 products in the HS4 by the number of months (quarters) and we sum this value across all rows. 
+  # The process to identify the number of observations that we will have in this export (import) dataset is the following: First, we count the number of distinct HS6 products by HS4 code to have a dataset at the HS4 level- *Table 1*. Second, using the regression sample^[firms that didn't have the technology in 2019 for the model that measures if tech adoption affects trade outcomes and keeping only period of analysis.], we collapse the export or import data by HS4 (summing trade values across time) to have a dataset at the firm-HS4 level - *Table 2*. We then join the *Table 2* and *Table 1* to have a dataset at the firm-hs4 level with columns *Firm*, *HS4*, *Number of HS6 products in the HS4*, *Total value of exports of the HS4*. Third, in this dataset at the firm-HS4 level, we multiply the number of HS6 products in the HS4 by the number of months (quarters) and we sum this value across all rows. 
   mutate(# Number of observation for each firm-month-feasible hs6
          obs_firm_month_feas_hs6 = number_hs6*length(unique(exports_data_IND$date)), 
          # Total number of observation in the blown-up-dataset at the firm-month-feasible HS6
@@ -98,42 +97,11 @@ stats_n_hs4_exp<-
   mutate(Data = 'Exports')
 
 
-
-
-# Approach using NAICS4 codes. 
-exp_NAICS4_hs6<-exports_data_IND %>% 
-  group_by(NAICS4, hs6) %>% 
-  summarize(exports = sum(export)) %>%
-  ungroup() %>% 
-  group_by(NAICS4) %>% 
-  summarise(number_hs6 = n_distinct(hs6))
-
-
-exp_firm_NAICS4<-exports_data_IND %>% 
-  group_by(company_id) %>% 
-  mutate(exports = sum(export)) %>% 
-  ungroup() %>% 
-  select(company_id, NAICS4) %>% 
-  distinct(company_id, .keep_all = T) %>% 
-  # Join with the number of HS6 products that has been ever exported by any firm in a particular NAICS subsector (NAICS4)
-  left_join(exp_NAICS4_hs6, by = "NAICS4") %>% 
-  # Expected Number of observations in the expanded dataset
-  mutate(obs_firm_month_feas_hs6 = number_hs6*length(unique(exports_data_IND$date)), 
-         # Total number of observation in the blown-up-dataset at the firm-month-feasible HS6
-         total_obs_firm_month_feas_hs6 = sum(obs_firm_month_feas_hs6, na.rm = T), 
-         # Number of observation for each firm-quarter-feasible hs6
-         obs_firm_quarter_feas_hs6 =  number_hs6*length(unique(zoo::as.yearqtr(exports_data_IND$date))), 
-         # Total number of observation in the blown-up-dataset at the firm-quarter-feasible HS6
-         total_obs_firm_quarter_feas_hs6 = sum(obs_firm_quarter_feas_hs6, na.rm = T)
-         )
-  
-
 ## Imports data for model that measures if tech adoption affects trade outcomes (after processed in gen_data_model_products_IND.R) ----
 imports_data_IND<- fread("../../Data/India/processed_data/imports_product_model_IND.csv") %>% 
   arrange(company_id, date, hs6) %>% 
   mutate(hs6  = str_pad(hs6, 6, "left", "0"), 
-         hs4 = substr(hs6, 1, 4), 
-         NAICS4 = substr(NAICS6_CODE, 1, 4)) %>% 
+         hs4 = substr(hs6, 1, 4)) %>% 
   relocate(date, hs6, hs4, company_id) %>% 
   # Convert date variable to date type
   mutate(date = as.Date(date))
@@ -186,33 +154,6 @@ stats_n_hs4_imp<-
   mutate(Data = 'Imports')
 
 
-# Approach of expansion using NAICS4 codes 
-imp_NAICS4_hs6<-imports_data_IND %>% 
-  group_by(NAICS4, hs6) %>% 
-  summarize(imports = sum(import)) %>%
-  ungroup() %>% 
-  group_by(NAICS4) %>% 
-  summarise(number_hs6 = n_distinct(hs6))
-
-
-imp_firm_NAICS4<-imports_data_IND %>% 
-  group_by(company_id) %>% 
-  mutate(imports = sum(import)) %>% 
-  ungroup() %>% 
-  select(company_id, NAICS4) %>% 
-  distinct(company_id, .keep_all = T) %>% 
-  # Join with the number of HS6 products that has been ever exported by any firm in a particular NAICS subsector (NAICS4)
-  left_join(imp_NAICS4_hs6, by = "NAICS4") %>% 
-  # Expected Number of observations in the expanded dataset
-  mutate(obs_firm_month_feas_hs6 = number_hs6*length(unique(imports_data_IND$date)), 
-         # Total number of observation in the blown-up-dataset at the firm-month-feasible HS6
-         total_obs_firm_month_feas_hs6 = sum(obs_firm_month_feas_hs6, na.rm = T), 
-         # Number of observation for each firm-quarter-feasible hs6
-         obs_firm_quarter_feas_hs6 =  number_hs6*length(unique(zoo::as.yearqtr(imports_data_IND$date))), 
-         # Total number of observation in the blown-up-dataset at the firm-quarter-feasible HS6
-         total_obs_firm_quarter_feas_hs6 = sum(obs_firm_quarter_feas_hs6, na.rm = T)
-  )
-
 
 ## Percentage of firms for which x% of their total exports correspond to the same HS4 ----
 
@@ -257,30 +198,14 @@ table1<-exp_firm_hs4 %>%
       relocate(Data) 
   )
 
-# Using NAICS4 
-table2<-exp_firm_NAICS4 %>% 
-  select(total_obs_firm_month_feas_hs6, total_obs_firm_quarter_feas_hs6) %>% 
-  head(1) %>% 
-  mutate(Data = "Exports") %>% 
-  relocate(Data) %>% 
-  # Join imports data
-  bind_rows(
-    imp_firm_NAICS4 %>% 
-      select(total_obs_firm_month_feas_hs6, total_obs_firm_quarter_feas_hs6) %>% 
-      head(1) %>% 
-      mutate(Data = "Imports") %>% 
-      relocate(Data) 
-  )
-
 
 # Data for model that measures if tech adoption mitigates COVID impacts ---- 
 ## Exports data for model that measures if tech adoption mitigates COVID impacts (after processed in gen_data_model_products_IND.R) ----
 exports_data_mitig_IND<- fread("../../Data/India/processed_data/exports_tech_mitigation_model_IND.csv") %>% 
   arrange(company_id, date, hs6) %>% 
   mutate(hs6  = str_pad(hs6, 6, "left", "0"), 
-         hs4 = substr(hs6, 1, 4), 
-         NAICS4 = substr(NAICS6_CODE, 1, 4)) %>% 
-  relocate(date, hs6, hs4, NAICS4, company_id) %>% 
+         hs4 = substr(hs6, 1, 4)) %>% 
+  relocate(date, hs6, hs4, company_id) %>% 
   # Convert date variable to date type
   mutate(date = as.Date(date))
 
@@ -296,14 +221,14 @@ exp_firm_hs4_mitig<-exports_data_mitig_IND %>%
   mutate(n_hs4 = n()) %>% 
   ungroup() %>% 
   # Possible number of observations in the blown-up dataset if we use months 
-  # The process to identify the number of observations that we will have in this export (import) dataset is the following: First, we count the number of distinct HS6 products by HS4 code to have a dataset at the HS4 level- *Table 1*. Second, using the regression sample^[firms that didn't have the technology in 2019 for the model that measures if tech adoption affects trade outcomes, firms in the SIC industries analyzed, firms that had website before period of analysis and are indexed after period of analysis and keeping only period of analysis.], we collapse the export or import data by HS4 (summing trade values across time) to have a dataset at the firm-HS4 level - *Table 2*. We then join the *Table 2* and *Table 1* to have a dataset at the firm-hs4 level with columns *Firm*, *HS4*, *Number of HS6 products in the HS4*, *Total value of exports of the HS4*. Third, in this dataset at the firm-HS4 level, we multiply the number of HS6 products in the HS4 by the number of months (quarters) and we sum this value across all rows. 
+  # The process to identify the number of observations that we will have in this export (import) dataset is the following: First, we count the number of distinct HS6 products by HS4 code to have a dataset at the HS4 level- *Table 1*. Second, using the regression sample^[, we collapse the export or import data by HS4 (summing trade values across time) to have a dataset at the firm-HS4 level - *Table 2*. We then join the *Table 2* and *Table 1* to have a dataset at the firm-hs4 level with columns *Firm*, *HS4*, *Number of HS6 products in the HS4*, *Total value of exports of the HS4*. Third, in this dataset at the firm-HS4 level, we multiply the number of HS6 products in the HS4 by the number of months (quarters) and we sum this value across all rows. 
   mutate(# Number of observation for each firm-month-feasible hs6
-    obs_firm_month_feas_hs6 = number_hs6*24, # There are 24 months from 2020-01-01 to 2021-12-31 (COVID period)
+    obs_firm_month_feas_hs6 = number_hs6*length(unique(exports_data_mitig_IND$date)),
     # Total number of observation in the blown-up-dataset at the firm-month-feasible HS6
     total_obs_firm_month_feas_hs6 = sum(obs_firm_month_feas_hs6, na.rm = T), 
     # Possible number of observations in the blown-up dataset if we use quarters 
     # Number of observation for each firm-quarter-feasible hs6
-    obs_firm_quarter_feas_hs6 =  number_hs6*8, # There are 8 quarters from 2020-01-01 to 2021-12-31 (COVID period)
+    obs_firm_quarter_feas_hs6 =  number_hs6*length(unique(zoo::as.yearqtr(exports_data_mitig_IND$date))), # There are 8 quarters from 2020-01-01 to 2021-12-31 (COVID period)
     # Total number of observation in the blown-up-dataset at the firm-quarter-feasible HS6
     total_obs_firm_quarter_feas_hs6 = sum(obs_firm_quarter_feas_hs6, na.rm = T)
   ) %>% 
@@ -332,41 +257,12 @@ stats_n_hs4_exp_mitig<-exp_firm_hs4_mitig %>%
 
 
 
-exp_NAICS4_hs6_mitig<-exports_data_mitig_IND %>% 
-  group_by(NAICS4, hs6) %>% 
-  summarize(exports = sum(export)) %>%
-  ungroup() %>% 
-  group_by(NAICS4) %>% 
-  summarise(number_hs6 = n_distinct(hs6))
-
-
-exp_firm_NAICS4_mitig<-exports_data_mitig_IND %>% 
-  group_by(company_id) %>% 
-  mutate(exports = sum(export)) %>% 
-  ungroup() %>% 
-  select(company_id, NAICS4) %>% 
-  distinct(company_id, .keep_all = T) %>% 
-  # Join with the number of HS6 products that has been ever exported by any firm in a particular NAICS subsector (NAICS4)
-  left_join(exp_NAICS4_hs6_mitig, by = "NAICS4") %>% 
-  # Expected Number of observations in the expanded dataset
-  mutate(obs_firm_month_feas_hs6 = number_hs6*24, 
-         # Total number of observation in the blown-up-dataset at the firm-month-feasible HS6
-         total_obs_firm_month_feas_hs6 = sum(obs_firm_month_feas_hs6, na.rm = T), 
-         # Number of observation for each firm-quarter-feasible hs6
-         obs_firm_quarter_feas_hs6 =  number_hs6*8, 
-         # Total number of observation in the blown-up-dataset at the firm-quarter-feasible HS6
-         total_obs_firm_quarter_feas_hs6 = sum(obs_firm_quarter_feas_hs6, na.rm = T)
-  )
-
-
-
 ## Imports data for model that measures if tech adoption mitigates COVID impacts (after processed in gen_data_model_products_IND.R) ----
 imports_data_mitig_IND<- fread("../../Data/India/processed_data/imports_tech_mitigation_model_IND.csv") %>% 
   arrange(company_id, date, hs6) %>% 
   mutate(hs6  = str_pad(hs6, 6, "left", "0"), 
-         hs4 = substr(hs6, 1, 4), 
-         NAICS4 = substr(NAICS6_CODE, 1, 4)) %>% 
-  relocate(date, hs6, hs4, NAICS4, company_id) %>% 
+         hs4 = substr(hs6, 1, 4)) %>% 
+  relocate(date, hs6, hs4, company_id) %>% 
   # Convert date variable to date type
   mutate(date = as.Date(date))
 
@@ -384,12 +280,12 @@ imp_firm_hs4_mitig<-imports_data_mitig_IND %>%
   # Possible number of observations in the blown-up dataset if we use months 
   # The process to identify the number of observations that we will have in this export (import) dataset is the following: First, we count the number of distinct HS6 products by HS4 code to have a dataset at the HS4 level- *Table 1*. Second, using the regression sample^[firms that didn't have the technology in 2019 for the model that measures if tech adoption affects trade outcomes, firms in the SIC industries analyzed, firms that had website before period of analysis and are indexed after period of analysis and keeping only period of analysis.], we collapse the export or import data by HS4 (summing trade values across time) to have a dataset at the firm-HS4 level - *Table 2*. We then join the *Table 2* and *Table 1* to have a dataset at the firm-hs4 level with columns *Firm*, *HS4*, *Number of HS6 products in the HS4*, *Total value of exports of the HS4*. Third, in this dataset at the firm-HS4 level, we multiply the number of HS6 products in the HS4 by the number of months (quarters) and we sum this value across all rows. 
   mutate(# Number of observation for each firm-month-feasible hs6
-    obs_firm_month_feas_hs6 = number_hs6*24, 
+    obs_firm_month_feas_hs6 = number_hs6*length(unique(imports_data_mitig_IND$date)), 
     # Total number of observation in the blown-up-dataset at the firm-month-feasible HS6
     total_obs_firm_month_feas_hs6 = sum(obs_firm_month_feas_hs6, na.rm = T), 
     # Possible number of observations in the blown-up dataset if we use quarters 
     # Number of observation for each firm-quarter-feasible hs6
-    obs_firm_quarter_feas_hs6 =  number_hs6*8, 
+    obs_firm_quarter_feas_hs6 =  number_hs6*length(unique(zoo::as.yearqtr(imports_data_mitig_IND$date))), 
     # Total number of observation in the blown-up-dataset at the firm-quarter-feasible HS6
     total_obs_firm_quarter_feas_hs6 = sum(obs_firm_quarter_feas_hs6, na.rm = T)
   ) %>% 
@@ -417,35 +313,6 @@ stats_n_hs4_imp_mitig<-imp_firm_hs4_mitig %>%
   mutate(Data = 'Imports')
 
 
-
-
-# Expansion approach using NAICS4 
-
-imp_NAICS4_hs6_mitig<-imports_data_mitig_IND %>% 
-  group_by(NAICS4, hs6) %>% 
-  summarize(imports = sum(import)) %>%
-  ungroup() %>% 
-  group_by(NAICS4) %>% 
-  summarise(number_hs6 = n_distinct(hs6))
-
-
-imp_firm_NAICS4_mitig<-imports_data_mitig_IND %>% 
-  group_by(company_id) %>% 
-  mutate(imports = sum(import)) %>% 
-  ungroup() %>% 
-  select(company_id, NAICS4) %>% 
-  distinct(company_id, .keep_all = T) %>% 
-  # Join with the number of HS6 products that has been ever exported by any firm in a particular NAICS subsector (NAICS4)
-  left_join(imp_NAICS4_hs6_mitig, by = "NAICS4") %>% 
-  # Expected Number of observations in the expanded dataset
-  mutate(obs_firm_month_feas_hs6 = number_hs6*24, 
-         # Total number of observation in the blown-up-dataset at the firm-month-feasible HS6
-         total_obs_firm_month_feas_hs6 = sum(obs_firm_month_feas_hs6, na.rm = T), 
-         # Number of observation for each firm-quarter-feasible hs6
-         obs_firm_quarter_feas_hs6 =  number_hs6*8, 
-         # Total number of observation in the blown-up-dataset at the firm-quarter-feasible HS6
-         total_obs_firm_quarter_feas_hs6 = sum(obs_firm_quarter_feas_hs6, na.rm = T)
-  )
 
 
 
@@ -490,24 +357,6 @@ table1_mitig<-exp_firm_hs4_mitig %>%
       relocate(Data) 
   )
 
-
-
-table2_mitig<-exp_firm_NAICS4_mitig %>% 
-  select(total_obs_firm_month_feas_hs6, total_obs_firm_quarter_feas_hs6) %>% 
-  head(1) %>% 
-  mutate(Data = "Exports") %>% 
-  relocate(Data) %>% 
-  # Join imports data
-  bind_rows(
-    imp_firm_NAICS4_mitig %>% 
-      select(total_obs_firm_month_feas_hs6, total_obs_firm_quarter_feas_hs6) %>% 
-      head(1) %>% 
-      mutate(Data = "Imports") %>% 
-      relocate(Data) 
-  )
-
-
-# Only expand for the HS4 most exported/imported ....
 
 
 
