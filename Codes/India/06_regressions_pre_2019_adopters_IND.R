@@ -92,31 +92,31 @@ import_tech_mitig<-data.frame(import_tech_mitig, i(import_tech_mitig$pre_2019_ad
 
 # Labels to be displayed in table of results 
 coef_labels<-c(
-  "pre_2017_adopter:month_mean_stringency_index"="Pre-2017 Adopter× Monthly Avg. Stringency Index",
-  "month_mean_stringency_index:adopter_2017"="2017-Adopter× Monthly Avg. Stringency Index",
-  "month_mean_stringency_index:adopter_2018"="2018-Adopter× Monthly Avg. Stringency Index",
+  "pre_2017_adopter:month_mean_stringency_index"="Pre-2017 Adopter × COVID stringency index",
+  "month_mean_stringency_index:adopter_2017"="2017-Adopter × COVID stringency index",
+  "month_mean_stringency_index:adopter_2018"="2018-Adopter × COVID stringency index",
   
-  "month_mean_stringency_index:cons_BEC" = "Monthly Avg. Stringency Index× Consumable",
-  "pre_2017_adopter:month_mean_stringency_index:cons_BEC" = "Pre-2017 Adopter× Monthly Avg. Stringency Index× Consumable",
-  "month_mean_stringency_index:cons_BEC:adopter_2017" = "2017-Adopter× Monthly Avg. Stringency Index× Consumable",
-  "month_mean_stringency_index:cons_BEC:adopter_2018" = "2018-Adopter× Monthly Avg. Stringency Index× Consumable",
+  "month_mean_stringency_index:cons_BEC" = "COVID stringency index × Consumable",
+  "pre_2017_adopter:month_mean_stringency_index:cons_BEC" = "Pre-2017 Adopter × COVID stringency index × Consumable",
+  "month_mean_stringency_index:cons_BEC:adopter_2017" = "2017-Adopter × COVID stringency index × Consumable",
+  "month_mean_stringency_index:cons_BEC:adopter_2018" = "2018-Adopter × COVID stringency index × Consumable",
   
-  "month_mean_stringency_index:China_E_commerce" = "Monthly Avg. Stringency Index× China e-commerce",
-  "pre_2017_adopter:month_mean_stringency_index:China_E_commerce" = "Pre-2017 Adopter× Monthly Avg. Stringency Index× China e-commerce",
-  "month_mean_stringency_index:China_E_commerce:adopter_2017" = "2017-Adopter× Monthly Avg. Stringency Index× China e-commerce",
-  "month_mean_stringency_index:China_E_commerce:adopter_2018" = "2018-Adopter× Monthly Avg. Stringency Index× China e-commerce",
-  
-  
-  "month_mean_stringency_index:Ebay_tradable" = "Monthly Avg. Stringency Index× eBay-Tradable",
-  "pre_2017_adopter:month_mean_stringency_index:Ebay_tradable" = "Pre-2017 Adopter× Monthly Avg. Stringency Index× eBay-Tradable",
-  "month_mean_stringency_index:Ebay_tradable:adopter_2017" = "2017-Adopter× Monthly Avg. Stringency Index× eBay-Tradable",
-  "month_mean_stringency_index:Ebay_tradable:adopter_2018" = "2018-Adopter× Monthly Avg. Stringency Index× eBay-Tradable",
+  "month_mean_stringency_index:China_E_commerce" = "COVID stringency index × China e-commerce",
+  "pre_2017_adopter:month_mean_stringency_index:China_E_commerce" = "Pre-2017 Adopter × COVID stringency index × China e-commerce",
+  "month_mean_stringency_index:China_E_commerce:adopter_2017" = "2017-Adopter × COVID stringency index × China e-commerce",
+  "month_mean_stringency_index:China_E_commerce:adopter_2018" = "2018-Adopter × COVID stringency index × China e-commerce",
   
   
-  "month_mean_stringency_index:durable_BEC" = "Monthly Avg. Stringency Index× Durable",
-  "pre_2017_adopter:month_mean_stringency_index:durable_BEC" = "Pre-2017 Adopter× Monthly Avg. Stringency Index× Durable", 
-  "month_mean_stringency_index:durable_BEC:adopter_2017" = "2017-Adopter× Monthly Avg. Stringency Index× Durable",
-  "month_mean_stringency_index:durable_BEC:adopter_2018" = "2018-Adopter× Monthly Avg. Stringency Index× Durable"
+  "month_mean_stringency_index:Ebay_tradable" = "COVID stringency index × eBay-Tradable",
+  "pre_2017_adopter:month_mean_stringency_index:Ebay_tradable" = "Pre-2017 Adopter × COVID stringency index × eBay-Tradable",
+  "month_mean_stringency_index:Ebay_tradable:adopter_2017" = "2017-Adopter × COVID stringency index × eBay-Tradable",
+  "month_mean_stringency_index:Ebay_tradable:adopter_2018" = "2018-Adopter × COVID stringency index × eBay-Tradable",
+  
+  
+  "month_mean_stringency_index:durable_BEC" = "COVID stringency index × Durable",
+  "pre_2017_adopter:month_mean_stringency_index:durable_BEC" = "Pre-2017 Adopter × COVID stringency index × Durable", 
+  "month_mean_stringency_index:durable_BEC:adopter_2017" = "2017-Adopter × COVID stringency index × Durable",
+  "month_mean_stringency_index:durable_BEC:adopter_2018" = "2018-Adopter × COVID stringency index × Durable"
   
 )
 
