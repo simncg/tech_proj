@@ -32,14 +32,13 @@ source("../src/packages.R")
 
 # Read Domestic Exports data at the firm-month-hs8-destination country level
 panjiva_export_data <-
-  read_dta("../../Data/Indonesia/raw_data/IDN_Exports_Monthly_domestic_level_dropdup.dta") %>%
-  filter(!str_starts(hs, "27"))
+  read_dta("../../Data/Indonesia/raw_data/exports_collapsed_dom_hs6.dta") %>%
+  filter(!str_starts(hs6, "27")) 
+
 
 ## Collapse exports data to the firm-month-hs6 level ----
 export_summary_by_firm_month_HS_code <- panjiva_export_data %>%
-  select(company_id, year, month,  hs, export, country) %>%
-  mutate(hs6 = substr(hs, 1, 6)) %>%
-  select(-hs) %>%
+  select(company_id = domestic_id, year, month,  hs6, export, country = foreign_country_cleaned_iso3) %>%
   group_by(company_id, year, month,  hs6) %>%
   summarise(
     # # Sum export values by firm-month-hs6
@@ -80,8 +79,7 @@ write_csv(export_summary_by_firm_month_HS_code, "../../Data/Indonesia/processed_
 
 ## Collapse exports data to the firm-month level ---- 
 export_summary_by_firm_month <- panjiva_export_data %>%
-  mutate(hs6 = substr(hs, 1, 6)) %>%
-  select(company_id, year, month, export, country, hs6) %>%
+  select(company_id = domestic_id, year, month,  hs6, export, country = foreign_country_cleaned_iso3) %>%
   group_by(company_id, year, month) %>%
   summarise(
     # # Sum export values by firm-month-hs6
@@ -124,19 +122,15 @@ gc()
 
 # Create outcomes for imports at the firm-month-hs6 level ----
 
-# Read Domestic Imports data at the firm-month-hs8-destination country level
+# Read Domestic Imports data at the firm-month-hs6-destination country level-quantity unit
 panjiva_import_data <-
-  read_dta("../../Data/Indonesia/raw_data/IDN_Imports_Monthly_domestic_level_dropdup.dta") %>%
-  filter(!str_starts(hs, "27"))
-
-
+  read_dta("../../Data/Indonesia/raw_data/imports_collapsed_dom_hs6.dta") %>%
+  filter(!str_starts(hs6, "27"))
 
 ## Collapse exports data to the firm-month-hs6 level ----
 import_summary_by_firm_month_HS_code<-
   panjiva_import_data %>%
-  select(company_id, year, month,  hs, import, country) %>%
-  mutate(hs6 = substr(hs, 1, 6)) %>%
-  select(-hs) %>%
+  select(company_id = domestic_id, year, month,  hs6, import, country = foreign_country_cleaned_iso3) %>%
   group_by(company_id, year, month,  hs6) %>%
   summarise(
     # Sum import values by firm-month-hs6
@@ -175,8 +169,7 @@ write_csv(import_summary_by_firm_month_HS_code, "../../Data/Indonesia/processed_
 # Collapse imports data to the firm-month level ----
 import_summary_by_firm_month<-
   panjiva_import_data %>%
-  mutate(hs6 = substr(hs, 1, 6)) %>%
-  select(company_id, year, month, import, country, hs6) %>%
+  select(company_id = domestic_id, year, month, import, country = foreign_country_cleaned_iso3, hs6) %>%
   # Group by firm-year-month
   group_by(company_id, year, month) %>%
   summarise(
