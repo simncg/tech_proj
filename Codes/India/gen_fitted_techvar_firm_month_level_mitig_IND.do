@@ -84,7 +84,7 @@ foreach data of local imp_exp {
 	import delimited "$path_data/India/processed_data/`data'_tech_mitigation_reg_firm_month_IND.csv", clear
 			
 		
-	keep company_id year month date date_character `y' adopted_pay_or_ecom_before_2019
+	keep company_id year month date date_character `y' adopted_pay_or_ecom_before_2020
 
 
 	/*--------------------------------------------------------------------------
@@ -112,7 +112,7 @@ foreach data of local imp_exp {
 	rename bing_lightning_at_firm ltb    // lightning strikes bing
 	rename bing_ookla_d_speed_at_firm dspb // download speed bing
 	rename bing_ookla_u_speed_at_firm uspb // upload speed bing
-	rename adopted_pay_or_ecom_before_2019 tech   // technology variable (pre-2019 adoption of technology)
+	rename adopted_pay_or_ecom_before_2020 tech   // technology variable (pre-2020 adoption of technology)
 	rename month_mean_stringency_index sti    // stringency index in t since endogenous variable is covid_t*tech_i
 		
 	* Generate interaction technology variable and covid variable	

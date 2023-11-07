@@ -1329,7 +1329,7 @@ prods_tech<-
   # Indonesia Exports
   export_mitig_data_IDN %>% 
   as.data.frame() %>% 
-  select(tech = adopted_pay_or_ecom_before_2019, Ebay_tradable, China_E_commerce, cons_BEC, durable_BEC) %>% 
+  select(tech = adopted_pay_or_ecom_before_2020, Ebay_tradable, China_E_commerce, cons_BEC, durable_BEC) %>% 
   na.omit() %>% 
   summarize_all(list(Mean = mean)) %>% 
   pivot_longer(cols = everything(), 
@@ -1343,7 +1343,7 @@ prods_tech<-
     # Indonesia Imports
     import_mitig_data_IDN %>% 
     as.data.frame() %>% 
-    select(tech = adopted_pay_or_ecom_before_2019, Ebay_tradable, China_E_commerce, cons_BEC, durable_BEC) %>% 
+    select(tech = adopted_pay_or_ecom_before_2020, Ebay_tradable, China_E_commerce, cons_BEC, durable_BEC) %>% 
     na.omit() %>% 
     summarize_all(list(Mean = mean)) %>% 
     pivot_longer(cols = everything(), 
@@ -1358,7 +1358,7 @@ prods_tech<-
     # India Exports
     export_mitig_data_IND %>% 
     as.data.frame() %>% 
-    select(tech = adopted_pay_or_ecom_before_2019, Ebay_tradable, China_E_commerce, cons_BEC, durable_BEC) %>% 
+    select(tech = adopted_pay_or_ecom_before_2020, Ebay_tradable, China_E_commerce, cons_BEC, durable_BEC) %>% 
     na.omit() %>% 
     summarize_all(list(Mean = mean)) %>% 
     pivot_longer(cols = everything(), 
@@ -1372,7 +1372,7 @@ prods_tech<-
       # India Imports
       import_mitig_data_IND %>% 
       as.data.frame() %>% 
-      select(tech = adopted_pay_or_ecom_before_2019, Ebay_tradable, China_E_commerce, cons_BEC, durable_BEC) %>% 
+      select(tech = adopted_pay_or_ecom_before_2020, Ebay_tradable, China_E_commerce, cons_BEC, durable_BEC) %>% 
       na.omit() %>% 
       summarize_all(list(Mean = mean)) %>% 
       pivot_longer(cols = everything(), 
@@ -1389,7 +1389,7 @@ prods_tech<-
     # Mexico Exports
     export_mitig_data_MEX %>% 
     as.data.frame() %>% 
-    select(tech = adopted_pay_or_ecom_before_2019, Ebay_tradable, China_E_commerce, cons_BEC, durable_BEC) %>% 
+    select(tech = adopted_pay_or_ecom_before_2020, Ebay_tradable, China_E_commerce, cons_BEC, durable_BEC) %>% 
     na.omit() %>% 
     summarize_all(list(Mean = mean)) %>% 
     pivot_longer(cols = everything(), 
@@ -1403,7 +1403,7 @@ prods_tech<-
       # Mexico Imports
       import_mitig_data_MEX %>% 
       as.data.frame() %>% 
-      select(tech = adopted_pay_or_ecom_before_2019, Ebay_tradable, China_E_commerce, cons_BEC, durable_BEC) %>% 
+      select(tech = adopted_pay_or_ecom_before_2020, Ebay_tradable, China_E_commerce, cons_BEC, durable_BEC) %>% 
       na.omit() %>% 
       summarize_all(list(Mean = mean)) %>% 
       pivot_longer(cols = everything(), 
@@ -1424,10 +1424,10 @@ prods_tech<-
 
 prods_tech<-as.data.frame(prods_tech)
 rownames(prods_tech)<-c("Exports", "Imports", "Exports ", "Imports ", "Exports  ", "Imports  ")
-colnames(prods_tech)<-c("Pre-2019\nE-payment/E-commerce", "e-Bay tradable", "China E-commerce", "Consumable", "Durable")
+colnames(prods_tech)<-c("Firm technology\nadoption pre-2020", "e-Bay tradable", "China E-commerce", "Consumable", "Durable")
 
 kbl(prods_tech, 
-    caption = "Proportion of Observations with Dummy Variables Equal to 1 for E-payment/E-commerce adopted before 2019, e-Bay Tradable, China E-commerce, Consumable, and Durable Product Categories - Regression Sample", centering = T, booktabs = T, align = "c") %>%
+    caption = "Proportion of Observations with Dummy Variables Equal to 1 for technology adopted before 2020, e-Bay Tradable, China E-commerce, Consumable, and Durable Product Categories - Regression Sample", centering = T, booktabs = T, align = "c") %>%
   kable_classic() %>%
   kable_styling(latex_options = "HOLD_position") %>% 
   pack_rows("Indonesia", 1, 2) %>%

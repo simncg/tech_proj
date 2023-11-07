@@ -107,7 +107,7 @@ GVC_firms<-
   inner_join(
     # Use imports data
     import_data %>% 
-      # Filter by year 2010
+      # Filter by year 2019
       filter(year(date) == 2019) %>% 
       # Distinct in terms of firms IDs to identify companies that imported during this year
       distinct(company_id),
@@ -142,8 +142,7 @@ tech_data<- read_parquet("../../Data/Indonesia/processed_data/tech_data_IDN.parq
 # Data for regressions of the model that measures if tech adoption affects trade outcomes ----
 
 
-# Data for regressions are at the transaction level (firm-month-hs6 code)
-# Join data for those observations that are matched to both BuiltWith and Aberdeen data
+# Data for regressions are at the firm-month level
 # We will analyze E-commerce (ecomnod) and E-payment technologies (payrobust)
 
 

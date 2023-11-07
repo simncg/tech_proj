@@ -1,5 +1,5 @@
 #===========================================================================#
-# Date:    December 2022                                                    #
+# Date:    November 2023                                                    #
 #                                                                           #
 # Project: Analysis of the COVID-19 Shock, Technology and Trade in India,   #
 #          Indonesia and Mexico.                                            #
@@ -184,9 +184,9 @@ FE<-as.data.frame(matrix(c("Firm FE", rep("Yes", length(e_comm_mod)),
 # Labels for variables and interaction of variables in tables 
 
 # Assign variables names to display in tables -----
-coef_labels<-c(pay_or_ecomnod_t_2 = "E-payment or E-commerce (t-2)",
-               "pay_or_ecomnod_t_2:China_E_commerce"="E-payment or E-commerce (t-2) × China e-commerce",
-               "pay_or_ecomnod_t_2:cons_BEC" = "E-payment or E-commerce (t-2) × Consumable"
+coef_labels<-c(pay_or_ecomnod_t_2 = "Firm technology adoption (t-2)",
+               "pay_or_ecomnod_t_2:China_E_commerce"="Firm technology adoption (t-2) × China e-commerce",
+               "pay_or_ecomnod_t_2:cons_BEC" = "Firm technology adoption (t-2) × Consumable"
                )
 
 

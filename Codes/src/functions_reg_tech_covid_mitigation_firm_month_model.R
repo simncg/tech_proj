@@ -41,24 +41,24 @@ gm <- list(
 reg_firm_month_tech_covid_mitig<-function(import_data, export_data, country_name, coef_labels){
   
   
-  log_import_reg <- feols(as.formula("log_import ~ adopted_pay_or_ecom_before_2019:month_mean_stringency_index | 
+  log_import_reg <- feols(as.formula("log_import ~ adopted_pay_or_ecom_before_2020:month_mean_stringency_index | 
                                     company_id + date_character"),
                           cluster = c("company_id"),
                           data = import_data)
   
   
-  log_export_reg <- feols(as.formula("log_export ~ adopted_pay_or_ecom_before_2019:month_mean_stringency_index | 
+  log_export_reg <- feols(as.formula("log_export ~ adopted_pay_or_ecom_before_2020:month_mean_stringency_index | 
                                     company_id + date_character"), 
                           cluster = c("company_id"),
                           data = export_data)
   
-  n_countries_imp_reg <- feols(as.formula("n_countries_import ~ adopted_pay_or_ecom_before_2019:month_mean_stringency_index | 
+  n_countries_imp_reg <- feols(as.formula("n_countries_import ~ adopted_pay_or_ecom_before_2020:month_mean_stringency_index | 
                                     company_id + date_character"),
                                cluster = c("company_id"),
                                data = import_data)
   
   
-  n_countries_exp_reg <- feols(as.formula("n_countries_export ~ adopted_pay_or_ecom_before_2019:month_mean_stringency_index | 
+  n_countries_exp_reg <- feols(as.formula("n_countries_export ~ adopted_pay_or_ecom_before_2020:month_mean_stringency_index | 
                                     company_id + date_character"), 
                                cluster = c("company_id"),
                                data = export_data)
@@ -68,13 +68,13 @@ reg_firm_month_tech_covid_mitig<-function(import_data, export_data, country_name
   
   if(country_name!="Indonesia"){
     
-    new_source_reg <- feols(as.formula("new_source ~ adopted_pay_or_ecom_before_2019:month_mean_stringency_index | 
+    new_source_reg <- feols(as.formula("new_source ~ adopted_pay_or_ecom_before_2020:month_mean_stringency_index | 
                                     company_id + date_character"),
                             cluster = c("company_id"),
                             data = import_data)
     
     
-    new_destination_reg <- feols(as.formula("new_destination ~ adopted_pay_or_ecom_before_2019:month_mean_stringency_index | 
+    new_destination_reg <- feols(as.formula("new_destination ~ adopted_pay_or_ecom_before_2020:month_mean_stringency_index | 
                                     company_id + date_character"), 
                                  cluster = c("company_id"),
                                  data = export_data)
@@ -93,7 +93,7 @@ reg_firm_month_tech_covid_mitig<-function(import_data, export_data, country_name
                                 "New Source", "New Destination")
     
     
-    list_notes<-list("E-payment/E-commerce 2019 variable is a dummy indicating pre-2019 adoption of E-payment or E-commerce technology", 
+    list_notes<-list("Firm technology adoption pre-2020 variable is a dummy indicating pre-2020 adoption of E-payment or E-commerce technology", 
                      "Clustered-standard errors at the firm level.", 
                      "A new source/new destination is defined with respect to baseline year 2017", 
                      "The regressions for new source/destination are estimated using a subset of firms that had transactions in 2017 as well.")
@@ -109,7 +109,7 @@ reg_firm_month_tech_covid_mitig<-function(import_data, export_data, country_name
                                 "No. Sources", "No. Destinations")
     
     
-    list_notes<-list("E-payment/E-commerce 2019 variable is a dummy indicating pre-2019 adoption of E-payment or E-commerce technology", 
+    list_notes<-list("Firm technology adoption pre-2020 variable is a dummy indicating pre-2020 adoption of E-payment or E-commerce technology", 
                      "Clustered-standard errors at the firm level.")
     
   }

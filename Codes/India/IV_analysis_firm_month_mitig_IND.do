@@ -84,7 +84,7 @@ foreach data of local imp_exp {
 	import delimited "$path_data/India/processed_data/`data'_tech_mitigation_reg_firm_month_IND.csv", clear
 			
 		
-	keep company_id year month date date_character `y' adopted_pay_or_ecom_before_2019
+	keep company_id year month date date_character `y' adopted_pay_or_ecom_before_2020
 
 
 	/*--------------------------------------------------------------------------
@@ -112,7 +112,7 @@ foreach data of local imp_exp {
 	rename bing_lightning_at_firm ltb    // lightning strikes bing
 	rename bing_ookla_d_speed_at_firm dspb // download speed bing
 	rename bing_ookla_u_speed_at_firm uspb // upload speed bing
-	rename adopted_pay_or_ecom_before_2019 tech   // technology variable (pre-2019 adoption of technolgy)
+	rename adopted_pay_or_ecom_before_2020 tech   // technology variable (pre-2020 adoption of technolgy)
 	rename month_mean_stringency_index sti    // stringency index in t since endogenous variable is covid_t*tech_i
 		
 		
@@ -147,7 +147,7 @@ foreach y of local dep_vars {
 	cap file close fh 
 	file open fh using "$path_outputs/India/regressions_results/firm_month_covid_mitigation_model/first_stage_log_iv_`y'_mitig_firm_month.tex", write replace  // Opening latex file for first stage
 
-	file write fh "{\def\sym#1{\ifmmode^{#1}\else\(^{#1}\)\fi}\resizebox{\textwidth}{!}{  \begin{tabular}{l*{6}{c}} \hline\hline \toprule & \multicolumn{6}{c}{Dependent Variable: Pre 2019 E-payment or E-commerce $\cdot covid_t$} \\ \toprule & \multicolumn{3}{c}{Instrumental Variable (Google)} & \multicolumn{3}{c}{Instrumental Variable (Bing)} \\ \cmidrule(lr){2-4} \cmidrule(lr){5-7}  & Log(1+Lightning Strikes) & Log(1+Download Speed) & Log(1+Upload Speed) & Log(1+Lightning Strikes) & Log(1+Download Speed) & Log(1+Upload Speed)\\ \hline" _n // Header of the table
+	file write fh "{\def\sym#1{\ifmmode^{#1}\else\(^{#1}\)\fi}\resizebox{\textwidth}{!}{  \begin{tabular}{l*{6}{c}} \hline\hline \toprule & \multicolumn{6}{c}{Dependent Variable: Firm technology adoption pre-2020 $\cdot covid_t$} \\ \toprule & \multicolumn{3}{c}{Instrumental Variable (Google)} & \multicolumn{3}{c}{Instrumental Variable (Bing)} \\ \cmidrule(lr){2-4} \cmidrule(lr){5-7}  & Log(1+Lightning Strikes) & Log(1+Download Speed) & Log(1+Upload Speed) & Log(1+Lightning Strikes) & Log(1+Download Speed) & Log(1+Upload Speed)\\ \hline" _n // Header of the table
 	
 	
 	* Iterate over covid variables 
@@ -252,7 +252,7 @@ foreach y of local dep_vars {
 	
 		
 	* Adding coefficients and significance level stars 
-	file write fh "Pre 2019 E-payment or E-commerce $\cdot covid_t$" "&" %4.3fc (`b_ltg') "`star_ltg'" "&"  %4.3fc (`b_dspg') "`star_dspg'" "&"  %4.3fc (`b_uspg') "`star_uspg'" "&"  %4.3fc (`b_ltb') "`star_ltb'" "&"  %4.3fc (`b_dspb') "`star_dspb'" "&"  %4.3fc (`b_uspb') "`star_uspb'" "\\" _n		
+	file write fh "Firm technology adoption pre-2020$\cdot covid_t$" "&" %4.3fc (`b_ltg') "`star_ltg'" "&"  %4.3fc (`b_dspg') "`star_dspg'" "&"  %4.3fc (`b_uspg') "`star_uspg'" "&"  %4.3fc (`b_ltb') "`star_ltb'" "&"  %4.3fc (`b_dspb') "`star_dspb'" "&"  %4.3fc (`b_uspb') "`star_uspb'" "\\" _n		
 		
 	* Adding standard errors 
 	file write fh "&" "(" %4.3fc (`se_ltg') ")" "&" "(" %4.3fc (`se_dspg')  ")" "&" "(" %4.3fc (`se_uspg') ")" "&" "(" %4.3fc (`se_ltb')  ")" "&" "(" %4.3fc (`se_dspb')  ")" "&" "(" %4.3fc (`se_uspb')  ") \\" _n  

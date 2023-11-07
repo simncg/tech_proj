@@ -35,8 +35,8 @@ imports_ext_marg_mitig<-fread("../../Data/Indonesia/processed_data/imports_mitig
 exports_ext_marg_mitig<-fread("../../Data/Indonesia/processed_data/exports_mitig_model_extmarg_IDN.csv")
 
 # From logical to dummy
-imports_ext_marg_mitig$adopted_pay_or_ecom_before_2019<-as.numeric(imports_ext_marg_mitig$adopted_pay_or_ecom_before_2019)
-exports_ext_marg_mitig$adopted_pay_or_ecom_before_2019<-as.numeric(exports_ext_marg_mitig$adopted_pay_or_ecom_before_2019)
+imports_ext_marg_mitig$adopted_pay_or_ecom_before_2020<-as.numeric(imports_ext_marg_mitig$adopted_pay_or_ecom_before_2020)
+exports_ext_marg_mitig$adopted_pay_or_ecom_before_2020<-as.numeric(exports_ext_marg_mitig$adopted_pay_or_ecom_before_2020)
 
 
 # Read data with information of variables to be displayed in tables of regression results
@@ -101,7 +101,7 @@ for(i in 1:nrow(dictionary)){
       imports_data = imports_ext_marg_mitig, 
       exports_data = exports_ext_marg_mitig, 
       product_var = dictionary$product_var[i], 
-      tech_var = "adopted_pay_or_ecom_before_2019", 
+      tech_var = "adopted_pay_or_ecom_before_2020", 
       covid_var = "month_mean_stringency_index",
       table_notes = c(dictionary$table_notes[i]), 
       country_name = "Indonesia", 
@@ -122,7 +122,7 @@ saveRDS(list_tables_mod2, "../../Outputs/Indonesia/regressions_results/tech_miti
 list_tables_mod2_n_countries<-table_mod2_n_countries(imports_data = imports_ext_marg_mitig, 
                                                      exports_data = exports_ext_marg_mitig,
                                                      n_countries_var = "n_country_partners",
-                                                     tech_var = "adopted_pay_or_ecom_before_2019", 
+                                                     tech_var = "adopted_pay_or_ecom_before_2020", 
                                                      covid_var = "month_mean_stringency_index",
                                                      country_name = "Indonesia")
 

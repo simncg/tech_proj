@@ -133,8 +133,8 @@ reg_models_tech_covid_definitive<-function(import_data, export_data, country_nam
                              "Month FE", rep("Yes", length(models_tech_covid_definitive))), 
                            nrow = 3, byrow=T))
   
-  if(indep_var == "adopted_pay_or_ecom_before_2019"){
-    indep_var_note<-"The variable E-payment or E-commerce 2019 means that the company adopted the E-payment or E-commerce technology before 2019."
+  if(indep_var == "adopted_pay_or_ecom_before_2020"){
+    indep_var_note<-"The variable Firm technology adoption pre-2020 means that the company adopted the E-payment or E-commerce technology before 2020."
   } else if(indep_var == "months_since_adoption"){
     indep_var_note<-"The variable Months Since Adoption represents the number of months since the firm adopted the E-payment or E-commerce technology."
   }
@@ -186,7 +186,7 @@ reg_models_tech_covid_definitive<-function(import_data, export_data, country_nam
 
 
 # This function allows to estimate the existing tech regressions using two independent variable measuring the existing tech adoption. For example, we estimate the 
-# regressions using technology adoption before 2019 dummy and months since adoption. 
+# regressions using technology adoption before 2020 dummy and months since adoption. 
 
 reg_models_tech_covid_two_indep_vars<-function(import_data, export_data, country_name, coef_labels, 
                                                dep_var_import, dep_var_export, 
@@ -316,7 +316,7 @@ reg_models_tech_covid_two_indep_vars<-function(import_data, export_data, country
                       title = paste0(country_name," - Regression Results for ", dep_var_labels[1], " and ", dep_var_labels[2], ": e-Bay tradable, China e-commerce, Consumable and Durable products")) |>
     add_header_above(c(" " = 1, "Dependent Variables" = length(models_tech_covid_definitive))) %>% 
     kable_styling(latex_options = c("HOLD_position", "scale_down")) %>% 
-    footnote(paste0("Clustered-standard errors at the firm-product level. The variable E-payment or E-commerce 2019 is a dummy equal to 1 if the company adopted the E-payment or E-commerce technology before 2019 and 0 if not. The variable Months Since Adoption is equal to the number of months since the firm adopted the E-payment or E-commerce technology. This is applicable only for firms that adopted the technology before 2019. For firms that did not adopt the technology prior to 2019, the 'Months Since Adoption' variable is set to 0. ",
+    footnote(paste0("Clustered-standard errors at the firm-product level. The variable Firm technology adoption pre-2020 is a dummy equal to 1 if the company adopted the E-payment or E-commerce technology before 2020 and 0 if not. The variable Months Since Adoption is equal to the number of months since the firm adopted the E-payment or E-commerce technology. This is applicable only for firms that adopted the technology before 2020. For firms that did not adopt the technology prior to 2020, the 'Months Since Adoption' variable is set to 0. ",
                     list_notes), 
              threeparttable = TRUE) 
   
@@ -328,7 +328,7 @@ reg_models_tech_covid_two_indep_vars<-function(import_data, export_data, country
 
 
 #This function will create a regression of the form $y_{ipt} = \alpha_0 + \alpha_1 indep_var1 \cdot covid + \alpha_1 indep_var1 \cdot covid \cdot product_p + same last two terms for all indep_vars  + covid \cdot product_p $
-reg_models_pre_2019_adopters<-function(import_data, export_data, country_name, 
+reg_models_pre_2020_adopters<-function(import_data, export_data, country_name, 
                                        product_vars, coef_labels, dep_var_import, 
                                        dep_var_export, dep_var_import_label, 
                                        dep_var_export_label, 
@@ -423,24 +423,24 @@ reg_models_pre_2019_adopters<-function(import_data, export_data, country_name,
 #   
 #   
 #   paybustorecom_import_preresearch_covid_1 <- feols(as.formula(paste0(dep_var_import,  "~ 
-#                                                       adopted_pay_or_ecom_before_2019:month_mean_stringency_index +
-#                                                       adopted_pay_or_ecom_before_2019:month_mean_stringency_index:Ebay_tradable +
+#                                                       adopted_pay_or_ecom_before_2020:month_mean_stringency_index +
+#                                                       adopted_pay_or_ecom_before_2020:month_mean_stringency_index:Ebay_tradable +
 #                                                       month_mean_stringency_index:Ebay_tradable|
 #                                                       company_id + hs6 + date_character")), 
 #                                                     cluster = c("company_id", "hs6"),
 #                                                     data = import_data )
 #   
 #   paybustorecom_import_preresearch_covid_2 <- feols(as.formula(paste0(dep_var_import,  "~ 
-#                                                       adopted_pay_or_ecom_before_2019:month_mean_stringency_index +
-#                                                       adopted_pay_or_ecom_before_2019:month_mean_stringency_index:China_E_commerce +
+#                                                       adopted_pay_or_ecom_before_2020:month_mean_stringency_index +
+#                                                       adopted_pay_or_ecom_before_2020:month_mean_stringency_index:China_E_commerce +
 #                                                       month_mean_stringency_index:China_E_commerce|
 #                                                       company_id + hs6 + date_character")), 
 #                                                     cluster = c("company_id", "hs6"),
 #                                                     data = import_data )
 #   
 #   paybustorecom_import_preresearch_covid_3 <- feols(as.formula(paste0(dep_var_import,  "~
-#                                                       adopted_pay_or_ecom_before_2019:month_mean_stringency_index +
-#                                                       adopted_pay_or_ecom_before_2019:month_mean_stringency_index:cons_BEC +
+#                                                       adopted_pay_or_ecom_before_2020:month_mean_stringency_index +
+#                                                       adopted_pay_or_ecom_before_2020:month_mean_stringency_index:cons_BEC +
 #                                                       month_mean_stringency_index:cons_BEC|
 #                                                       company_id + hs6 + date_character")), 
 #                                                     cluster = c("company_id", "hs6"),
@@ -449,8 +449,8 @@ reg_models_pre_2019_adopters<-function(import_data, export_data, country_name,
 #   
 #   
 #   paybustorecom_import_preresearch_covid_4 <- feols(as.formula(paste0(dep_var_import,  " ~ 
-#                                                       adopted_pay_or_ecom_before_2019:month_mean_stringency_index +
-#                                                       adopted_pay_or_ecom_before_2019:month_mean_stringency_index:durable_BEC +
+#                                                       adopted_pay_or_ecom_before_2020:month_mean_stringency_index +
+#                                                       adopted_pay_or_ecom_before_2020:month_mean_stringency_index:durable_BEC +
 #                                                       month_mean_stringency_index:durable_BEC|
 #                                                       company_id + hs6 + date_character")), 
 #                                                     cluster = c("company_id", "hs6"),
@@ -459,24 +459,24 @@ reg_models_pre_2019_adopters<-function(import_data, export_data, country_name,
 #   
 #   
 #   paybustorecom_export_preresearch_covid_1 <- feols(as.formula(paste0(dep_var_export,  "~ 
-#                                                       adopted_pay_or_ecom_before_2019:month_mean_stringency_index +
-#                                                       adopted_pay_or_ecom_before_2019:month_mean_stringency_index:Ebay_tradable +
+#                                                       adopted_pay_or_ecom_before_2020:month_mean_stringency_index +
+#                                                       adopted_pay_or_ecom_before_2020:month_mean_stringency_index:Ebay_tradable +
 #                                                       month_mean_stringency_index:Ebay_tradable|
 #                                                       company_id + hs6 + date_character")), 
 #                                                     cluster = c("company_id", "hs6"),
 #                                                     data = export_data )
 #   
 #   paybustorecom_export_preresearch_covid_2 <- feols(as.formula(paste0(dep_var_export,  " ~ 
-#                                                       adopted_pay_or_ecom_before_2019:month_mean_stringency_index +
-#                                                       adopted_pay_or_ecom_before_2019:month_mean_stringency_index:China_E_commerce +
+#                                                       adopted_pay_or_ecom_before_2020:month_mean_stringency_index +
+#                                                       adopted_pay_or_ecom_before_2020:month_mean_stringency_index:China_E_commerce +
 #                                                       month_mean_stringency_index:China_E_commerce|
 #                                                       company_id + hs6 + date_character")), 
 #                                                     cluster = c("company_id", "hs6"),
 #                                                     data = export_data )
 #   
 #   paybustorecom_export_preresearch_covid_3 <- feols(as.formula(paste0(dep_var_export,  " ~ 
-#                                                       adopted_pay_or_ecom_before_2019:month_mean_stringency_index +
-#                                                       adopted_pay_or_ecom_before_2019:month_mean_stringency_index:cons_BEC +
+#                                                       adopted_pay_or_ecom_before_2020:month_mean_stringency_index +
+#                                                       adopted_pay_or_ecom_before_2020:month_mean_stringency_index:cons_BEC +
 #                                                       month_mean_stringency_index:cons_BEC|
 #                                                       company_id + hs6 + date_character")), 
 #                                                     cluster = c("company_id", "hs6"),
@@ -484,8 +484,8 @@ reg_models_pre_2019_adopters<-function(import_data, export_data, country_name,
 #   
 #   
 #   paybustorecom_export_preresearch_covid_4 <- feols(as.formula(paste0(dep_var_export,  " ~ 
-#                                                       adopted_pay_or_ecom_before_2019:month_mean_stringency_index +
-#                                                       adopted_pay_or_ecom_before_2019:month_mean_stringency_index:durable_BEC +
+#                                                       adopted_pay_or_ecom_before_2020:month_mean_stringency_index +
+#                                                       adopted_pay_or_ecom_before_2020:month_mean_stringency_index:durable_BEC +
 #                                                       month_mean_stringency_index:durable_BEC|
 #                                                       company_id + hs6 + date_character")), 
 #                                                     cluster = c("company_id", "hs6"),
@@ -511,7 +511,7 @@ reg_models_pre_2019_adopters<-function(import_data, export_data, country_name,
 #   
 #   if(dep_var_export == "new_destination" & dep_var_import == "new_source"){
 #     list_notes<-list("Clustered-standard errors at the firm-product level", 
-#                      "The variable E-payment or E-commerce 2019 means that the company adopted the E-payment or E-commerce technology before 2019.",
+#                      "The variable Firm technology adoption pre-2020 means that the company adopted the E-payment or E-commerce technology before 2020.",
 #                      "A new source/new destination is defined with respect to baseline year 2017", 
 #                      "The regressions for new source/destination are estimated using a subset of firms that had transactions in 2017 as well.")
 #     
@@ -519,7 +519,7 @@ reg_models_pre_2019_adopters<-function(import_data, export_data, country_name,
 #     
 #   } else{
 #     list_notes<-list("Clustered-standard errors at the firm-product level", 
-#                      "The variable E-payment or E-commerce 2019 means that the company adopted the E-payment or E-commerce technology before 2019.")
+#                      "The variable Firm technology adoption pre-2020 means that the company adopted the E-payment or E-commerce technology before 2020.")
 #     
 #     format_se_coef <- f1
 #     
@@ -553,24 +553,24 @@ reg_models_pre_2019_adopters<-function(import_data, export_data, country_name,
 #   
 #   # Dependent variable: Log imports
 #   paybustorecom_import_preresearch_covid_1 <- feols(log_import ~ 
-#                                                       adopted_pay_or_ecom_before_2019:month_mean_stringency_index +
-#                                                       adopted_pay_or_ecom_before_2019:month_mean_stringency_index:Ebay_tradable +
+#                                                       adopted_pay_or_ecom_before_2020:month_mean_stringency_index +
+#                                                       adopted_pay_or_ecom_before_2020:month_mean_stringency_index:Ebay_tradable +
 #                                                       month_mean_stringency_index:Ebay_tradable|
 #                                                       company_id + hs6 + date_character, 
 #                                                     cluster = c("company_id", "hs6"),
 #                                                     data = import_data )
 #   
 #   paybustorecom_import_preresearch_covid_2 <- feols(log_import ~ 
-#                                                       adopted_pay_or_ecom_before_2019:month_mean_stringency_index +
-#                                                       adopted_pay_or_ecom_before_2019:month_mean_stringency_index:China_E_commerce +
+#                                                       adopted_pay_or_ecom_before_2020:month_mean_stringency_index +
+#                                                       adopted_pay_or_ecom_before_2020:month_mean_stringency_index:China_E_commerce +
 #                                                       month_mean_stringency_index:China_E_commerce|
 #                                                       company_id + hs6 + date_character, 
 #                                                     cluster = c("company_id", "hs6"),
 #                                                     data = import_data )
 #   
 #   paybustorecom_import_preresearch_covid_3 <- feols(log_import ~ 
-#                                                       adopted_pay_or_ecom_before_2019:month_mean_stringency_index +
-#                                                       adopted_pay_or_ecom_before_2019:month_mean_stringency_index:cons_BEC +
+#                                                       adopted_pay_or_ecom_before_2020:month_mean_stringency_index +
+#                                                       adopted_pay_or_ecom_before_2020:month_mean_stringency_index:cons_BEC +
 #                                                       month_mean_stringency_index:cons_BEC|
 #                                                       company_id + hs6 + date_character, 
 #                                                     cluster = c("company_id", "hs6"),
@@ -579,8 +579,8 @@ reg_models_pre_2019_adopters<-function(import_data, export_data, country_name,
 #   
 #   
 #   paybustorecom_import_preresearch_covid_4 <- feols(log_import ~ 
-#                                                       adopted_pay_or_ecom_before_2019:month_mean_stringency_index +
-#                                                       adopted_pay_or_ecom_before_2019:month_mean_stringency_index:durable_BEC +
+#                                                       adopted_pay_or_ecom_before_2020:month_mean_stringency_index +
+#                                                       adopted_pay_or_ecom_before_2020:month_mean_stringency_index:durable_BEC +
 #                                                       month_mean_stringency_index:durable_BEC|
 #                                                       company_id + hs6 + date_character, 
 #                                                     cluster = c("company_id", "hs6"),
@@ -590,24 +590,24 @@ reg_models_pre_2019_adopters<-function(import_data, export_data, country_name,
 #   
 #   # Dependent variable: Log exports
 #   paybustorecom_export_preresearch_covid_1 <- feols(log_export ~ 
-#                                                       adopted_pay_or_ecom_before_2019:month_mean_stringency_index +
-#                                                       adopted_pay_or_ecom_before_2019:month_mean_stringency_index:Ebay_tradable +
+#                                                       adopted_pay_or_ecom_before_2020:month_mean_stringency_index +
+#                                                       adopted_pay_or_ecom_before_2020:month_mean_stringency_index:Ebay_tradable +
 #                                                       month_mean_stringency_index:Ebay_tradable|
 #                                                       company_id + hs6 + date_character, 
 #                                                     cluster = c("company_id", "hs6"),
 #                                                     data = export_data )
 #   
 #   paybustorecom_export_preresearch_covid_2 <- feols(log_export ~ 
-#                                                       adopted_pay_or_ecom_before_2019:month_mean_stringency_index +
-#                                                       adopted_pay_or_ecom_before_2019:month_mean_stringency_index:China_E_commerce +
+#                                                       adopted_pay_or_ecom_before_2020:month_mean_stringency_index +
+#                                                       adopted_pay_or_ecom_before_2020:month_mean_stringency_index:China_E_commerce +
 #                                                       month_mean_stringency_index:China_E_commerce|
 #                                                       company_id + hs6 + date_character, 
 #                                                     cluster = c("company_id", "hs6"),
 #                                                     data = export_data )
 #   
 #   paybustorecom_export_preresearch_covid_3 <- feols(log_export ~ 
-#                                                       adopted_pay_or_ecom_before_2019:month_mean_stringency_index +
-#                                                       adopted_pay_or_ecom_before_2019:month_mean_stringency_index:cons_BEC +
+#                                                       adopted_pay_or_ecom_before_2020:month_mean_stringency_index +
+#                                                       adopted_pay_or_ecom_before_2020:month_mean_stringency_index:cons_BEC +
 #                                                       month_mean_stringency_index:cons_BEC|
 #                                                       company_id + hs6 + date_character, 
 #                                                     cluster = c("company_id", "hs6"),
@@ -615,8 +615,8 @@ reg_models_pre_2019_adopters<-function(import_data, export_data, country_name,
 #   
 #   
 #   paybustorecom_export_preresearch_covid_4 <- feols(log_export ~ 
-#                                                       adopted_pay_or_ecom_before_2019:month_mean_stringency_index +
-#                                                       adopted_pay_or_ecom_before_2019:month_mean_stringency_index:durable_BEC +
+#                                                       adopted_pay_or_ecom_before_2020:month_mean_stringency_index +
+#                                                       adopted_pay_or_ecom_before_2020:month_mean_stringency_index:durable_BEC +
 #                                                       month_mean_stringency_index:durable_BEC|
 #                                                       company_id + hs6 + date_character, 
 #                                                     cluster = c("company_id", "hs6"),
@@ -648,7 +648,7 @@ reg_models_pre_2019_adopters<-function(import_data, export_data, country_name,
 #                       add_rows = FE, 
 #                       output = "latex", 
 #                       align = paste(c("l", rep("c", length(models_tech_covid_definitive))), sep="", collapse=""), 
-#                       notes = list("The variable E-payment or E-commerce 2019 means that the company adopted the E-payment or E-commerce technology before 2019.", "Clustered-standard errors at the firm-product level."),
+#                       notes = list("The variable Firm technology adoption pre-2020 means that the company adopted the E-payment or E-commerce technology before 2020.", "Clustered-standard errors at the firm-product level."),
 #                       fmt = f1, 
 #                       title = paste0(country_name,' - Regression Results for Log. Exports and Log.Imports: e-Bay tradable, China e-commerce, Consumable and Durable products')) |>
 #     add_header_above(c(" " = 1, "Dependent Variables" = length(models_tech_covid_definitive))) %>% 
@@ -669,24 +669,24 @@ reg_models_pre_2019_adopters<-function(import_data, export_data, country_name,
 #   
 #   # Dependent variable: Log imports
 #   paybustorecom_import_preresearch_covid_1 <- feols(log_import ~ 
-#                                                       adopted_pay_or_ecom_before_2019:month_mean_stringency_index +
-#                                                       adopted_pay_or_ecom_before_2019:month_mean_stringency_index:Ebay_tradable +
+#                                                       adopted_pay_or_ecom_before_2020:month_mean_stringency_index +
+#                                                       adopted_pay_or_ecom_before_2020:month_mean_stringency_index:Ebay_tradable +
 #                                                       month_mean_stringency_index:Ebay_tradable|
 #                                                       company_id + hs6 + date_character, 
 #                                                     cluster = c("company_id", "hs6"),
 #                                                     data = import_data )
 #   
 #   paybustorecom_import_preresearch_covid_2 <- feols(log_import ~ 
-#                                                       adopted_pay_or_ecom_before_2019:month_mean_stringency_index +
-#                                                       adopted_pay_or_ecom_before_2019:month_mean_stringency_index:China_E_commerce +
+#                                                       adopted_pay_or_ecom_before_2020:month_mean_stringency_index +
+#                                                       adopted_pay_or_ecom_before_2020:month_mean_stringency_index:China_E_commerce +
 #                                                       month_mean_stringency_index:China_E_commerce|
 #                                                       company_id + hs6 + date_character, 
 #                                                     cluster = c("company_id", "hs6"),
 #                                                     data = import_data )
 #   
 #   paybustorecom_import_preresearch_covid_3 <- feols(log_import ~ 
-#                                                       adopted_pay_or_ecom_before_2019:month_mean_stringency_index +
-#                                                       adopted_pay_or_ecom_before_2019:month_mean_stringency_index:China_E_commerce_updated +
+#                                                       adopted_pay_or_ecom_before_2020:month_mean_stringency_index +
+#                                                       adopted_pay_or_ecom_before_2020:month_mean_stringency_index:China_E_commerce_updated +
 #                                                       month_mean_stringency_index:China_E_commerce_updated|
 #                                                       company_id + hs6 + date_character, 
 #                                                     cluster = c("company_id", "hs6"),
@@ -695,8 +695,8 @@ reg_models_pre_2019_adopters<-function(import_data, export_data, country_name,
 #   
 #   
 #   paybustorecom_import_preresearch_covid_4 <- feols(log_import ~ 
-#                                                       adopted_pay_or_ecom_before_2019:month_mean_stringency_index +
-#                                                       adopted_pay_or_ecom_before_2019:month_mean_stringency_index:diff_new_old_China_ecommerce_list +
+#                                                       adopted_pay_or_ecom_before_2020:month_mean_stringency_index +
+#                                                       adopted_pay_or_ecom_before_2020:month_mean_stringency_index:diff_new_old_China_ecommerce_list +
 #                                                       month_mean_stringency_index:diff_new_old_China_ecommerce_list|
 #                                                       company_id + hs6 + date_character, 
 #                                                     cluster = c("company_id", "hs6"),
@@ -706,24 +706,24 @@ reg_models_pre_2019_adopters<-function(import_data, export_data, country_name,
 #   
 #   # Dependent variable: Log exports
 #   paybustorecom_export_preresearch_covid_1 <- feols(log_export ~ 
-#                                                       adopted_pay_or_ecom_before_2019:month_mean_stringency_index +
-#                                                       adopted_pay_or_ecom_before_2019:month_mean_stringency_index:Ebay_tradable +
+#                                                       adopted_pay_or_ecom_before_2020:month_mean_stringency_index +
+#                                                       adopted_pay_or_ecom_before_2020:month_mean_stringency_index:Ebay_tradable +
 #                                                       month_mean_stringency_index:Ebay_tradable|
 #                                                       company_id + hs6 + date_character, 
 #                                                     cluster = c("company_id", "hs6"),
 #                                                     data = export_data )
 #   
 #   paybustorecom_export_preresearch_covid_2 <- feols(log_export ~ 
-#                                                       adopted_pay_or_ecom_before_2019:month_mean_stringency_index +
-#                                                       adopted_pay_or_ecom_before_2019:month_mean_stringency_index:China_E_commerce +
+#                                                       adopted_pay_or_ecom_before_2020:month_mean_stringency_index +
+#                                                       adopted_pay_or_ecom_before_2020:month_mean_stringency_index:China_E_commerce +
 #                                                       month_mean_stringency_index:China_E_commerce|
 #                                                       company_id + hs6 + date_character, 
 #                                                     cluster = c("company_id", "hs6"),
 #                                                     data = export_data )
 #   
 #   paybustorecom_export_preresearch_covid_3 <- feols(log_export ~ 
-#                                                       adopted_pay_or_ecom_before_2019:month_mean_stringency_index +
-#                                                       adopted_pay_or_ecom_before_2019:month_mean_stringency_index:China_E_commerce_updated +
+#                                                       adopted_pay_or_ecom_before_2020:month_mean_stringency_index +
+#                                                       adopted_pay_or_ecom_before_2020:month_mean_stringency_index:China_E_commerce_updated +
 #                                                       month_mean_stringency_index:China_E_commerce_updated|
 #                                                       company_id + hs6 + date_character, 
 #                                                     cluster = c("company_id", "hs6"),
@@ -731,8 +731,8 @@ reg_models_pre_2019_adopters<-function(import_data, export_data, country_name,
 #   
 #   
 #   paybustorecom_export_preresearch_covid_4 <- feols(log_export ~ 
-#                                                       adopted_pay_or_ecom_before_2019:month_mean_stringency_index +
-#                                                       adopted_pay_or_ecom_before_2019:month_mean_stringency_index:diff_new_old_China_ecommerce_list +
+#                                                       adopted_pay_or_ecom_before_2020:month_mean_stringency_index +
+#                                                       adopted_pay_or_ecom_before_2020:month_mean_stringency_index:diff_new_old_China_ecommerce_list +
 #                                                       month_mean_stringency_index:diff_new_old_China_ecommerce_list|
 #                                                       company_id + hs6 + date_character, 
 #                                                     cluster = c("company_id", "hs6"),
@@ -764,7 +764,7 @@ reg_models_pre_2019_adopters<-function(import_data, export_data, country_name,
 #                add_rows = FE, 
 #                output = "latex", 
 #                align = paste(c("l", rep("c", length(models_tech_covid_ebay_china))), sep="", collapse=""), 
-#                notes = list("The variable E-payment or E-commerce 2019 means that the company adopted the E-payment or E-commerce technology before 2019.", "Clustered-standard errors at the firm-product level."),
+#                notes = list("The variable Firm technology adoption pre-2020 means that the company adopted the E-payment or E-commerce technology before 2020.", "Clustered-standard errors at the firm-product level."),
 #                fmt = f1, 
 #                title = paste0(country_name,' - Regression Results for Log. Exports and Log.Imports: e-Bay tradable and China e-commerce products')) |>
 #     add_header_above(c(" " = 1, "Dependent Variables" = length(models_tech_covid_ebay_china))) %>% 
@@ -784,32 +784,32 @@ reg_models_pre_2019_adopters<-function(import_data, export_data, country_name,
 #   
 #   # Dependent variable: Log imports
 #   paybustorecom_import_preresearch_covid_5 <- feols(log_import ~ 
-#                                                       adopted_pay_or_ecom_before_2019:month_mean_stringency_index +
-#                                                       adopted_pay_or_ecom_before_2019:month_mean_stringency_index:parts_BEC +
+#                                                       adopted_pay_or_ecom_before_2020:month_mean_stringency_index +
+#                                                       adopted_pay_or_ecom_before_2020:month_mean_stringency_index:parts_BEC +
 #                                                       month_mean_stringency_index:parts_BEC|
 #                                                       company_id + hs6 + date_character, 
 #                                                     cluster = c("company_id", "hs6"),
 #                                                     data = import_data )
 #   
 #   paybustorecom_import_preresearch_covid_6 <- feols(log_import ~ 
-#                                                       adopted_pay_or_ecom_before_2019:month_mean_stringency_index +
-#                                                       adopted_pay_or_ecom_before_2019:month_mean_stringency_index:cons_dur_BEC +
+#                                                       adopted_pay_or_ecom_before_2020:month_mean_stringency_index +
+#                                                       adopted_pay_or_ecom_before_2020:month_mean_stringency_index:cons_dur_BEC +
 #                                                       month_mean_stringency_index:cons_dur_BEC|
 #                                                       company_id + hs6 + date_character, 
 #                                                     cluster = c("company_id", "hs6"),
 #                                                     data = import_data )
 #   
 #   paybustorecom_import_preresearch_covid_7 <- feols(log_import ~ 
-#                                                       adopted_pay_or_ecom_before_2019:month_mean_stringency_index +
-#                                                       adopted_pay_or_ecom_before_2019:month_mean_stringency_index:cons_semi_BEC +
+#                                                       adopted_pay_or_ecom_before_2020:month_mean_stringency_index +
+#                                                       adopted_pay_or_ecom_before_2020:month_mean_stringency_index:cons_semi_BEC +
 #                                                       month_mean_stringency_index:cons_semi_BEC|
 #                                                       company_id + hs6 + date_character, 
 #                                                     cluster = c("company_id", "hs6"),
 #                                                     data = import_data )
 #   
 #   paybustorecom_import_preresearch_covid_8 <- feols(log_import ~ 
-#                                                       adopted_pay_or_ecom_before_2019:month_mean_stringency_index +
-#                                                       adopted_pay_or_ecom_before_2019:month_mean_stringency_index:cons_BEC +
+#                                                       adopted_pay_or_ecom_before_2020:month_mean_stringency_index +
+#                                                       adopted_pay_or_ecom_before_2020:month_mean_stringency_index:cons_BEC +
 #                                                       month_mean_stringency_index:cons_BEC|
 #                                                       company_id + hs6 + date_character, 
 #                                                     cluster = c("company_id", "hs6"),
@@ -817,24 +817,24 @@ reg_models_pre_2019_adopters<-function(import_data, export_data, country_name,
 #   
 #   
 #   paybustorecom_import_preresearch_covid_9 <- feols(log_import ~ 
-#                                                       adopted_pay_or_ecom_before_2019:month_mean_stringency_index +
-#                                                       adopted_pay_or_ecom_before_2019:month_mean_stringency_index:transp_BEC +
+#                                                       adopted_pay_or_ecom_before_2020:month_mean_stringency_index +
+#                                                       adopted_pay_or_ecom_before_2020:month_mean_stringency_index:transp_BEC +
 #                                                       month_mean_stringency_index:transp_BEC|
 #                                                       company_id + hs6 + date_character, 
 #                                                     cluster = c("company_id", "hs6"),
 #                                                     data = import_data )
 #   
 #   paybustorecom_import_preresearch_covid_10 <- feols(log_import ~ 
-#                                                        adopted_pay_or_ecom_before_2019:month_mean_stringency_index +
-#                                                        adopted_pay_or_ecom_before_2019:month_mean_stringency_index:durable_BEC +
+#                                                        adopted_pay_or_ecom_before_2020:month_mean_stringency_index +
+#                                                        adopted_pay_or_ecom_before_2020:month_mean_stringency_index:durable_BEC +
 #                                                        month_mean_stringency_index:durable_BEC|
 #                                                        company_id + hs6 + date_character, 
 #                                                      cluster = c("company_id", "hs6"),
 #                                                      data = import_data )
 #   
 #   paybustorecom_import_preresearch_covid_11 <- feols(log_import ~ 
-#                                                        adopted_pay_or_ecom_before_2019:month_mean_stringency_index +
-#                                                        adopted_pay_or_ecom_before_2019:month_mean_stringency_index:durable_semi_BEC +
+#                                                        adopted_pay_or_ecom_before_2020:month_mean_stringency_index +
+#                                                        adopted_pay_or_ecom_before_2020:month_mean_stringency_index:durable_semi_BEC +
 #                                                        month_mean_stringency_index:durable_semi_BEC|
 #                                                        company_id + hs6 + date_character, 
 #                                                      cluster = c("company_id", "hs6"),
@@ -842,32 +842,32 @@ reg_models_pre_2019_adopters<-function(import_data, export_data, country_name,
 #   
 #   # Dependent variable: Log exports 
 #   paybustorecom_export_preresearch_covid_5 <- feols(log_export ~ 
-#                                                       adopted_pay_or_ecom_before_2019:month_mean_stringency_index +
-#                                                       adopted_pay_or_ecom_before_2019:month_mean_stringency_index:parts_BEC +
+#                                                       adopted_pay_or_ecom_before_2020:month_mean_stringency_index +
+#                                                       adopted_pay_or_ecom_before_2020:month_mean_stringency_index:parts_BEC +
 #                                                       month_mean_stringency_index:parts_BEC|
 #                                                       company_id + hs6 + date_character, 
 #                                                     cluster = c("company_id", "hs6"),
 #                                                     data = export_data )
 #   
 #   paybustorecom_export_preresearch_covid_6 <- feols(log_export ~ 
-#                                                       adopted_pay_or_ecom_before_2019:month_mean_stringency_index +
-#                                                       adopted_pay_or_ecom_before_2019:month_mean_stringency_index:cons_dur_BEC +
+#                                                       adopted_pay_or_ecom_before_2020:month_mean_stringency_index +
+#                                                       adopted_pay_or_ecom_before_2020:month_mean_stringency_index:cons_dur_BEC +
 #                                                       month_mean_stringency_index:cons_dur_BEC|
 #                                                       company_id + hs6 + date_character, 
 #                                                     cluster = c("company_id", "hs6"),
 #                                                     data = export_data )
 #   
 #   paybustorecom_export_preresearch_covid_7 <- feols(log_export ~ 
-#                                                       adopted_pay_or_ecom_before_2019:month_mean_stringency_index +
-#                                                       adopted_pay_or_ecom_before_2019:month_mean_stringency_index:cons_semi_BEC +
+#                                                       adopted_pay_or_ecom_before_2020:month_mean_stringency_index +
+#                                                       adopted_pay_or_ecom_before_2020:month_mean_stringency_index:cons_semi_BEC +
 #                                                       month_mean_stringency_index:cons_semi_BEC|
 #                                                       company_id + hs6 + date_character, 
 #                                                     cluster = c("company_id", "hs6"),
 #                                                     data = export_data )
 #   
 #   paybustorecom_export_preresearch_covid_8 <- feols(log_export ~ 
-#                                                       adopted_pay_or_ecom_before_2019:month_mean_stringency_index +
-#                                                       adopted_pay_or_ecom_before_2019:month_mean_stringency_index:cons_BEC +
+#                                                       adopted_pay_or_ecom_before_2020:month_mean_stringency_index +
+#                                                       adopted_pay_or_ecom_before_2020:month_mean_stringency_index:cons_BEC +
 #                                                       month_mean_stringency_index:cons_BEC|
 #                                                       company_id + hs6 + date_character, 
 #                                                     cluster = c("company_id", "hs6"),
@@ -875,24 +875,24 @@ reg_models_pre_2019_adopters<-function(import_data, export_data, country_name,
 #   
 #   
 #   paybustorecom_export_preresearch_covid_9 <- feols(log_export ~ 
-#                                                       adopted_pay_or_ecom_before_2019:month_mean_stringency_index +
-#                                                       adopted_pay_or_ecom_before_2019:month_mean_stringency_index:transp_BEC +
+#                                                       adopted_pay_or_ecom_before_2020:month_mean_stringency_index +
+#                                                       adopted_pay_or_ecom_before_2020:month_mean_stringency_index:transp_BEC +
 #                                                       month_mean_stringency_index:transp_BEC|
 #                                                       company_id + hs6 + date_character, 
 #                                                     cluster = c("company_id", "hs6"),
 #                                                     data = export_data )
 #   
 #   paybustorecom_export_preresearch_covid_10 <- feols(log_export ~ 
-#                                                        adopted_pay_or_ecom_before_2019:month_mean_stringency_index +
-#                                                        adopted_pay_or_ecom_before_2019:month_mean_stringency_index:durable_BEC +
+#                                                        adopted_pay_or_ecom_before_2020:month_mean_stringency_index +
+#                                                        adopted_pay_or_ecom_before_2020:month_mean_stringency_index:durable_BEC +
 #                                                        month_mean_stringency_index:durable_BEC|
 #                                                        company_id + hs6 + date_character, 
 #                                                      cluster = c("company_id", "hs6"),
 #                                                      data = export_data )
 #   
 #   paybustorecom_export_preresearch_covid_11 <- feols(log_export ~ 
-#                                                        adopted_pay_or_ecom_before_2019:month_mean_stringency_index +
-#                                                        adopted_pay_or_ecom_before_2019:month_mean_stringency_index:durable_semi_BEC +
+#                                                        adopted_pay_or_ecom_before_2020:month_mean_stringency_index +
+#                                                        adopted_pay_or_ecom_before_2020:month_mean_stringency_index:durable_semi_BEC +
 #                                                        month_mean_stringency_index:durable_semi_BEC|
 #                                                        company_id + hs6 + date_character, 
 #                                                      cluster = c("company_id", "hs6"),
@@ -928,7 +928,7 @@ reg_models_pre_2019_adopters<-function(import_data, export_data, country_name,
 #                  add_rows = FE, 
 #                  output = "latex", 
 #                  align = paste(c("l", rep("c", length(models_tech_covid_BEC))), sep="", collapse=""), 
-#                  notes = list("The variable E-payment or E-commerce 2019 means that the company adopted the E-payment or E-commerce technology before 2019.", "Clustered-standard errors at the firm-product level."), 
+#                  notes = list("The variable Firm technology adoption pre-2020 means that the company adopted the E-payment or E-commerce technology before 2020.", "Clustered-standard errors at the firm-product level."), 
 #                  fmt = f1, 
 #                  title = paste0(country_name, ' - Regression Results for Log. Exports and Log.Imports: BEC products classification')) |>
 #     add_header_above(c(" " = 1, "Dependent Variables" = length(models_tech_covid_BEC))) %>% 
@@ -950,16 +950,16 @@ reg_models_pre_2019_adopters<-function(import_data, export_data, country_name,
 #   
 #   # Dependent variable: Log Imports
 #   paybustorecom_import_preresearch_covid_12 <- feols(log_import ~ 
-#                                                        adopted_pay_or_ecom_before_2019:month_mean_stringency_index +
-#                                                        adopted_pay_or_ecom_before_2019:month_mean_stringency_index:component +
+#                                                        adopted_pay_or_ecom_before_2020:month_mean_stringency_index +
+#                                                        adopted_pay_or_ecom_before_2020:month_mean_stringency_index:component +
 #                                                        month_mean_stringency_index:component|
 #                                                        company_id + hs6 + date_character, 
 #                                                      cluster = c("company_id", "hs6"),
 #                                                      data = import_data )
 #   
 #   paybustorecom_import_preresearch_covid_13 <- feols(log_import ~ 
-#                                                        adopted_pay_or_ecom_before_2019:month_mean_stringency_index +
-#                                                        adopted_pay_or_ecom_before_2019:month_mean_stringency_index:fresh +
+#                                                        adopted_pay_or_ecom_before_2020:month_mean_stringency_index +
+#                                                        adopted_pay_or_ecom_before_2020:month_mean_stringency_index:fresh +
 #                                                        month_mean_stringency_index:fresh|
 #                                                        company_id + hs6 + date_character, 
 #                                                      cluster = c("company_id", "hs6"),
@@ -967,16 +967,16 @@ reg_models_pre_2019_adopters<-function(import_data, export_data, country_name,
 #   
 #   
 #   paybustorecom_import_preresearch_covid_14 <- feols(log_import ~ 
-#                                                        adopted_pay_or_ecom_before_2019:month_mean_stringency_index +
-#                                                        adopted_pay_or_ecom_before_2019:month_mean_stringency_index:frozen +
+#                                                        adopted_pay_or_ecom_before_2020:month_mean_stringency_index +
+#                                                        adopted_pay_or_ecom_before_2020:month_mean_stringency_index:frozen +
 #                                                        month_mean_stringency_index:frozen|
 #                                                        company_id + hs6 + date_character, 
 #                                                      cluster = c("company_id", "hs6"),
 #                                                      data = import_data )
 #   
 #   paybustorecom_import_preresearch_covid_15 <- feols(log_import ~ 
-#                                                        adopted_pay_or_ecom_before_2019:month_mean_stringency_index +
-#                                                        adopted_pay_or_ecom_before_2019:month_mean_stringency_index:hummels_timesensitive +
+#                                                        adopted_pay_or_ecom_before_2020:month_mean_stringency_index +
+#                                                        adopted_pay_or_ecom_before_2020:month_mean_stringency_index:hummels_timesensitive +
 #                                                        month_mean_stringency_index:hummels_timesensitive|
 #                                                        company_id + hs6 + date_character, 
 #                                                      cluster = c("company_id", "hs6"),
@@ -984,8 +984,8 @@ reg_models_pre_2019_adopters<-function(import_data, export_data, country_name,
 #   
 #   
 #   paybustorecom_import_preresearch_covid_16 <- feols(log_import ~ 
-#                                                        adopted_pay_or_ecom_before_2019:month_mean_stringency_index +
-#                                                        adopted_pay_or_ecom_before_2019:month_mean_stringency_index:agric_timesensitive +
+#                                                        adopted_pay_or_ecom_before_2020:month_mean_stringency_index +
+#                                                        adopted_pay_or_ecom_before_2020:month_mean_stringency_index:agric_timesensitive +
 #                                                        month_mean_stringency_index:agric_timesensitive|
 #                                                        company_id + hs6 + date_character, 
 #                                                      cluster = c("company_id", "hs6"),
@@ -993,8 +993,8 @@ reg_models_pre_2019_adopters<-function(import_data, export_data, country_name,
 #   
 #   
 #   paybustorecom_import_preresearch_covid_17 <- feols(log_import ~ 
-#                                                        adopted_pay_or_ecom_before_2019:month_mean_stringency_index +
-#                                                        adopted_pay_or_ecom_before_2019:month_mean_stringency_index:time_sens_hs2013_russ_typeofgoods +
+#                                                        adopted_pay_or_ecom_before_2020:month_mean_stringency_index +
+#                                                        adopted_pay_or_ecom_before_2020:month_mean_stringency_index:time_sens_hs2013_russ_typeofgoods +
 #                                                        month_mean_stringency_index:time_sens_hs2013_russ_typeofgoods|
 #                                                        company_id + hs6 + date_character, 
 #                                                      cluster = c("company_id", "hs6"),
@@ -1003,16 +1003,16 @@ reg_models_pre_2019_adopters<-function(import_data, export_data, country_name,
 #   
 #   
 #   paybustorecom_export_preresearch_covid_12 <- feols(log_export ~ 
-#                                                        adopted_pay_or_ecom_before_2019:month_mean_stringency_index +
-#                                                        adopted_pay_or_ecom_before_2019:month_mean_stringency_index:component +
+#                                                        adopted_pay_or_ecom_before_2020:month_mean_stringency_index +
+#                                                        adopted_pay_or_ecom_before_2020:month_mean_stringency_index:component +
 #                                                        month_mean_stringency_index:component|
 #                                                        company_id + hs6 + date_character, 
 #                                                      cluster = c("company_id", "hs6"),
 #                                                      data = export_data )
 #   
 #   paybustorecom_export_preresearch_covid_13 <- feols(log_export ~ 
-#                                                        adopted_pay_or_ecom_before_2019:month_mean_stringency_index +
-#                                                        adopted_pay_or_ecom_before_2019:month_mean_stringency_index:fresh +
+#                                                        adopted_pay_or_ecom_before_2020:month_mean_stringency_index +
+#                                                        adopted_pay_or_ecom_before_2020:month_mean_stringency_index:fresh +
 #                                                        month_mean_stringency_index:fresh|
 #                                                        company_id + hs6 + date_character,
 #                                                      cluster = c("company_id", "hs6"),
@@ -1020,16 +1020,16 @@ reg_models_pre_2019_adopters<-function(import_data, export_data, country_name,
 #   
 #   
 #   paybustorecom_export_preresearch_covid_14 <- feols(log_export ~ 
-#                                                        adopted_pay_or_ecom_before_2019:month_mean_stringency_index +
-#                                                        adopted_pay_or_ecom_before_2019:month_mean_stringency_index:frozen +
+#                                                        adopted_pay_or_ecom_before_2020:month_mean_stringency_index +
+#                                                        adopted_pay_or_ecom_before_2020:month_mean_stringency_index:frozen +
 #                                                        month_mean_stringency_index:frozen|
 #                                                        company_id + hs6 + date_character, 
 #                                                      cluster = c("company_id", "hs6"),
 #                                                      data = export_data )
 #   
 #   paybustorecom_export_preresearch_covid_15 <- feols(log_export ~ 
-#                                                        adopted_pay_or_ecom_before_2019:month_mean_stringency_index +
-#                                                        adopted_pay_or_ecom_before_2019:month_mean_stringency_index:hummels_timesensitive +
+#                                                        adopted_pay_or_ecom_before_2020:month_mean_stringency_index +
+#                                                        adopted_pay_or_ecom_before_2020:month_mean_stringency_index:hummels_timesensitive +
 #                                                        month_mean_stringency_index:hummels_timesensitive|
 #                                                        company_id + hs6 + date_character, 
 #                                                      cluster = c("company_id", "hs6"),
@@ -1037,8 +1037,8 @@ reg_models_pre_2019_adopters<-function(import_data, export_data, country_name,
 #   
 #   
 #   paybustorecom_export_preresearch_covid_16 <- feols(log_export ~ 
-#                                                        adopted_pay_or_ecom_before_2019:month_mean_stringency_index +
-#                                                        adopted_pay_or_ecom_before_2019:month_mean_stringency_index:agric_timesensitive +
+#                                                        adopted_pay_or_ecom_before_2020:month_mean_stringency_index +
+#                                                        adopted_pay_or_ecom_before_2020:month_mean_stringency_index:agric_timesensitive +
 #                                                        month_mean_stringency_index:agric_timesensitive|
 #                                                        company_id + hs6 + date_character, 
 #                                                      cluster = c("company_id", "hs6"),
@@ -1046,8 +1046,8 @@ reg_models_pre_2019_adopters<-function(import_data, export_data, country_name,
 #   
 #   
 #   paybustorecom_export_preresearch_covid_17 <- feols(log_export ~ 
-#                                                        adopted_pay_or_ecom_before_2019:month_mean_stringency_index +
-#                                                        adopted_pay_or_ecom_before_2019:month_mean_stringency_index:time_sens_hs2013_russ_typeofgoods +
+#                                                        adopted_pay_or_ecom_before_2020:month_mean_stringency_index +
+#                                                        adopted_pay_or_ecom_before_2020:month_mean_stringency_index:time_sens_hs2013_russ_typeofgoods +
 #                                                        month_mean_stringency_index:time_sens_hs2013_russ_typeofgoods|
 #                                                        company_id + hs6 + date_character, 
 #                                                      cluster = c("company_id", "hs6"),
@@ -1082,7 +1082,7 @@ reg_models_pre_2019_adopters<-function(import_data, export_data, country_name,
 #                add_rows = FE, 
 #                output = "latex", 
 #                align = paste(c("l", rep("c", length(models_covid_time_sensitivity))), sep="", collapse=""), 
-#                notes = list("The variable E-payment or E-commerce 2019 means that the company adopted the E-payment or E-commerce technology before 2019.", "Clustered-standard errors at the firm-product level."), 
+#                notes = list("The variable Firm technology adoption pre-2020 means that the company adopted the E-payment or E-commerce technology before 2020.", "Clustered-standard errors at the firm-product level."), 
 #                fmt = f1, 
 #                title = paste0(country_name, " - Regression Results for Log. Imports and Log.Exports: Time-sensitive Products")) |>
 #     add_header_above(c(" " = 1, "Dependent Variables" = length(models_covid_time_sensitivity))) %>% 
@@ -1101,30 +1101,30 @@ reg_models_pre_2019_adopters<-function(import_data, export_data, country_name,
 #   
 #   
 #   paybustorecom_import_preresearch_covid_18 <- feols(log_import ~ 
-#                                                        adopted_pay_or_ecom_before_2019:month_mean_stringency_index +
-#                                                        adopted_pay_or_ecom_before_2019:month_mean_stringency_index:letter_credit_use +
+#                                                        adopted_pay_or_ecom_before_2020:month_mean_stringency_index +
+#                                                        adopted_pay_or_ecom_before_2020:month_mean_stringency_index:letter_credit_use +
 #                                                        month_mean_stringency_index:letter_credit_use|
 #                                                        company_id + hs6 + date_character, 
 #                                                      cluster = c("company_id", "hs6"),
 #                                                      data = import_data )
 #   paybustorecom_import_preresearch_covid_19 <- feols(log_import ~ 
-#                                                        adopted_pay_or_ecom_before_2019:month_mean_stringency_index +
-#                                                        adopted_pay_or_ecom_before_2019:month_mean_stringency_index:mean_remote_work_ISIC +
+#                                                        adopted_pay_or_ecom_before_2020:month_mean_stringency_index +
+#                                                        adopted_pay_or_ecom_before_2020:month_mean_stringency_index:mean_remote_work_ISIC +
 #                                                        month_mean_stringency_index:mean_remote_work_ISIC|
 #                                                        company_id + hs6 + date_character, 
 #                                                      cluster = c("company_id", "hs6"),
 #                                                      data = import_data )
 #   
 #   paybustorecom_import_preresearch_covid_20 <- feols(log_import ~ 
-#                                                        adopted_pay_or_ecom_before_2019:month_mean_stringency_index +
-#                                                        adopted_pay_or_ecom_before_2019:month_mean_stringency_index:relationship_stickiness +
+#                                                        adopted_pay_or_ecom_before_2020:month_mean_stringency_index +
+#                                                        adopted_pay_or_ecom_before_2020:month_mean_stringency_index:relationship_stickiness +
 #                                                        month_mean_stringency_index:relationship_stickiness|
 #                                                        company_id + hs6 + date_character, 
 #                                                      cluster = c("company_id", "hs6"),
 #                                                      data = import_data )
 #   paybustorecom_import_preresearch_covid_21 <- feols(log_import ~ 
-#                                                        adopted_pay_or_ecom_before_2019:month_mean_stringency_index +
-#                                                        adopted_pay_or_ecom_before_2019:month_mean_stringency_index:frac_lib_diff +
+#                                                        adopted_pay_or_ecom_before_2020:month_mean_stringency_index +
+#                                                        adopted_pay_or_ecom_before_2020:month_mean_stringency_index:frac_lib_diff +
 #                                                        month_mean_stringency_index:frac_lib_diff|
 #                                                        company_id + hs6 + date_character, 
 #                                                      cluster = c("company_id", "hs6"),
@@ -1132,30 +1132,30 @@ reg_models_pre_2019_adopters<-function(import_data, export_data, country_name,
 #   
 #   
 #   paybustorecom_export_preresearch_covid_18 <- feols(log_export ~ 
-#                                                        adopted_pay_or_ecom_before_2019:month_mean_stringency_index +
-#                                                        adopted_pay_or_ecom_before_2019:month_mean_stringency_index:letter_credit_use +
+#                                                        adopted_pay_or_ecom_before_2020:month_mean_stringency_index +
+#                                                        adopted_pay_or_ecom_before_2020:month_mean_stringency_index:letter_credit_use +
 #                                                        month_mean_stringency_index:letter_credit_use|
 #                                                        company_id + hs6 + date_character, 
 #                                                      cluster = c("company_id", "hs6"),
 #                                                      data = export_data )
 #   paybustorecom_export_preresearch_covid_19 <- feols(log_export ~ 
-#                                                        adopted_pay_or_ecom_before_2019:month_mean_stringency_index +
-#                                                        adopted_pay_or_ecom_before_2019:month_mean_stringency_index:mean_remote_work_ISIC +
+#                                                        adopted_pay_or_ecom_before_2020:month_mean_stringency_index +
+#                                                        adopted_pay_or_ecom_before_2020:month_mean_stringency_index:mean_remote_work_ISIC +
 #                                                        month_mean_stringency_index:mean_remote_work_ISIC|
 #                                                        company_id + hs6 + date_character, 
 #                                                      cluster = c("company_id", "hs6"),
 #                                                      data = export_data )
 #   
 #   paybustorecom_export_preresearch_covid_20 <- feols(log_export ~ 
-#                                                        adopted_pay_or_ecom_before_2019:month_mean_stringency_index +
-#                                                        adopted_pay_or_ecom_before_2019:month_mean_stringency_index:relationship_stickiness +
+#                                                        adopted_pay_or_ecom_before_2020:month_mean_stringency_index +
+#                                                        adopted_pay_or_ecom_before_2020:month_mean_stringency_index:relationship_stickiness +
 #                                                        month_mean_stringency_index:relationship_stickiness|
 #                                                        company_id + hs6 + date_character, 
 #                                                      cluster = c("company_id", "hs6"),
 #                                                      data = export_data )
 #   paybustorecom_export_preresearch_covid_21 <- feols(log_export ~ 
-#                                                        adopted_pay_or_ecom_before_2019:month_mean_stringency_index +
-#                                                        adopted_pay_or_ecom_before_2019:month_mean_stringency_index:frac_lib_diff +
+#                                                        adopted_pay_or_ecom_before_2020:month_mean_stringency_index +
+#                                                        adopted_pay_or_ecom_before_2020:month_mean_stringency_index:frac_lib_diff +
 #                                                        month_mean_stringency_index:frac_lib_diff|
 #                                                        company_id + hs6 + date_character, 
 #                                                      cluster = c("company_id", "hs6"),
@@ -1188,7 +1188,7 @@ reg_models_pre_2019_adopters<-function(import_data, export_data, country_name,
 #                add_rows = FE, 
 #                output = "latex", 
 #                align = paste(c("l", rep("c", length(model_covid_prods_impacted))), sep="", collapse=""), 
-#                notes = list("The variable E-payment or E-commerce 2019 means that the company adopted the E-payment or E-commerce technology before 2019.", "Clustered-standard errors at the firm-product level."), 
+#                notes = list("The variable Firm technology adoption pre-2020 means that the company adopted the E-payment or E-commerce technology before 2020.", "Clustered-standard errors at the firm-product level."), 
 #                fmt = f1, 
 #                title =  paste0(country_name, " - Regression Results for Log. Imports Log. Exports: COVID impacted Products")) |>
 #     add_header_above(c(" " = 1, "Dependent Variables" = length(model_covid_prods_impacted))) %>% 
@@ -1208,15 +1208,15 @@ reg_models_pre_2019_adopters<-function(import_data, export_data, country_name,
 #   
 #   
 #   paybustorecom_import_preresearch_covid_22 <- feols(log_import ~ 
-#                                                        adopted_pay_or_ecom_before_2019:month_mean_stringency_index +
-#                                                        adopted_pay_or_ecom_before_2019:month_mean_stringency_index:CAP +
+#                                                        adopted_pay_or_ecom_before_2020:month_mean_stringency_index +
+#                                                        adopted_pay_or_ecom_before_2020:month_mean_stringency_index:CAP +
 #                                                        month_mean_stringency_index:CAP|
 #                                                        company_id + hs6 + date_character, 
 #                                                      cluster = c("company_id", "hs6"),
 #                                                      data = import_data )
 #   paybustorecom_import_preresearch_covid_23 <- feols(log_import ~ 
-#                                                        adopted_pay_or_ecom_before_2019:month_mean_stringency_index +
-#                                                        adopted_pay_or_ecom_before_2019:month_mean_stringency_index:INT +
+#                                                        adopted_pay_or_ecom_before_2020:month_mean_stringency_index +
+#                                                        adopted_pay_or_ecom_before_2020:month_mean_stringency_index:INT +
 #                                                        month_mean_stringency_index:INT|
 #                                                        company_id + hs6 + date_character, 
 #                                                      cluster = c("company_id", "hs6"),
@@ -1224,15 +1224,15 @@ reg_models_pre_2019_adopters<-function(import_data, export_data, country_name,
 #   
 #   
 #   paybustorecom_export_preresearch_covid_22 <- feols(log_export ~ 
-#                                                        adopted_pay_or_ecom_before_2019:month_mean_stringency_index +
-#                                                        adopted_pay_or_ecom_before_2019:month_mean_stringency_index:CAP +
+#                                                        adopted_pay_or_ecom_before_2020:month_mean_stringency_index +
+#                                                        adopted_pay_or_ecom_before_2020:month_mean_stringency_index:CAP +
 #                                                        month_mean_stringency_index:CAP|
 #                                                        company_id + hs6 + date_character, 
 #                                                      cluster = c("company_id", "hs6"),
 #                                                      data = export_data )
 #   paybustorecom_export_preresearch_covid_23 <- feols(log_export ~ 
-#                                                        adopted_pay_or_ecom_before_2019:month_mean_stringency_index +
-#                                                        adopted_pay_or_ecom_before_2019:month_mean_stringency_index:INT +
+#                                                        adopted_pay_or_ecom_before_2020:month_mean_stringency_index +
+#                                                        adopted_pay_or_ecom_before_2020:month_mean_stringency_index:INT +
 #                                                        month_mean_stringency_index:INT|
 #                                                        company_id + hs6 + date_character, 
 #                                                      cluster = c("company_id", "hs6"),
@@ -1263,7 +1263,7 @@ reg_models_pre_2019_adopters<-function(import_data, export_data, country_name,
 #                       add_rows = FE, 
 #                       output = "latex", 
 #                       align = paste(c("l", rep("c", length(model_covid_prods_cap_int))), sep="", collapse=""), 
-#                       notes = list("The variable E-payment or E-commerce 2019 means that the company adopted the E-payment or E-commerce technology before 2019.", "Clustered-standard errors at the firm-product level."), 
+#                       notes = list("The variable Firm technology adoption pre-2020 means that the company adopted the E-payment or E-commerce technology before 2020.", "Clustered-standard errors at the firm-product level."), 
 #                       fmt = f1, 
 #                       title =  paste0(country_name, " - Regression Results for Log. Imports Log. Exports: COVID impacted Products")) |>
 #     add_header_above(c(" " = 1, "Dependent Variables" = length(model_covid_prods_cap_int))) %>% 

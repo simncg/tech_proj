@@ -102,15 +102,15 @@ reg_firm_month_IDN[[2]]
 
 # 2. Does Existing Tech Use Mitigate COVID Impacts?
 
-The aim of these regressions is to investigate whether companies that had adopted E-payment or E-commerce technology before 2019 were better equipped to mitigate the impacts of COVID on their trade outcomes. The regression model is specified as follows:
+The aim of these regressions is to investigate whether companies that had adopted E-payment or E-commerce technology before 2020 were better equipped to mitigate the impacts of COVID on their trade outcomes. The regression model is specified as follows:
 
 \begin{dmath}\label{reg_2}
 y_{it} = \alpha_0 + \alpha_1 tech_i \cdot covid_t + FE_i + FE_t + \epsilon_{it}
 \end{dmath}
 
-Trade outcomes $y_{it}$ are the same as in equation (1). The variable $tech_i$ is a dummy variable indicating whether the company adopted an E-commerce or E-payment technology before 2019. $covid_t$ captures the impact of COVID using the monthly \textit{Stringency Index}.
+Trade outcomes $y_{it}$ are the same as in equation (1). The variable $tech_i$ is a dummy variable indicating whether the company adopted an E-commerce or E-payment technology before 2020. $covid_t$ captures the impact of COVID using the monthly \textit{Stringency Index}.
 
-The interaction term $tech_i \cdot covid_t$ investigates whether the adoption of E-commerce or E-payment technology before 2019 mitigates the impact of COVID on trade outcomes. Finally, fixed-effects are included for firm and month.
+The interaction term $tech_i \cdot covid_t$ investigates whether the adoption of E-commerce or E-payment technology before 2020 mitigates the impact of COVID on trade outcomes. Finally, fixed-effects are included for firm and month.
 
 ## 2.1 Intensive Margin Analysis
 

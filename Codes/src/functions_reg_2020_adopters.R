@@ -8,7 +8,7 @@
 #                                                                           #
 #                                                                           #
 # This program generates functions for running regressions regressions      #
-# with different dummies referring to pre-2019 tech adopters                #
+# with different dummies referring to pre-2020 tech adopters                #
 #                                                                           #                                                                         
 #                                                                           #
 #                                                                           #           -                                                                                                                                                  #
@@ -17,8 +17,8 @@
 source("../src/packages.R")
 library(fastDummies)
 
-#This function will create a regression of the form $y_{ipt} = \alpha_0 + \alpha_1 indep_var1 \cdot covid + \alpha_1 indep_var1 \cdot covid \cdot product_p + same last two terms for all indep_vars  + covid \cdot product_p $
-reg_models_pre_2019_adopters<-function(import_data, export_data, country_name, 
+#This function will create a regression of the form $y_{ipt} = \alpha_0 + \alpha_1 indep_var1 \cdot covid + \alpha_2 indep_var1 \cdot covid \cdot product_p + same last two terms for all indep_vars  + covid \cdot product_p $
+reg_models_pre_2020_adopters<-function(import_data, export_data, country_name, 
                                        product_vars, dep_var_import, 
                                        dep_var_export, covid_var, indep_vars){
   
@@ -62,8 +62,8 @@ reg_models_pre_2019_adopters<-function(import_data, export_data, country_name,
 
 
 
-# Function for running extensive margin regressions using different type of pre-2019 adopters as independent variables (pre-2017 adopter, 2017-adopter, 2018-adopter)
-ext_reg_models_pre_2019_adopters<-function(country_name, indep_vars, covid_var, product_vars){
+# Function for running extensive margin regressions using different type of pre-2020 adopters as independent variables (pre-2017 adopter, 2017-adopter, 2018-adopter)
+ext_reg_models_pre_2020_adopters<-function(country_name, indep_vars, covid_var, product_vars){
   
   # Abbreviation
   if(country_name == "India"){
@@ -111,34 +111,38 @@ ext_reg_models_pre_2019_adopters<-function(country_name, indep_vars, covid_var, 
   import_data[, (product_vars) := lapply(.SD, function(x) 1 * x), .SDcols = product_vars]
   
   
-  # Create pre_2019_adopter_type variable
-  import_data[ , pre_2019_adopter_type := 
+  # Create pre_2020_adopter_type variable
+  import_data[ , pre_2020_adopter_type := 
                  fifelse(
-                   year(date_of_adoption) >= 2019 | is.na(date_of_adoption), 
-                   "non_pre_2019_adopter", 
+                   year(date_of_adoption) >= 2020 | is.na(date_of_adoption), 
+                   "non_pre_2020_adopter", 
                    old_adopter_type
                  )
   ]
   
   
-  # Create dummies of categories within pre_2019_adopter type (2017-adopter, pre-2017 adopter, 2018 adopter)
-  import_data<-dummy_cols(import_data, select_columns = "pre_2019_adopter_type")
+  # Create dummies of categories within pre_2020_adopter type (pre-2017 adopter, 2017-adopter, 2018 adopter, 2019-adopter)
+  import_data<-dummy_cols(import_data, select_columns = "pre_2020_adopter_type")
   
   # Rename columns 
   if(country_name != "Indonesia"){
     setnames(import_data, 
-             old = c("pre_2019_adopter_type_2016_or_pre_2016_adopter", 
-                     "pre_2019_adopter_type_2017_adopter", 
-                     "pre_2019_adopter_type_2018_adopter"), 
-             new = c("pre_2017_adopter", "adopter_2017", "adopter_2018")
+             old = c("pre_2020_adopter_type_2016_or_pre_2016_adopter", 
+                     "pre_2020_adopter_type_2017_adopter", 
+                     "pre_2020_adopter_type_2018_adopter", 
+                     "pre_2020_adopter_type_2019_adopter"), 
+             new = c("pre_2017_adopter", "adopter_2017", "adopter_2018", "adopter_2019")
     )
     
   } else if(country_name == "Indonesia"){
     setnames(import_data, 
-             old = c("pre_2019_adopter_type_2017_or_pre_2017_adopter", 
-                     "pre_2019_adopter_type_2018_adopter"), 
+             old = c("pre_2020_adopter_type_2017_or_pre_2017_adopter", 
+                     "pre_2020_adopter_type_2018_adopter",
+                     "pre_2020_adopter_type_2019_adopter"
+                     ), 
              new = c("pre_2018_adopter", 
-                     "adopter_2018")
+                     "adopter_2018", 
+                     "adopter_2019")
     )
   }
   
@@ -172,32 +176,36 @@ ext_reg_models_pre_2019_adopters<-function(country_name, indep_vars, covid_var, 
   export_data[, (product_vars) := lapply(.SD, function(x) 1 * x), .SDcols = product_vars]
   
   
-  # Create pre_2019_adopter_type variable
-  export_data[ , pre_2019_adopter_type := 
+  # Create pre_2020_adopter_type variable
+  export_data[ , pre_2020_adopter_type := 
                  fifelse(
-                   year(date_of_adoption) >= 2019 | is.na(date_of_adoption), 
-                   "non_pre_2019_adopter", 
+                   year(date_of_adoption) >= 2020 | is.na(date_of_adoption), 
+                   "non_pre_2020_adopter", 
                    old_adopter_type
                  )
   ]
   
   
   # Create dummies of categories within pre_2019_adopter type (2017-adopter, pre-2017 adopter, 2018 adopter)
-  export_data<-dummy_cols(export_data, select_columns = "pre_2019_adopter_type")
+  export_data<-dummy_cols(export_data, select_columns = "pre_2020_adopter_type")
   
   # Rename columns 
   if(country_name != "Indonesia"){
     setnames(export_data, 
-             old = c("pre_2019_adopter_type_2016_or_pre_2016_adopter", 
-                     "pre_2019_adopter_type_2017_adopter", 
-                     "pre_2019_adopter_type_2018_adopter"), 
-             new = c("pre_2017_adopter", "adopter_2017", "adopter_2018")
+             old = c("pre_2020_adopter_type_2016_or_pre_2016_adopter", 
+                     "pre_2020_adopter_type_2017_adopter", 
+                     "pre_2020_adopter_type_2018_adopter", 
+                     "pre_2020_adopter_type_2018_adopter", 
+                     "pre_2020_adopter_type_2019_adopter"
+                     ), 
+             new = c("pre_2017_adopter", "adopter_2017", "adopter_2018", "adopter_2019")
              ) 
   } else if(country_name == "Indonesia"){
     setnames(export_data, 
-             old = c("pre_2019_adopter_type_2017_or_pre_2017_adopter", 
-                     "pre_2019_adopter_type_2018_adopter"), 
-             new = c("pre_2018_adopter", "adopter_2018")
+             old = c("pre_2020_adopter_type_2017_or_pre_2017_adopter", 
+                     "pre_2020_adopter_type_2018_adopter", 
+                     "pre_2020_adopter_type_2019_adopter"), 
+             new = c("pre_2018_adopter", "adopter_2018", "adopter_2019")
     )
   }
   

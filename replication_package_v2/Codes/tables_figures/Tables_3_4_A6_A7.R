@@ -1,5 +1,5 @@
 #===========================================================================#
-# Date:    December 2022                                                    #
+# Date:    November 2023                                                    #
 #                                                                           #
 # Project: E-commerce and Trade during Crisis Times: Firm-level             #
 #          Evidence from India, Indonesia and Mexico                        #                  
@@ -49,7 +49,7 @@ for(country in c("India", "Mexico", "Indonesia")){
   ## Read imports dataset for intensive margin regressions 
   imports_data<-fread(paste0("../../Data/processed_data/", country, "/imports_tech_mitigation_model_", abbr, ".csv")) %>% 
     # Select relevant variables
-    select(company_id, hs6, date, date_character, log_import, adopted_pay_or_ecom_before_2019, 
+    select(company_id, hs6, date, date_character, log_import, adopted_pay_or_ecom_before_2020, 
            month_mean_stringency_index, China_E_commerce, cons_BEC) %>% 
     # From Boolean to dummy (for regression purposes)
     mutate(China_E_commerce = China_E_commerce*1, 
@@ -58,7 +58,7 @@ for(country in c("India", "Mexico", "Indonesia")){
   ## Read exports dataset for extensive margin regressions
   exports_data<-fread(paste0("../../Data/processed_data/", country, "/exports_tech_mitigation_model_", abbr, ".csv")) %>% 
     # Select relevant variables
-    select(company_id, hs6, date, date_character, log_export, adopted_pay_or_ecom_before_2019, 
+    select(company_id, hs6, date, date_character, log_export, adopted_pay_or_ecom_before_2020, 
            month_mean_stringency_index, China_E_commerce, cons_BEC) %>% 
     # From boolean to dummy (for regression purposes)
     mutate(China_E_commerce = China_E_commerce*1, 
@@ -71,7 +71,7 @@ for(country in c("India", "Mexico", "Indonesia")){
     reg_results<-exist_tech_reg(import_data = imports_data, export_data = exports_data, 
                                dep_var_import = "log_import", dep_var_export = "log_export",
                                covid_var = "month_mean_stringency_index", product_var = product_var,
-                               tech_var = "adopted_pay_or_ecom_before_2019", company_var = "company_id", 
+                               tech_var = "adopted_pay_or_ecom_before_2020", company_var = "company_id", 
                                hs_var = "hs6", date_var = "date_character")
     
     # Add results to final lists
@@ -117,7 +117,7 @@ for(country in c("India", "Mexico", "Indonesia")){
   # Iterate over imports and exports
   for(trade_var in c("imports", "exports")){
     # Product vars and tech var
-    vars <- c("China_E_commerce", "cons_BEC", "adopted_pay_or_ecom_before_2019")
+    vars <- c("China_E_commerce", "cons_BEC", "adopted_pay_or_ecom_before_2020")
     
     if(trade_var == "imports"){
       dep_var = "import_dummy"
@@ -127,7 +127,7 @@ for(country in c("India", "Mexico", "Indonesia")){
     
     
     data <-read_parquet(paste0("../../Data/processed_data/", country, "/", trade_var, "_grid_mitig_model_", abbr, ".parquet"), 
-                               col_select = c("company_id", "hs6", "date_character", dep_var , "adopted_pay_or_ecom_before_2019", 
+                               col_select = c("company_id", "hs6", "date_character", dep_var , "adopted_pay_or_ecom_before_2020", 
                                               "month_mean_stringency_index", "China_E_commerce", "cons_BEC"))
     
     data<-as.data.table(data)
@@ -144,7 +144,7 @@ for(country in c("India", "Mexico", "Indonesia")){
       reg_result<-exist_tech_reg_ext_marg(data = data, dep_var = dep_var,
                                           covid_var = "month_mean_stringency_index", 
                                           product_var = product_var,
-                                          tech_var = "adopted_pay_or_ecom_before_2019", company_var = "company_id", 
+                                          tech_var = "adopted_pay_or_ecom_before_2020", company_var = "company_id", 
                                           hs_var = "hs6", date_var = "date_character")
       
       # Add results to final lists
@@ -179,11 +179,11 @@ FE<-as.data.frame(matrix(c("Firm FE", rep("Yes", length(exist_e_comm_mod)),
 
 
 # Labels for variables and interaction of variables in tables 
-coef_labels<-c("adopted_pay_or_ecom_before_2019:month_mean_stringency_index"="E-payment or E-commerce 2019 × Monthly Avg. Stringency Index",
-               "month_mean_stringency_index:China_E_commerce" = "Monthly Avg. Stringency Index × China e-commerce",
-               "adopted_pay_or_ecom_before_2019:month_mean_stringency_index:China_E_commerce" = "E-payment or E-commerce 2019 × Monthly Avg. Stringency Index × China e-commerce",
-               "month_mean_stringency_index:cons_BEC" = "Monthly Avg. Stringency Index × Consumable",
-               "adopted_pay_or_ecom_before_2019:month_mean_stringency_index:cons_BEC" = "E-payment or E-commerce 2019 × Monthly Avg. Stringency Index × Consumable")
+coef_labels<-c("adopted_pay_or_ecom_before_2020:month_mean_stringency_index"="Firm technology adoption pre-2020 × COVID stringency index",
+               "month_mean_stringency_index:China_E_commerce" = "COVID stringency index × China e-commerce",
+               "adopted_pay_or_ecom_before_2020:month_mean_stringency_index:China_E_commerce" = "Firm technology adoption pre-2020 × COVID stringency index × China e-commerce",
+               "month_mean_stringency_index:cons_BEC" = "COVID stringency index × Consumable",
+               "adopted_pay_or_ecom_before_2020:month_mean_stringency_index:cons_BEC" = "Firm technology adoption pre-2020 × COVID stringency index × Consumable")
 
 # Customize latex tables
 options("modelsummary_format_numeric_latex" = "plain")

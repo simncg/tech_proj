@@ -217,9 +217,9 @@ panel_table_mod1<-function(imports_data, exports_data, product_var, tech_var,
                            name_product, short_name_prod, short_name_non_prod){
   
   # Labels for tables
-  coef_labels<-c("pay_or_ecomnod_t_1" = "E-payment or E-commerce (t-1)",
-                 "pay_or_ecomnod_t_2" = "E-payment or E-commerce (t-2)",
-                 "pay_or_ecomnod_t_3" = "E-payment or E-commerce (t-3)"
+  coef_labels<-c("pay_or_ecomnod_t_1" = "Firm technology adoption (t-1)",
+                 "pay_or_ecomnod_t_2" = "Firm technology adoption (t-2)",
+                 "pay_or_ecomnod_t_3" = "Firm technology adoption (t-3)"
   )
   
   # Create list with panels (each panel corresponds to a lag in the tech var)
@@ -289,9 +289,9 @@ panel_table_mod1_n_countries<-function(imports_data, exports_data, n_countries_v
                                        name_tech_var, country_name){
   
   # Labels for tables
-  coef_labels<-c("pay_or_ecomnod_t_1" = "E-payment or E-commerce (t-1)",
-                 "pay_or_ecomnod_t_2" = "E-payment or E-commerce (t-2)",
-                 "pay_or_ecomnod_t_3" = "E-payment or E-commerce (t-3)"
+  coef_labels<-c("pay_or_ecomnod_t_1" = "Firm technology adoption (t-1)",
+                 "pay_or_ecomnod_t_2" = "Firm technology adoption (t-2)",
+                 "pay_or_ecomnod_t_3" = "Firm technology adoption (t-3)"
   )
   
   # Create list with panels (each panel corresponds to a lag in the tech var)
@@ -509,7 +509,7 @@ table_mod2<-function(imports_data, exports_data, product_var, tech_var,
   models<-ext_marg_reg_mitig(imports_data, exports_data, product_var, tech_var, covid_var)
   
   # Coefficient labels 
-  coef_labels<-c("adopted_pay_or_ecom_before_2019:month_mean_stringency_index"="E-payment or E-commerce 2019 × Monthly Avg. Stringency Index")
+  coef_labels<-c("adopted_pay_or_ecom_before_2020:month_mean_stringency_index"="Firm technology adoption pre-2020 × Monthly Avg. Stringency Index")
   
   # Assign dependent variable names 
   names(models)<-c(rep(c(short_name_prod, short_name_non_prod), 4), "Import", "Export")
@@ -525,7 +525,7 @@ table_mod2<-function(imports_data, exports_data, product_var, tech_var,
     output = "latex",
     align = paste(c("l", rep("c", 10)), sep="", collapse=""),
     notes = c(table_notes, 
-              "The variable E-payment or E-commerce 2019 is a dummy equal to 1 if the company adopted the E-payment or E-commerce technology before 2019",
+              "The variable Firm technology adoption 2020 is a dummy equal to 1 if the company adopted the E-payment or E-commerce technology before 2020",
               "Clustered-standard errors at the firm level. PPML refers to Poisson Pseudo Maximum Likelihood and LPM to Linear Probability Model estimated using OLS.", 
               "R-squared for PPML refers to the squared correlation coefficient between the dependent variable and the fitted values."), 
     title = paste(country_name,"- Extensive margin analysis for", name_product)
@@ -545,7 +545,7 @@ table_mod2<-function(imports_data, exports_data, product_var, tech_var,
     fmt = format_se_coef,
     align = paste(c("l", rep("c", 10)), sep="", collapse=""),
     notes = c(table_notes, 
-              "The variable E-payment or E-commerce 2019 is a dummy equal to 1 if the company adopted the E-payment or E-commerce technology before 2019",
+              "The variable Firm technology adoption pre-2020 is a dummy equal to 1 if the company adopted the E-payment or E-commerce technology before 2020",
               "Clustered-standard errors at the firm level. PPML refers to Poisson Pseudo Maximum Likelihood and LPM to Linear Probability Model estimated using OLS.", 
               "R-squared for PPML refers to the squared correlation coefficient between the dependent variable and the fitted values."), 
     title = paste(country_name,"- Extensive margin analysis for", name_product)
@@ -576,7 +576,7 @@ table_mod2_n_countries<-function(imports_data, exports_data,
   models<-ext_marg_reg_mitig_n_countries(imports_data, exports_data, n_countries_var, tech_var, covid_var)
   
   # Coefficient labels 
-  coef_labels<-c("adopted_pay_or_ecom_before_2019:month_mean_stringency_index"="E-payment or E-commerce 2019 × Monthly Avg. Stringency Index")
+  coef_labels<-c("adopted_pay_or_ecom_before_2020:month_mean_stringency_index"="Firm technology adoption pre-2020 × Monthly Avg. Stringency Index")
   
   # Assign dependent variable names 
   names(models)<-rep(c("Imports", "Exports"), 2)
@@ -591,7 +591,7 @@ table_mod2_n_countries<-function(imports_data, exports_data,
     fmt = format_se_coef,
     output = "latex",
     align = paste(c("l", rep("c", 4)), sep="", collapse=""),
-    notes = c("The variable E-payment or E-commerce 2019 is a dummy equal to 1 if the company adopted the E-payment or E-commerce technology before 2019",
+    notes = c("The variable Firm technology adoption pre-2020 is a dummy equal to 1 if the company adopted the E-payment or E-commerce technology before 2020",
               "Clustered-standard errors at the firm level. PPML refers to Poisson Pseudo Maximum Likelihood estimator.", 
               "R-squared for PPML refers to the squared correlation coefficient between the dependent variable and the fitted values."), 
     title = paste(country_name,"- Extensive margin analysis for number of partner countries")
@@ -610,7 +610,7 @@ table_mod2_n_countries<-function(imports_data, exports_data,
     add_rows = FE_n_countries, 
     fmt = format_se_coef,
     align = paste(c("l", rep("c", 4)), sep="", collapse=""),
-    notes = c("The variable E-payment or E-commerce 2019 is a dummy equal to 1 if the company adopted the E-payment or E-commerce technology before 2019",
+    notes = c("The variable Firm technology adoption pre-2020 is a dummy equal to 1 if the company adopted the E-payment or E-commerce technology before 2020",
               "Clustered-standard errors at the firm level. PPML refers to Poisson Pseudo Maximum Likelihood estimator.", 
               "R-squared for PPML refers to the squared correlation coefficient between the dependent variable and the fitted values."), 
     title = paste(country_name,"- Extensive margin analysis for number of partner countries")

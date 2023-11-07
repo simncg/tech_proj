@@ -49,7 +49,7 @@ foreach data of local imp_exp {
 	import delimited "$path_data/India/processed_data/`data'_tech_mitigation_model_IND.csv", clear
 		
 		
-	keep company_id year month date date_character hs6 `y' ebay_tradable cons_bec china_e_commerce durable_bec adopted_pay_or_ecom_before_2019
+	keep company_id year month date date_character hs6 `y' ebay_tradable cons_bec china_e_commerce durable_bec adopted_pay_or_ecom_before_2020
 
 	foreach var of varlist ebay_tradable cons_bec china_e_commerce durable_bec {
 		replace `var' = "1" if `var' == "TRUE"
@@ -135,7 +135,7 @@ foreach y of local dep_vars {
 	
 		
 	* Adding coefficients and significance level stars 
-	file write fh "Pre 2019 E-payment or E-commerce $\cdot covid_t$" "&" %4.3fc (`b_ltg') "`star_ltg'" "&"  %4.3fc (`b_dspg') "`star_dspg'" "&"  %4.3fc (`b_uspg') "`star_uspg'" "&"  %4.3fc (`b_ltb') "`star_ltb'" "&"  %4.3fc (`b_dspb') "`star_dspb'" "&"  %4.3fc (`b_uspb') "`star_uspb'" "\\" _n		
+	file write fh "Firm technology adoption pre-2020$\cdot covid_t$" "&" %4.3fc (`b_ltg') "`star_ltg'" "&"  %4.3fc (`b_dspg') "`star_dspg'" "&"  %4.3fc (`b_uspg') "`star_uspg'" "&"  %4.3fc (`b_ltb') "`star_ltb'" "&"  %4.3fc (`b_dspb') "`star_dspb'" "&"  %4.3fc (`b_uspb') "`star_uspb'" "\\" _n		
 		
 	* Adding standard errors 
 	file write fh "&" "(" %4.3fc (`se_ltg') ")" "&" "(" %4.3fc (`se_dspg')  ")" "&" "(" %4.3fc (`se_uspg') ")" "&" "(" %4.3fc (`se_ltb')  ")" "&" "(" %4.3fc (`se_dspb')  ")" "&" "(" %4.3fc (`se_uspb')  ") \\" _n  

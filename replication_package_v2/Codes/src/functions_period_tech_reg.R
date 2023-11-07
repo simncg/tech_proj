@@ -1,5 +1,5 @@
 #===========================================================================#
-# Date:    December 2022                                                    #
+# Date:    November 2023                                                    #
 #                                                                           #
 # Project: Analysis of the COVID-19 Shock, Technology and Trade in India,   #
 #          Indonesia and Mexico.                                            #
@@ -7,7 +7,7 @@
 # Author:  Simon Caicedo - DECTI - The World Bank                           #
 #                                                                           #
 #                                                                           #
-# This program generates functions for running intesive and extensive margin#
+# This program generates functions for running intensive and extensive margin#
 # for firms that adopted the technology during the period of analysis and   #
 # certain type of products.                                                 #
 #                                                                           #                                                                                                                                                                                                                       #

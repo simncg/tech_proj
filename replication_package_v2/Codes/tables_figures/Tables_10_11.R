@@ -23,7 +23,7 @@ source("../src/functions_reg_2019_adopters.R")
 
 # Intensive Margin Regressions -----
 
-model_pre_2019<-list()
+model_pre_2020<-list()
 
 # Iterate over countries
 for(country in c("India", "Mexico", "Indonesia")){
@@ -55,16 +55,16 @@ for(country in c("India", "Mexico", "Indonesia")){
   
   
   
-  # Generate an additional adopter type variable, which will be equal to non-pre-2019-adopter if the firm 
-  # is never adopter/2019-adopter/covid-adopter and if it is pre-2019 adopter the variable will be equal 
-  # to 2018-adopter, 2017-adopter or pre-2017 adopter depending on the year when the firm adopted the technology
+  # Generate an additional adopter type variable, which will be equal to non-pre-2020-adopter if the firm 
+  # is never adopter/2019-adopter/covid-adopter and if it is pre-2020 adopter the variable will be equal 
+  # to 2019-adopter, 2018-adopter, 2017-adopter or pre-2017 adopter depending on the year when the firm adopted the technology
   
   import_data<-import_data %>% 
     mutate(
-      pre_2019_adopter_type = 
+      pre_2020_adopter_type = 
         case_when(
-          year(date_of_adoption) >= 2019 | is.na(date_of_adoption) ~ "non_pre_2019_adopter",
-          year(date_of_adoption) < 2019  ~ old_adopter_type,
+          year(date_of_adoption) >= 2020 | is.na(date_of_adoption) ~ "non_pre_2020_adopter",
+          year(date_of_adoption) < 2020  ~ old_adopter_type,
           TRUE ~ NA # Although this case never happens
         )
     )
@@ -72,10 +72,10 @@ for(country in c("India", "Mexico", "Indonesia")){
   
   export_data<-export_data %>% 
     mutate(
-      pre_2019_adopter_type = 
+      pre_2020_adopter_type = 
         case_when(
-          year(date_of_adoption) >= 2019 | is.na(date_of_adoption) ~ "non_pre_2019_adopter",
-          year(date_of_adoption) < 2019  ~ old_adopter_type,
+          year(date_of_adoption) >= 2020 | is.na(date_of_adoption) ~ "non_pre_2020_adopter",
+          year(date_of_adoption) < 2020  ~ old_adopter_type,
           TRUE ~ NA # Although this case never happens
         )
     )
@@ -83,46 +83,50 @@ for(country in c("India", "Mexico", "Indonesia")){
   
   
   if(country != "Indonesia"){
-    # Create dummies for 2017-adopter, 2018-adopter, pre-2017 adopter, we use as baseline (ref) the non-pre-2019 adopter
-    export_data<-data.frame(export_data, i(export_data$pre_2019_adopter_type, ref = "non_pre_2019_adopter")) %>% 
+    # Create dummies for 2017-adopter, 2018-adopter, 2019-adopter, pre-2017 adopter, we use as baseline (ref) the non-pre-2020 adopter
+    export_data<-data.frame(export_data, i(export_data$pre_2020_adopter_type, ref = "non_pre_2020_adopter")) %>% 
       rename(`pre_2017_adopter` = `X2016_or_pre_2016_adopter`, 
              `adopter_2017` = `X2017_adopter`, 
              `adopter_2018` = `X2018_adopter`, 
+             `adopter_2019` = `X2019_adopter`
       )
     
     
-    import_data<-data.frame(import_data, i(import_data$pre_2019_adopter_type, ref = "non_pre_2019_adopter")) %>% 
+    import_data<-data.frame(import_data, i(import_data$pre_2020_adopter_type, ref = "non_pre_2020_adopter")) %>% 
       rename(`pre_2017_adopter` = `X2016_or_pre_2016_adopter`, 
              `adopter_2017` = `X2017_adopter`, 
              `adopter_2018` = `X2018_adopter`, 
+             `adopter_2019` = `X2019_adopter`
       ) 
     
     
-    indep_vars <- c("pre_2017_adopter", "adopter_2017", "adopter_2018")
+    indep_vars <- c("pre_2017_adopter", "adopter_2017", "adopter_2018", "adopter_2019")
     
   } else if(country == "Indonesia"){
     
-    # Create dummies for 2017-adopter, 2018-adopter, pre-2017 adopter, we use as baseline (ref) the non-pre-2019 adopter
-    export_data<-data.frame(export_data, i(export_data$pre_2019_adopter_type, ref = "non_pre_2019_adopter")) %>% 
+    # Create dummies for 2017-adopter, 2018-adopter, pre-2017 adopter, we use as baseline (ref) the non-pre-2020 adopter
+    export_data<-data.frame(export_data, i(export_data$pre_2020_adopter_type, ref = "non_pre_2020_adopter")) %>% 
       rename(`pre_2018_adopter` = `X2017_or_pre_2017_adopter`, 
-             `adopter_2018` = `X2018_adopter` 
+             `adopter_2018` = `X2018_adopter`, 
+             `adopter_2019` = `X2019_adopter`
       )
     
     
-    import_data<-data.frame(import_data, i(import_data$pre_2019_adopter_type, ref = "non_pre_2019_adopter")) %>% 
+    import_data<-data.frame(import_data, i(import_data$pre_2020_adopter_type, ref = "non_pre_2020_adopter")) %>% 
       rename(`pre_2018_adopter` = `X2017_or_pre_2017_adopter`, 
-             `adopter_2018` = `X2018_adopter`
+             `adopter_2018` = `X2018_adopter`, 
+             `adopter_2019` = `X2019_adopter`
       )
     
     
-    indep_vars <- c("pre_2018_adopter", "adopter_2018")
+    indep_vars <- c("pre_2018_adopter", "adopter_2018", "adopter_2019")
     
     
   }
   
   
   models<-
-    reg_models_pre_2019_adopters(import_data = import_data,
+    reg_models_pre_2020_adopters(import_data = import_data,
                                  export_data = export_data,
                                  country_name = country, 
                                  product_vars = "China_E_commerce",
@@ -132,7 +136,7 @@ for(country in c("India", "Mexico", "Indonesia")){
                                  indep_vars = indep_vars)
   
   
-  model_pre_2019<-c(model_pre_2019, models)
+  model_pre_2020<-c(model_pre_2020, models)
   
   
   rm(import_data, export_data)
@@ -144,24 +148,24 @@ for(country in c("India", "Mexico", "Indonesia")){
 # Extensive Margin Regressions -----
 
 
-ext_model_pre_2019<-list()
+ext_model_pre_2020<-list()
 
 # Iterate over countries
 for(country in c("India", "Mexico", "Indonesia")){
   
   if(country == "Indonesia"){ # Since BuiltWith dataset for Indonesia is not available before 2017
-    indep_vars<-c("pre_2018_adopter", "adopter_2018")
+    indep_vars<-c("pre_2018_adopter", "adopter_2018", "adopter_2019")
   } else if(country != "Indonesia"){
-    indep_vars<-c("pre_2017_adopter", "adopter_2017", "adopter_2018")
+    indep_vars<-c("pre_2017_adopter", "adopter_2017", "adopter_2018", "adopter_2019")
   }
   
   reg_results<-
-    ext_reg_models_pre_2019_adopters(country_name = country, 
+    ext_reg_models_pre_2020_adopters(country_name = country, 
                                      indep_vars = indep_vars, 
                                      covid_var = "month_mean_stringency_index", 
                                      product_vars = c("China_E_commerce"))
   
-  ext_model_pre_2019<-c(ext_model_pre_2019, reg_results)
+  ext_model_pre_2020<-c(ext_model_pre_2020, reg_results)
   
 }
 
@@ -170,30 +174,39 @@ for(country in c("India", "Mexico", "Indonesia")){
 # Tables -----
 
 # Assign dependent variable name to models names
-names(model_pre_2019)<-rep(c("Log. Imports", "Log. Exports"), length(model_pre_2019)/2)
+names(model_pre_2020)<-rep(c("Log. Imports", "Log. Exports"), length(model_pre_2020)/2)
 
 # Labels 
 # Labels to be displayed in table of results 
 coef_labels<-c(
-  "month_mean_stringency_index:China_E_commerce" = "Monthly Avg. Stringency Index × China e-commerce",
-  "pre_2017_adopter:month_mean_stringency_index"="Pre-2017 Adopter× Monthly Avg. Stringency Index",
-  "pre_2017_adopter:month_mean_stringency_index:China_E_commerce" = "Pre-2017 Adopter× Monthly Avg. Stringency Index× China e-commerce",
+  "month_mean_stringency_index:China_E_commerce" = "COVID stringency index × China e-commerce",
+  
+  "pre_2017_adopter:month_mean_stringency_index"="Pre-2017 Adopter × COVID stringency index",
+  "pre_2017_adopter:month_mean_stringency_index:China_E_commerce" = "Pre-2017 Adopter × COVID stringency index × China e-commerce",
 
-  "pre_2018_adopter:month_mean_stringency_index"="Pre-2018 Adopter × Monthly Avg. Stringency Index",
-  "pre_2018_adopter:month_mean_stringency_index:China_E_commerce" = "Pre-2018 Adopter × Monthly Avg. Stringency Index × China e-commerce",
+  "pre_2018_adopter:month_mean_stringency_index"="Pre-2018 Adopter × COVID stringency index",
+  "pre_2018_adopter:month_mean_stringency_index:China_E_commerce" = "Pre-2018 Adopter × COVID stringency index × China e-commerce",
   
-  "month_mean_stringency_index:adopter_2017"="2017-Adopter× Monthly Avg. Stringency Index",
-  "month_mean_stringency_index:China_E_commerce:adopter_2017" = "2017-Adopter× Monthly Avg. Stringency Index × China e-commerce",
+  "pre_2019_adopter:month_mean_stringency_index"="Pre-2019 Adopter × COVID stringency index",
+  "pre_2019_adopter:month_mean_stringency_index:China_E_commerce" = "Pre-2019 Adopter × COVID stringency index × China e-commerce",
   
-  "month_mean_stringency_index:adopter_2018"="2018-Adopter× Monthly Avg. Stringency Index",
-  "month_mean_stringency_index:China_E_commerce:adopter_2018" = "2018-Adopter× Monthly Avg. Stringency Index × China e-commerce"
+  "month_mean_stringency_index:adopter_2017"="2017-Adopter× COVID stringency index",
+  "month_mean_stringency_index:China_E_commerce:adopter_2017" = "2017-Adopter× COVID stringency index × China e-commerce",
+  
+  "month_mean_stringency_index:adopter_2018"="2018-Adopter× COVID stringency index",
+  "month_mean_stringency_index:China_E_commerce:adopter_2018" = "2018-Adopter × COVID stringency index × China e-commerce", 
+  
+  "month_mean_stringency_index:adopter_2019"="2019-Adopter× COVID stringency index",
+  "month_mean_stringency_index:China_E_commerce:adopter_2019" = "2019-Adopter × COVID stringency index × China e-commerce"
+  
+  
   )
 
 
 # Add fixed-effects indicators to tables
-FE<-as.data.frame(matrix(c("Firm FE", rep("Yes", length(model_pre_2019)), 
-                           "Product FE", rep("Yes", length(model_pre_2019)),
-                           "Month FE", rep("Yes", length(model_pre_2019))), 
+FE<-as.data.frame(matrix(c("Firm FE", rep("Yes", length(model_pre_2020)), 
+                           "Product FE", rep("Yes", length(model_pre_2020)),
+                           "Month FE", rep("Yes", length(model_pre_2020))), 
                          nrow = 3, byrow=T))
 
 
@@ -216,24 +229,24 @@ format_se_coef <- function(x) format(round(x, 5), nsmall = 3, scientific = FALSE
 
 
 # Produce tables 
-table_pre_2019_adop<-
-  modelsummary(model_pre_2019,
+table_pre_2020_adop<-
+  modelsummary(model_pre_2020,
                coef_map = coef_labels, 
                gof_map = gm, 
                estimate = "{estimate}{stars}",
                stars = c('*' = .1, '**' = .05, '***'= 0.01), 
                add_rows = FE, 
-               align = paste(c("l", rep("c", length(model_pre_2019))), sep="", collapse=""), 
+               align = paste(c("l", rep("c", length(model_pre_2020))), sep="", collapse=""), 
                fmt = format_se_coef, 
                notes = NULL, 
                output = "latex"
                ) %>% 
   add_header_above(c(" " = 1, "India" = 2, "Mexico" = 2, "Indonesia" = 2)) %>% 
   kable_styling(latex_options = c("scale_down", "HOLD_position")) %>% 
-  footnote("Clustered-standard errors at the firm-product level. The baseline category consists of non-pre-2019 adopters, which includes both never adopters and firms that adopted the technology from 2019 onwards.", threeparttable = TRUE) 
+  footnote("Clustered-standard errors at the firm-product level. The baseline category consists of non-pre-2020 adopters, which includes both never adopters and firms that adopted the technology from 2020 onwards.", threeparttable = TRUE) 
 
 
-capture.output(table_pre_2019_adop, file = "../../Outputs/Tables/reg_pre_2019_adopters_intensive.tex")
+capture.output(table_pre_2020_adop, file = "../../Outputs/Tables/reg_pre_2020_adopters_intensive.tex")
 
 
 
@@ -244,24 +257,24 @@ format_se_coef <- function(x) format(round(x, 6), nsmall = 3, scientific = FALSE
 
 
 # Produce tables 
-table_ext_pre_2019_adop<-
-  modelsummary(ext_model_pre_2019,
+table_ext_pre_2020_adop<-
+  modelsummary(ext_model_pre_2020,
                coef_map = coef_labels, 
                gof_map = gm, 
                estimate = "{estimate}{stars}",
                stars = c('*' = .1, '**' = .05, '***'= 0.01), 
                add_rows = FE, 
-               align = paste(c("l", rep("c", length(model_pre_2019))), sep="", collapse=""), 
+               align = paste(c("l", rep("c", length(model_pre_2020))), sep="", collapse=""), 
                fmt = format_se_coef, 
                notes = NULL, 
                output = "latex"
   ) %>% 
   add_header_above(c(" " = 1, "India" = 2, "Mexico" = 2, "Indonesia" = 2)) %>% 
   kable_styling(latex_options = c("scale_down", "HOLD_position")) %>% 
-  footnote("Clustered-standard errors at the firm-product level. The baseline category consists of non-pre-2019 adopters, which includes both never adopters and firms that adopted the technology from 2019 onwards.", threeparttable = TRUE) 
+  footnote("Clustered-standard errors at the firm-product level. The baseline category consists of non-pre-2020 adopters, which includes both never adopters and firms that adopted the technology from 2020 onwards.", threeparttable = TRUE) 
 
 
-capture.output(table_ext_pre_2019_adop, file = "../../Outputs/Tables/reg_pre_2019_adopters_extensive.tex")
+capture.output(table_ext_pre_2020_adop, file = "../../Outputs/Tables/reg_pre_2020_adopters_extensive.tex")
 
 
 

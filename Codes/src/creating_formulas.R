@@ -72,7 +72,7 @@ reg_models_tech_adopters<-function(import_data, export_data, country_name,
                       title = paste0(country_name," - Regression Results for ", dep_var_labels[1], " and ", dep_var_labels[2], ": e-Bay tradable, China e-commerce, Consumable and Durable products")) |>
     add_header_above(c(" " = 1, "Dependent Variables" = length(models))) %>% 
     kable_styling(latex_options = c("HOLD_position", "scale_down")) %>% 
-    footnote(paste0("Clustered-standard errors at the firm-product level. The variable E-payment or E-commerce 2019 is a dummy equal to 1 if the company adopted the E-payment or E-commerce technology before 2019 and 0 if not. The variable 2018-Adopter is equal to the number of months since the firm adopted the E-payment or E-commerce technology. This is applicable only for firms that adopted the technology before 2019. For firms that did not adopt the technology prior to 2019, the '2018-Adopter' variable is set to 0. ",
+    footnote(paste0("Clustered-standard errors at the firm-product level. The variable 'Firm technology adoption pre-2020' is a dummy equal to 1 if the company adopted the E-payment or E-commerce technology before 2020 and 0 if not. ",
                     list_notes), 
              threeparttable = TRUE) 
   
@@ -87,27 +87,27 @@ coef_labels<-c(
   "month_mean_stringency_index:adopter_2017"="2017-Adopter × Monthly Avg. Stringency Index",
   "month_mean_stringency_index:adopter_2018"="2018-Adopter × Monthly Avg. Stringency Index",
   
-  "month_mean_stringency_index:cons_BEC" = "Monthly Avg. Stringency Index × Consumable",
-  "pre_2017_adopter:month_mean_stringency_index:cons_BEC" = "Pre-2017 Adopter × Monthly Avg. Stringency Index × Consumable",
-  "month_mean_stringency_index:cons_BEC:adopter_2017" = "2017-Adopter × Monthly Avg. Stringency Index × Consumable",
-  "month_mean_stringency_index:cons_BEC:adopter_2018" = "2018-Adopter × Monthly Avg. Stringency Index × Consumable",
+  "month_mean_stringency_index:cons_BEC" = "COVID stringency index × Consumable",
+  "pre_2017_adopter:month_mean_stringency_index:cons_BEC" = "Pre-2017 Adopter × COVID stringency index × Consumable",
+  "month_mean_stringency_index:cons_BEC:adopter_2017" = "2017-Adopter × COVID stringency index × Consumable",
+  "month_mean_stringency_index:cons_BEC:adopter_2018" = "2018-Adopter × COVID stringency index × Consumable",
   
-  "month_mean_stringency_index:China_E_commerce" = "Monthly Avg. Stringency Index × China e-commerce",
-  "pre_2017_adopter:month_mean_stringency_index:China_E_commerce" = "Pre-2017 Adopter × Monthly Avg. Stringency Index × China e-commerce",
-  "month_mean_stringency_index:China_E_commerce:adopter_2017" = "2017-Adopter × Monthly Avg. Stringency Index × China e-commerce",
-  "month_mean_stringency_index:China_E_commerce:adopter_2018" = "2018-Adopter × Monthly Avg. Stringency Index × China e-commerce",
-  
-  
-  "month_mean_stringency_index:Ebay_tradable" = "Monthly Avg. Stringency Index × eBay-Tradable",
-  "pre_2017_adopter:month_mean_stringency_index:Ebay_tradable" = "Pre-2017 Adopter × Monthly Avg. Stringency Index × eBay-Tradable",
-  "month_mean_stringency_index:Ebay_tradable:adopter_2017" = "2017-Adopter × Monthly Avg. Stringency Index × eBay-Tradable",
-  "month_mean_stringency_index:Ebay_tradable:adopter_2018" = "2018-Adopter × Monthly Avg. Stringency Index × eBay-Tradable",
+  "month_mean_stringency_index:China_E_commerce" = "COVID stringency index × China e-commerce",
+  "pre_2017_adopter:month_mean_stringency_index:China_E_commerce" = "Pre-2017 Adopter × COVID stringency index × China e-commerce",
+  "month_mean_stringency_index:China_E_commerce:adopter_2017" = "2017-Adopter × COVID stringency index × China e-commerce",
+  "month_mean_stringency_index:China_E_commerce:adopter_2018" = "2018-Adopter × COVID stringency index × China e-commerce",
   
   
-  "month_mean_stringency_index:durable_BEC" = "Monthly Avg. Stringency Index × Durable",
-  "pre_2017_adopter:month_mean_stringency_index:durable_BEC" = "Pre-2017 Adopter × Monthly Avg. Stringency Index × Durable", 
-  "month_mean_stringency_index:durable_BEC:adopter_2017" = "2017-Adopter × Monthly Avg. Stringency Index × Durable",
-  "month_mean_stringency_index:durable_BEC:adopter_2018" = "2018-Adopter × Monthly Avg. Stringency Index × Durable"
+  "month_mean_stringency_index:Ebay_tradable" = "COVID stringency index × eBay-Tradable",
+  "pre_2017_adopter:month_mean_stringency_index:Ebay_tradable" = "Pre-2017 Adopter × COVID stringency index × eBay-Tradable",
+  "month_mean_stringency_index:Ebay_tradable:adopter_2017" = "2017-Adopter × COVID stringency index × eBay-Tradable",
+  "month_mean_stringency_index:Ebay_tradable:adopter_2018" = "2018-Adopter × COVID stringency index × eBay-Tradable",
+  
+  
+  "month_mean_stringency_index:durable_BEC" = "COVID stringency index × Durable",
+  "pre_2017_adopter:month_mean_stringency_index:durable_BEC" = "Pre-2017 Adopter × COVID stringency index × Durable", 
+  "month_mean_stringency_index:durable_BEC:adopter_2017" = "2017-Adopter × COVID stringency index × Durable",
+  "month_mean_stringency_index:durable_BEC:adopter_2018" = "2018-Adopter × COVID stringency index × Durable"
   
 )
 

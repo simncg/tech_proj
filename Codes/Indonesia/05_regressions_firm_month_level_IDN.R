@@ -32,10 +32,10 @@ source("../src/functions_reg_firm_month_model.R")
 
 
 # Assign variables names to display in tables -----
-coef_labels<-c(pay_or_ecomnod="E-payment or E-commerce", 
-               pay_or_ecomnod_t_1 = "E-payment or E-commerce (t-1)",
-               pay_or_ecomnod_t_2 = "E-payment or E-commerce (t-2)",
-               pay_or_ecomnod_t_3 = "E-payment or E-commerce (t-3)"
+coef_labels<-c(pay_or_ecomnod="Firm technology adoption", 
+               pay_or_ecomnod_t_1 = "Firm technology adoption (t-1)",
+               pay_or_ecomnod_t_2 = "Firm technology adoption (t-2)",
+               pay_or_ecomnod_t_3 = "Firm technology adoption (t-3)"
 )
 
 

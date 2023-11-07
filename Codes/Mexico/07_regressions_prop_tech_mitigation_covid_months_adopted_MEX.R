@@ -25,23 +25,23 @@ source("../src/packages.R")
 source("../src/functions_reg_prop_tech_covid_mitigation.R")
 
 # Run regressions for definitive products to be used in the analysis using months since adoption as indep var ----
-coef_labels<-c("months_since_adoption:month_mean_stringency_index"="Months Since Adoption ?? Monthly Avg. Stringency Index",
-               "months_since_adoption:month_mean_stringency_index:Ebay_tradable" = "Months Since Adoption ?? Monthly Avg. Stringency Index ?? eBay-Tradable",
-               "month_mean_stringency_index:Ebay_tradable" = "Monthly Avg. Stringency Index ?? eBay-Tradable",
-               "month_mean_stringency_index:China_E_commerce" = "Monthly Avg. Stringency Index ?? China e-commerce",
-               "months_since_adoption:month_mean_stringency_index:China_E_commerce" = "Months Since Adoption ?? Monthly Avg. Stringency Index ?? China e-commerce",
-               "month_mean_stringency_index:cons_BEC" = "Monthly Avg. Stringency Index ?? Consumable",
-               "months_since_adoption:month_mean_stringency_index:cons_BEC" = "Months Since Adoption ?? Monthly Avg. Stringency Index ?? Consumable", 
-               "month_mean_stringency_index:durable_BEC" = "Monthly Avg. Stringency Index ?? Durable",
-               "months_since_adoption:month_mean_stringency_index:durable_BEC" = "Months Since Adoption ?? Monthly Avg. Stringency Index ?? Durable", 
-               "month_mean_stringency_index:adopted_pay_or_ecom_before_2019"="E-payment or E-commerce 2019 ?? Monthly Avg. Stringency Index",
-               "month_mean_stringency_index:Ebay_tradable:adopted_pay_or_ecom_before_2019" = "E-payment or E-commerce 2019 ?? Monthly Avg. Stringency Index ?? eBay-Tradable", 
-               "month_mean_stringency_index:China_E_commerce:adopted_pay_or_ecom_before_2019" = "E-payment or E-commerce 2019 ?? Monthly Avg. Stringency Index ?? China e-commerce",
-               "month_mean_stringency_index:cons_BEC:adopted_pay_or_ecom_before_2019" = "E-payment or E-commerce 2019 ?? Monthly Avg. Stringency Index ?? Consumable", 
-               "month_mean_stringency_index:durable_BEC:adopted_pay_or_ecom_before_2019" = "E-payment or E-commerce 2019 ?? Monthly Avg. Stringency Index ?? Durable"
+coef_labels<-c("months_since_adoption:month_mean_stringency_index"="Months Since Adoption × COVID stringency index",
+               "months_since_adoption:month_mean_stringency_index:Ebay_tradable" = "Months Since Adoption × COVID stringency index × eBay-Tradable",
+               "month_mean_stringency_index:Ebay_tradable" = "COVID stringency index × eBay-Tradable",
+               "month_mean_stringency_index:China_E_commerce" = "COVID stringency index × China e-commerce",
+               "months_since_adoption:month_mean_stringency_index:China_E_commerce" = "Months Since Adoption × COVID stringency index × China e-commerce",
+               "month_mean_stringency_index:cons_BEC" = "COVID stringency index × Consumable",
+               "months_since_adoption:month_mean_stringency_index:cons_BEC" = "Months Since Adoption × COVID stringency index × Consumable", 
+               "month_mean_stringency_index:durable_BEC" = "COVID stringency index × Durable",
+               "months_since_adoption:month_mean_stringency_index:durable_BEC" = "Months Since Adoption × COVID stringency index × Durable", 
+               "month_mean_stringency_index:adopted_pay_or_ecom_before_2020"="Firm technology adoption pre-2020 × COVID stringency index",
+               "month_mean_stringency_index:Ebay_tradable:adopted_pay_or_ecom_before_2020" = "Firm technology adoption pre-2020 × COVID stringency index × eBay-Tradable", 
+               "month_mean_stringency_index:China_E_commerce:adopted_pay_or_ecom_before_2020" = "Firm technology adoption pre-2020 × COVID stringency index × China e-commerce",
+               "month_mean_stringency_index:cons_BEC:adopted_pay_or_ecom_before_2020" = "Firm technology adoption pre-2020 × COVID stringency index × Consumable", 
+               "month_mean_stringency_index:durable_BEC:adopted_pay_or_ecom_before_2020" = "Firm technology adoption pre-2020 × COVID stringency index × Durable"
 )
 
 
 
-models_tech_covid_definitive_months_adopted_MEX<-prop_reg_models_2019_tech_var_months_covid("Mexico", 
+models_tech_covid_definitive_months_adopted_MEX<-prop_reg_models_2020_tech_var_months_covid("Mexico", 
                                                                                             coef_labels)

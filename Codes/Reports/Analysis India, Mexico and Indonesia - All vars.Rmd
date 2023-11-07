@@ -190,15 +190,15 @@ models_definitive_ext_MEX
 
 # 2. Does Existing Tech Use Mitigate COVID Impacts?
 
-The aim of these regressions is to investigate whether companies that had adopted E-payment or E-commerce technology before 2019 were better equipped to mitigate the impacts of COVID on their product trade outcomes. The regression model is specified as follows:
+The aim of these regressions is to investigate whether companies that had adopted E-payment or E-commerce technology before 2020 were better equipped to mitigate the impacts of COVID on their product trade outcomes. The regression model is specified as follows:
 
 \begin{dmath}\label{reg_2}
 y_{ipt} = \alpha_0 + \alpha_1 tech_i \cdot covid_t + \alpha_2 tech_i \cdot covid_t \cdot category_p + \alpha_3 covid_t \cdot category_p + FE_p + FE_i + FE_t + \epsilon_{ipt}
 \end{dmath}
 
-Trade outcomes $y_{ipt}$ are the same as in equation (1). The variable $tech_i$ is a dummy variable indicating whether the company adopted an E-commerce or E-payment technology before 2019. $covid_t$ captures the impact of COVID using the monthly \textit{Stringency Index}, and $category_p$ is a dummy variable describing the category of product $p$.
+Trade outcomes $y_{ipt}$ are the same as in equation (1). The variable $tech_i$ is a dummy variable indicating whether the company adopted an E-commerce or E-payment technology before 2020. $covid_t$ captures the impact of COVID using the monthly \textit{Stringency Index}, and $category_p$ is a dummy variable describing the category of product $p$.
 
-The triple interaction term $tech_i \cdot covid_t \cdot category_p$ captures the effect of the adoption of E-commerce or E-payment technology before 2019 on mitigating the impact of COVID on trade outcomes for products of a specific category. The interaction term $tech_i \cdot covid_t$ investigates whether the adoption of E-commerce or E-payment technology before 2019 mitigates the impact of COVID on trade outcomes, without distinguishing by product category. The term $covid_t \cdot category_p$ examines the effect of COVID on trade outcomes of a specific category, without distinguishing by firms' adoption of e-commerce or e-payment technologies before 2019. Finally, fixed-effects are included for product, firm, and month.
+The triple interaction term $tech_i \cdot covid_t \cdot category_p$ captures the effect of the adoption of E-commerce or E-payment technology before 2020 on mitigating the impact of COVID on trade outcomes for products of a specific category. The interaction term $tech_i \cdot covid_t$ investigates whether the adoption of E-commerce or E-payment technology before 2020 mitigates the impact of COVID on trade outcomes, without distinguishing by product category. The term $covid_t \cdot category_p$ examines the effect of COVID on trade outcomes of a specific category, without distinguishing by firms' adoption of e-commerce or e-payment technologies before 2020. Finally, fixed-effects are included for product, firm, and month.
 
 ## 2.1 Intensive Margin Analysis
 
@@ -300,7 +300,7 @@ As in section 1.2, we expand the dataset at the firm-month-HS6 level by using on
 
 ```{r, eval=T}
 
-models_definitive_ext_mitig_IND<-readRDS("../../Outputs/India/regressions_results/tech_mitigation_covid_model/models_tech_covid_definitive_summary_adopted_pay_or_ecom_before_2019.rds")[[2]]
+models_definitive_ext_mitig_IND<-readRDS("../../Outputs/India/regressions_results/tech_mitigation_covid_model/models_tech_covid_definitive_summary_adopted_pay_or_ecom_before_2020.rds")[[2]]
 
 models_definitive_ext_mitig_IND
 
@@ -309,7 +309,7 @@ models_definitive_ext_mitig_IND
 
 ```{r, eval=T}
 
-models_definitive_ext_mitig_IDN<-readRDS("../../Outputs/Indonesia/regressions_results/tech_mitigation_covid_model/models_tech_covid_definitive_summary_adopted_pay_or_ecom_before_2019.rds")[[2]]
+models_definitive_ext_mitig_IDN<-readRDS("../../Outputs/Indonesia/regressions_results/tech_mitigation_covid_model/models_tech_covid_definitive_summary_adopted_pay_or_ecom_before_2020.rds")[[2]]
 
 models_definitive_ext_mitig_IDN
 
@@ -319,7 +319,7 @@ models_definitive_ext_mitig_IDN
 
 ```{r, eval=T}
 
-models_definitive_ext_mitig_MEX<-readRDS("../../Outputs/Mexico/regressions_results/tech_mitigation_covid_model/models_tech_covid_definitive_summary_adopted_pay_or_ecom_before_2019.rds")[[2]]
+models_definitive_ext_mitig_MEX<-readRDS("../../Outputs/Mexico/regressions_results/tech_mitigation_covid_model/models_tech_covid_definitive_summary_adopted_pay_or_ecom_before_2020.rds")[[2]]
 
 models_definitive_ext_mitig_MEX
 

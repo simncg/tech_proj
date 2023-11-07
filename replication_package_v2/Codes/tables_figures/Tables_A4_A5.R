@@ -1,10 +1,10 @@
 #===========================================================================#
-# Date:    June 2022                                                    #
+# Date:    June 2022                                                        #
 #                                                                           #
 # Project: E-commerce and Trade during Crisis Times: Firm-level             #
-#          Evidence from India, Indonesia and Mexico                       #                    #
+#          Evidence from India, Indonesia and Mexico                        # 
 #                                                                           #
-# This program generates Tables A.4 and A.5
+# This program generates Tables A.4 and A.5                                 #
 #                                                                           #                                                                                                                                                             #
 #===========================================================================#
 
@@ -22,7 +22,7 @@ big_number_format<-function(x){format(x, big.mark = ",")}
 source("../src/packages.R")
 
 # SAMPLE 1: Sample with never adopters and firms that adopted the technology during the period of analysis
-# SAMPLE 2: Sample with all firms (firms that adopted the technology pre-2019, never adopters and after 2018)
+# SAMPLE 2: Sample with all firms (firms that adopted the technology pre-2020, never adopters and after 2018)
 
 # Regression sample of firms adopting the technology during period of analysis and never-adopters ----
 
@@ -150,7 +150,7 @@ table_sample_1<-
   rename(`E-tradeable Goods` = n_measure_e_tradeable, 
          `BEC Consumer Goods` = n_measure_consumer) %>% 
   select(-data, -country) %>% 
-  kbl(caption = "Count of observations and products classified as E-tradeable Goods and BEC Consumer Goods at the year-month-firm-HS6 product level - Sample with firms that never adopt digital technology and firms that adopt digital technology in 2019-2021 period", 
+  kbl(caption = "Count of observations and products classified as E-tradeable Goods and BEC Consumer Goods at the year-month-firm-HS6 product level - Sample with firms that never adopt digital technology and firms that adopt digital technology in 2020-2021 period", 
       centering = T, booktabs = T, align = "c", format = "latex") %>%
   kable_styling(latex_options = c("HOLD_position")) %>% 
   group_rows("Panel A: Indonesia", 1, 4, hline_after = T) %>%

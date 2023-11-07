@@ -34,7 +34,7 @@ export_tech_mitig<-as.data.frame(export_tech_mitig)
 # Run regressions ebay, china e-commerce, consumable and durable products ----
 
 # Assign variables names to display in tables
-coef_labels<-c("adopted_pay_or_ecom_before_2019:month_mean_stringency_index"="E-payment or E-commerce 2019 × Monthly Avg. Stringency Index")
+coef_labels<-c("adopted_pay_or_ecom_before_2020:month_mean_stringency_index"="Firm technology adoption pre-2020 × COVID stringency index")
 
 
 # Regressions for log imports and log exports -----

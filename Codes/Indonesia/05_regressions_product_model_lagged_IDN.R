@@ -54,30 +54,30 @@ pay_ecom_export_data_IDN[ebay_china_vars] <- lapply(pay_ecom_export_data_IDN[eba
 
 
 # Assign variables names to display in tables
-coef_labels<-c(pay_or_ecomnod="E-payment or E-commerce", 
-               pay_or_ecomnod_t_1 = "E-payment or E-commerce (t-1)",
-               pay_or_ecomnod_t_2 = "E-payment or E-commerce (t-2)",
-               pay_or_ecomnod_t_3 = "E-payment or E-commerce (t-3)",
+coef_labels<-c(pay_or_ecomnod="Firm technology adoption", 
+               pay_or_ecomnod_t_1 = "Firm technology adoption (t-1)",
+               pay_or_ecomnod_t_2 = "Firm technology adoption (t-2)",
+               pay_or_ecomnod_t_3 = "Firm technology adoption (t-3)",
                
-               "pay_or_ecomnod:Ebay_tradable"="E-payment or E-commerce × eBay-tradable",
-               "pay_or_ecomnod_t_1:Ebay_tradable"="E-payment or E-commerce (t-1) × eBay-tradable",
-               "pay_or_ecomnod_t_2:Ebay_tradable"="E-payment or E-commerce (t-2) × eBay-tradable",
-               "pay_or_ecomnod_t_3:Ebay_tradable"="E-payment or E-commerce (t-3) × eBay-tradable",
+               "pay_or_ecomnod:Ebay_tradable"="Firm technology adoption × eBay-tradable",
+               "pay_or_ecomnod_t_1:Ebay_tradable"="Firm technology adoption (t-1) × eBay-tradable",
+               "pay_or_ecomnod_t_2:Ebay_tradable"="Firm technology adoption (t-2) × eBay-tradable",
+               "pay_or_ecomnod_t_3:Ebay_tradable"="Firm technology adoption (t-3) × eBay-tradable",
                
-               "pay_or_ecomnod:China_E_commerce"="E-payment or E-commerce × China e-commerce",
-               "pay_or_ecomnod_t_1:China_E_commerce"="E-payment or E-commerce (t-1) × China e-commerce",
-               "pay_or_ecomnod_t_2:China_E_commerce"="E-payment or E-commerce (t-2) × China e-commerce",
-               "pay_or_ecomnod_t_3:China_E_commerce"="E-payment or E-commerce (t-3) × China e-commerce",
+               "pay_or_ecomnod:China_E_commerce"="Firm technology adoption × China e-commerce",
+               "pay_or_ecomnod_t_1:China_E_commerce"="Firm technology adoption (t-1) × China e-commerce",
+               "pay_or_ecomnod_t_2:China_E_commerce"="Firm technology adoption (t-2) × China e-commerce",
+               "pay_or_ecomnod_t_3:China_E_commerce"="Firm technology adoption (t-3) × China e-commerce",
                
-               "pay_or_ecomnod:China_E_commerce_updated"="E-payment or E-commerce × China e-commerce upd.",
-               "pay_or_ecomnod_t_1:China_E_commerce_updated"="E-payment or E-commerce (t-1) × China e-commerce upd.",
-               "pay_or_ecomnod_t_2:China_E_commerce_updated"="E-payment or E-commerce (t-2) × China e-commerce upd.",
-               "pay_or_ecomnod_t_3:China_E_commerce_updated"="E-payment or E-commerce (t-3) × China e-commerce upd.",
+               "pay_or_ecomnod:China_E_commerce_updated"="Firm technology adoption × China e-commerce upd.",
+               "pay_or_ecomnod_t_1:China_E_commerce_updated"="Firm technology adoption (t-1) × China e-commerce upd.",
+               "pay_or_ecomnod_t_2:China_E_commerce_updated"="Firm technology adoption (t-2) × China e-commerce upd.",
+               "pay_or_ecomnod_t_3:China_E_commerce_updated"="Firm technology adoption (t-3) × China e-commerce upd.",
                
-               "pay_or_ecomnod:diff_new_old_China_ecommerce_list" = "E-payment or E-commerce × Diff. China e-commerce",
-               "pay_or_ecomnod_t_1:diff_new_old_China_ecommerce_list" = "E-payment or E-commerce (t-1) × Diff. China e-commerce",
-               "pay_or_ecomnod_t_2:diff_new_old_China_ecommerce_list" = "E-payment or E-commerce (t-2) × Diff. China e-commerce",
-               "pay_or_ecomnod_t_3:diff_new_old_China_ecommerce_list" = "E-payment or E-commerce (t-3) × Diff. China e-commerce"
+               "pay_or_ecomnod:diff_new_old_China_ecommerce_list" = "Firm technology adoption × Diff. China e-commerce",
+               "pay_or_ecomnod_t_1:diff_new_old_China_ecommerce_list" = "Firm technology adoption (t-1) × Diff. China e-commerce",
+               "pay_or_ecomnod_t_2:diff_new_old_China_ecommerce_list" = "Firm technology adoption (t-2) × Diff. China e-commerce",
+               "pay_or_ecomnod_t_3:diff_new_old_China_ecommerce_list" = "Firm technology adoption (t-3) × Diff. China e-commerce"
 )
 
 
@@ -116,45 +116,45 @@ pay_ecom_export_data_IDN[bec_vars] <- lapply(pay_ecom_export_data_IDN[bec_vars],
 
 
 # Coefficient labels for tables
-coef_labels<-c(pay_or_ecomnod="E-payment or E-commerce", 
-               pay_or_ecomnod_t_1="E-payment or E-commerce (t-1)", 
-               pay_or_ecomnod_t_2="E-payment or E-commerce (t-2)", 
-               pay_or_ecomnod_t_3="E-payment or E-commerce (t-3)", 
+coef_labels<-c(pay_or_ecomnod="Firm technology adoption", 
+               pay_or_ecomnod_t_1="Firm technology adoption (t-1)", 
+               pay_or_ecomnod_t_2="Firm technology adoption (t-2)", 
+               pay_or_ecomnod_t_3="Firm technology adoption (t-3)", 
                
-               "pay_or_ecomnod:parts_BEC"="E-payment or E-commerce × Parts",
-               "pay_or_ecomnod_t_1:parts_BEC"="E-payment or E-commerce (t-1) × Parts",
-               "pay_or_ecomnod_t_2:parts_BEC"="E-payment or E-commerce (t-2) × Parts",
-               "pay_or_ecomnod_t_3:parts_BEC"="E-payment or E-commerce (t-3) × Parts",
+               "pay_or_ecomnod:parts_BEC"="Firm technology adoption × Parts",
+               "pay_or_ecomnod_t_1:parts_BEC"="Firm technology adoption (t-1) × Parts",
+               "pay_or_ecomnod_t_2:parts_BEC"="Firm technology adoption (t-2) × Parts",
+               "pay_or_ecomnod_t_3:parts_BEC"="Firm technology adoption (t-3) × Parts",
                
-               "pay_or_ecomnod:cons_dur_BEC"="E-payment or E-commerce × Consumable and Durable",
-               "pay_or_ecomnod_t_1:cons_dur_BEC"="E-payment or E-commerce (t-1) × Consumable and Durable",
-               "pay_or_ecomnod_t_2:cons_dur_BEC"="E-payment or E-commerce (t-2) × Consumable and Durable",
-               "pay_or_ecomnod_t_3:cons_dur_BEC"="E-payment or E-commerce (t-3) × Consumable and Durable",
+               "pay_or_ecomnod:cons_dur_BEC"="Firm technology adoption × Consumable and Durable",
+               "pay_or_ecomnod_t_1:cons_dur_BEC"="Firm technology adoption (t-1) × Consumable and Durable",
+               "pay_or_ecomnod_t_2:cons_dur_BEC"="Firm technology adoption (t-2) × Consumable and Durable",
+               "pay_or_ecomnod_t_3:cons_dur_BEC"="Firm technology adoption (t-3) × Consumable and Durable",
                
-               "pay_or_ecomnod:cons_semi_BEC"="E-payment or E-commerce × Consumable and Semi-durable",
-               "pay_or_ecomnod_t_1:cons_semi_BEC"="E-payment or E-commerce (t-1) × Consumable and Semi-durable",
-               "pay_or_ecomnod_t_2:cons_semi_BEC"="E-payment or E-commerce (t-2) × Consumable and Semi-durable",
-               "pay_or_ecomnod_t_3:cons_semi_BEC"="E-payment or E-commerce (t-3) × Consumable and Semi-durable",
+               "pay_or_ecomnod:cons_semi_BEC"="Firm technology adoption × Consumable and Semi-durable",
+               "pay_or_ecomnod_t_1:cons_semi_BEC"="Firm technology adoption (t-1) × Consumable and Semi-durable",
+               "pay_or_ecomnod_t_2:cons_semi_BEC"="Firm technology adoption (t-2) × Consumable and Semi-durable",
+               "pay_or_ecomnod_t_3:cons_semi_BEC"="Firm technology adoption (t-3) × Consumable and Semi-durable",
                
-               "pay_or_ecomnod:cons_BEC" = "E-payment or E-commerce × Consumable",
-               "pay_or_ecomnod_t_1:cons_BEC" = "E-payment or E-commerce (t-1) × Consumable",
-               "pay_or_ecomnod_t_2:cons_BEC" = "E-payment or E-commerce (t-2) × Consumable",
-               "pay_or_ecomnod_t_3:cons_BEC" = "E-payment or E-commerce (t-3) × Consumable",
+               "pay_or_ecomnod:cons_BEC" = "Firm technology adoption × Consumable",
+               "pay_or_ecomnod_t_1:cons_BEC" = "Firm technology adoption (t-1) × Consumable",
+               "pay_or_ecomnod_t_2:cons_BEC" = "Firm technology adoption (t-2) × Consumable",
+               "pay_or_ecomnod_t_3:cons_BEC" = "Firm technology adoption (t-3) × Consumable",
                
-               "pay_or_ecomnod:durable_BEC" = "E-payment or E-commerce × Durable",
-               "pay_or_ecomnod_t_1:durable_BEC" = "E-payment or E-commerce (t-1) × Durable",
-               "pay_or_ecomnod_t_2:durable_BEC" = "E-payment or E-commerce (t-2) × Durable",
-               "pay_or_ecomnod_t_3:durable_BEC" = "E-payment or E-commerce (t-3) × Durable",
+               "pay_or_ecomnod:durable_BEC" = "Firm technology adoption × Durable",
+               "pay_or_ecomnod_t_1:durable_BEC" = "Firm technology adoption (t-1) × Durable",
+               "pay_or_ecomnod_t_2:durable_BEC" = "Firm technology adoption (t-2) × Durable",
+               "pay_or_ecomnod_t_3:durable_BEC" = "Firm technology adoption (t-3) × Durable",
                
-               "pay_or_ecomnod:durable_semi_BEC" = "E-payment or E-commerce × Semi-durable",
-               "pay_or_ecomnod_t_1:durable_semi_BEC" = "E-payment or E-commerce (t-1) × Semi-durable", 
-               "pay_or_ecomnod_t_2:durable_semi_BEC" = "E-payment or E-commerce (t-2) × Semi-durable", 
-               "pay_or_ecomnod_t_3:durable_semi_BEC" = "E-payment or E-commerce (t-3) × Semi-durable", 
+               "pay_or_ecomnod:durable_semi_BEC" = "Firm technology adoption × Semi-durable",
+               "pay_or_ecomnod_t_1:durable_semi_BEC" = "Firm technology adoption (t-1) × Semi-durable", 
+               "pay_or_ecomnod_t_2:durable_semi_BEC" = "Firm technology adoption (t-2) × Semi-durable", 
+               "pay_or_ecomnod_t_3:durable_semi_BEC" = "Firm technology adoption (t-3) × Semi-durable", 
                
-               "pay_or_ecomnod:transp_BECTRUE" = "E-payment or E-commerce × Transport",
-               "pay_or_ecomnod_t_1:transp_BECTRUE" = "E-payment or E-commerce (t-1) × Transport",
-               "pay_or_ecomnod_t_2:transp_BECTRUE" = "E-payment or E-commerce (t-2) × Transport",
-               "pay_or_ecomnod_t_3:transp_BECTRUE" = "E-payment or E-commerce (t-3) × Transport"
+               "pay_or_ecomnod:transp_BECTRUE" = "Firm technology adoption × Transport",
+               "pay_or_ecomnod_t_1:transp_BECTRUE" = "Firm technology adoption (t-1) × Transport",
+               "pay_or_ecomnod_t_2:transp_BECTRUE" = "Firm technology adoption (t-2) × Transport",
+               "pay_or_ecomnod_t_3:transp_BECTRUE" = "Firm technology adoption (t-3) × Transport"
 )
 
 # Regressions with 1 lag (t-1) in technology variable
@@ -192,40 +192,40 @@ pay_ecom_export_data_IDN[time_sens_vars] <- lapply(pay_ecom_export_data_IDN[time
 
 
 # Assign variables names to display in tables
-coef_labels<-c(pay_or_ecomnod="E-payment or E-commerce", 
-               pay_or_ecomnod_t_1="E-payment or E-commerce (t-1)", 
-               pay_or_ecomnod_t_2="E-payment or E-commerce (t-2)", 
-               pay_or_ecomnod_t_3="E-payment or E-commerce (t-3)", 
+coef_labels<-c(pay_or_ecomnod="Firm technology adoption", 
+               pay_or_ecomnod_t_1="Firm technology adoption (t-1)", 
+               pay_or_ecomnod_t_2="Firm technology adoption (t-2)", 
+               pay_or_ecomnod_t_3="Firm technology adoption (t-3)", 
                
-               "pay_or_ecomnod:component"="E-payment or E-commerce × Component ",
-               "pay_or_ecomnod_t_1:component"="E-payment or E-commerce (t-1) × Component ",
-               "pay_or_ecomnod_t_2:component"="E-payment or E-commerce (t-2) × Component ",
-               "pay_or_ecomnod_t_3:component"="E-payment or E-commerce (t-3) × Component ",
+               "pay_or_ecomnod:component"="Firm technology adoption × Component ",
+               "pay_or_ecomnod_t_1:component"="Firm technology adoption (t-1) × Component ",
+               "pay_or_ecomnod_t_2:component"="Firm technology adoption (t-2) × Component ",
+               "pay_or_ecomnod_t_3:component"="Firm technology adoption (t-3) × Component ",
                
-               "pay_or_ecomnod:fresh"="E-payment or E-commerce × Fresh",
-               "pay_or_ecomnod_t_1:fresh"="E-payment or E-commerce (t-1) × Fresh",
-               "pay_or_ecomnod_t_2:fresh"="E-payment or E-commerce (t-2) × Fresh",
-               "pay_or_ecomnod_t_3:fresh"="E-payment or E-commerce (t-3) × Fresh",
+               "pay_or_ecomnod:fresh"="Firm technology adoption × Fresh",
+               "pay_or_ecomnod_t_1:fresh"="Firm technology adoption (t-1) × Fresh",
+               "pay_or_ecomnod_t_2:fresh"="Firm technology adoption (t-2) × Fresh",
+               "pay_or_ecomnod_t_3:fresh"="Firm technology adoption (t-3) × Fresh",
                
-               "pay_or_ecomnod:frozen"="E-payment or E-commerce × Frozen",
-               "pay_or_ecomnod_t_1:frozen"="E-payment or E-commerce (t-1) × Frozen",
-               "pay_or_ecomnod_t_2:frozen"="E-payment or E-commerce (t-2) × Frozen",
-               "pay_or_ecomnod_t_3:frozen"="E-payment or E-commerce (t-3) × Frozen",
+               "pay_or_ecomnod:frozen"="Firm technology adoption × Frozen",
+               "pay_or_ecomnod_t_1:frozen"="Firm technology adoption (t-1) × Frozen",
+               "pay_or_ecomnod_t_2:frozen"="Firm technology adoption (t-2) × Frozen",
+               "pay_or_ecomnod_t_3:frozen"="Firm technology adoption (t-3) × Frozen",
                
-               "pay_or_ecomnod:hummels_timesensitive" = "E-payment or E-commerce × Hummels Time-Sensitive",
-               "pay_or_ecomnod_t_1:hummels_timesensitive" = "E-payment or E-commerce (t-1) × Hummels Time-Sensitive",
-               "pay_or_ecomnod_t_2:hummels_timesensitive" = "E-payment or E-commerce (t-2) × Hummels Time-Sensitive",
-               "pay_or_ecomnod_t_3:hummels_timesensitive" = "E-payment or E-commerce (t-3) × Hummels Time-Sensitive",
+               "pay_or_ecomnod:hummels_timesensitive" = "Firm technology adoption × Hummels Time-Sensitive",
+               "pay_or_ecomnod_t_1:hummels_timesensitive" = "Firm technology adoption (t-1) × Hummels Time-Sensitive",
+               "pay_or_ecomnod_t_2:hummels_timesensitive" = "Firm technology adoption (t-2) × Hummels Time-Sensitive",
+               "pay_or_ecomnod_t_3:hummels_timesensitive" = "Firm technology adoption (t-3) × Hummels Time-Sensitive",
                
-               "pay_or_ecomnod:time_sens_hs2013_russ_typeofgoods" = "E-payment or E-commerce × Hummels and Schaur Time-Sensitive",
-               "pay_or_ecomnod_t_1:time_sens_hs2013_russ_typeofgoods" = "E-payment or E-commerce (t-1) × Hummels and Schaur Time-Sensitive",
-               "pay_or_ecomnod_t_2:time_sens_hs2013_russ_typeofgoods" = "E-payment or E-commerce (t-2) × Hummels and Schaur Time-Sensitive",
-               "pay_or_ecomnod_t_3:time_sens_hs2013_russ_typeofgoods" = "E-payment or E-commerce (t-3) × Hummels and Schaur Time-Sensitive",
+               "pay_or_ecomnod:time_sens_hs2013_russ_typeofgoods" = "Firm technology adoption × Hummels and Schaur Time-Sensitive",
+               "pay_or_ecomnod_t_1:time_sens_hs2013_russ_typeofgoods" = "Firm technology adoption (t-1) × Hummels and Schaur Time-Sensitive",
+               "pay_or_ecomnod_t_2:time_sens_hs2013_russ_typeofgoods" = "Firm technology adoption (t-2) × Hummels and Schaur Time-Sensitive",
+               "pay_or_ecomnod_t_3:time_sens_hs2013_russ_typeofgoods" = "Firm technology adoption (t-3) × Hummels and Schaur Time-Sensitive",
                
-               "pay_or_ecomnod:agric_timesensitive"="E-payment or E-commerce × Agricultural Time-Sensitive",
-               "pay_or_ecomnod_t_1:agric_timesensitive"="E-payment or E-commerce (t-1) × Agricultural Time-Sensitive",
-               "pay_or_ecomnod_t_2:agric_timesensitive"="E-payment or E-commerce (t-2) × Agricultural Time-Sensitive",
-               "pay_or_ecomnod_t_3:agric_timesensitive"="E-payment or E-commerce (t-3) × Agricultural Time-Sensitive"
+               "pay_or_ecomnod:agric_timesensitive"="Firm technology adoption × Agricultural Time-Sensitive",
+               "pay_or_ecomnod_t_1:agric_timesensitive"="Firm technology adoption (t-1) × Agricultural Time-Sensitive",
+               "pay_or_ecomnod_t_2:agric_timesensitive"="Firm technology adoption (t-2) × Agricultural Time-Sensitive",
+               "pay_or_ecomnod_t_3:agric_timesensitive"="Firm technology adoption (t-3) × Agricultural Time-Sensitive"
                
 )
 
@@ -258,30 +258,30 @@ gc()
 # Regressions with other classification for HS Products (Letter credit use, mean remote work, relationship stickiness)---- 
 
 # Assign variables names to display in tables
-coef_labels<-c(pay_or_ecomnod="E-payment or E-commerce", 
-               pay_or_ecomnod_t_1="E-payment or E-commerce (t-1)", 
-               pay_or_ecomnod_t_2="E-payment or E-commerce (t-2)", 
-               pay_or_ecomnod_t_3="E-payment or E-commerce (t-3)", 
+coef_labels<-c(pay_or_ecomnod="Firm technology adoption", 
+               pay_or_ecomnod_t_1="Firm technology adoption (t-1)", 
+               pay_or_ecomnod_t_2="Firm technology adoption (t-2)", 
+               pay_or_ecomnod_t_3="Firm technology adoption (t-3)", 
                
-               "pay_or_ecomnod:relationship_stickiness"="E-payment or E-commerce × Relationship Stickiness",
-               "pay_or_ecomnod_t_1:relationship_stickiness"="E-payment or E-commerce (t-1) × Relationship Stickiness",
-               "pay_or_ecomnod_t_2:relationship_stickiness"="E-payment or E-commerce (t-2) × Relationship Stickiness",
-               "pay_or_ecomnod_t_3:relationship_stickiness"="E-payment or E-commerce (t-3) × Relationship Stickiness",
+               "pay_or_ecomnod:relationship_stickiness"="Firm technology adoption × Relationship Stickiness",
+               "pay_or_ecomnod_t_1:relationship_stickiness"="Firm technology adoption (t-1) × Relationship Stickiness",
+               "pay_or_ecomnod_t_2:relationship_stickiness"="Firm technology adoption (t-2) × Relationship Stickiness",
+               "pay_or_ecomnod_t_3:relationship_stickiness"="Firm technology adoption (t-3) × Relationship Stickiness",
                
-               "pay_or_ecomnod:letter_credit_use"="E-payment or E-commerce × Letter Credit Use",
-               "pay_or_ecomnod_t_1:letter_credit_use"="E-payment or E-commerce (t-1) × Letter Credit Use",
-               "pay_or_ecomnod_t_2:letter_credit_use"="E-payment or E-commerce (t-2) × Letter Credit Use",
-               "pay_or_ecomnod_t_3:letter_credit_use"="E-payment or E-commerce (t-3) × Letter Credit Use",
+               "pay_or_ecomnod:letter_credit_use"="Firm technology adoption × Letter Credit Use",
+               "pay_or_ecomnod_t_1:letter_credit_use"="Firm technology adoption (t-1) × Letter Credit Use",
+               "pay_or_ecomnod_t_2:letter_credit_use"="Firm technology adoption (t-2) × Letter Credit Use",
+               "pay_or_ecomnod_t_3:letter_credit_use"="Firm technology adoption (t-3) × Letter Credit Use",
                
-               "pay_or_ecomnod:mean_remote_work_ISIC"="E-payment or E-commerce × Mean Remote Work ISIC",
-               "pay_or_ecomnod_t_1:mean_remote_work_ISIC"="E-payment or E-commerce (t-1) × Mean Remote Work ISIC",
-               "pay_or_ecomnod_t_2:mean_remote_work_ISIC"="E-payment or E-commerce (t-2) × Mean Remote Work ISIC",
-               "pay_or_ecomnod_t_3:mean_remote_work_ISIC"="E-payment or E-commerce (t-3) × Mean Remote Work ISIC",
+               "pay_or_ecomnod:mean_remote_work_ISIC"="Firm technology adoption × Mean Remote Work ISIC",
+               "pay_or_ecomnod_t_1:mean_remote_work_ISIC"="Firm technology adoption (t-1) × Mean Remote Work ISIC",
+               "pay_or_ecomnod_t_2:mean_remote_work_ISIC"="Firm technology adoption (t-2) × Mean Remote Work ISIC",
+               "pay_or_ecomnod_t_3:mean_remote_work_ISIC"="Firm technology adoption (t-3) × Mean Remote Work ISIC",
                
-               "pay_or_ecomnod:frac_lib_diff" = "E-payment or E-commerce × Fraction inputs not sold on exchange and not ref priced",
-               "pay_or_ecomnod_t_1:frac_lib_diff" = "E-payment or E-commerce (t-1) × Fraction inputs not sold on exchange and not ref priced",
-               "pay_or_ecomnod_t_2:frac_lib_diff" = "E-payment or E-commerce (t-2) × Fraction inputs not sold on exchange and not ref priced",
-               "pay_or_ecomnod_t_3:frac_lib_diff" = "E-payment or E-commerce (t-3) × Fraction inputs not sold on exchange and not ref priced")
+               "pay_or_ecomnod:frac_lib_diff" = "Firm technology adoption × Fraction inputs not sold on exchange and not ref priced",
+               "pay_or_ecomnod_t_1:frac_lib_diff" = "Firm technology adoption (t-1) × Fraction inputs not sold on exchange and not ref priced",
+               "pay_or_ecomnod_t_2:frac_lib_diff" = "Firm technology adoption (t-2) × Fraction inputs not sold on exchange and not ref priced",
+               "pay_or_ecomnod_t_3:frac_lib_diff" = "Firm technology adoption (t-3) × Fraction inputs not sold on exchange and not ref priced")
 
 
 
@@ -321,20 +321,20 @@ pay_ecom_export_data_IDN[cap_int_vars] <- lapply(pay_ecom_export_data_IDN[cap_in
 
 
 # Coefficient labels for tables
-coef_labels<-c(pay_or_ecomnod="E-payment or E-commerce", 
-               pay_or_ecomnod_t_1="E-payment or E-commerce (t-1)", 
-               pay_or_ecomnod_t_2="E-payment or E-commerce (t-2)", 
-               pay_or_ecomnod_t_3="E-payment or E-commerce (t-3)", 
+coef_labels<-c(pay_or_ecomnod="Firm technology adoption", 
+               pay_or_ecomnod_t_1="Firm technology adoption (t-1)", 
+               pay_or_ecomnod_t_2="Firm technology adoption (t-2)", 
+               pay_or_ecomnod_t_3="Firm technology adoption (t-3)", 
                
-               "pay_or_ecomnod:CAP"="E-payment or E-commerce × Capital",
-               "pay_or_ecomnod_t_1:CAP"="E-payment or E-commerce (t-1) × Capital",
-               "pay_or_ecomnod_t_2:CAP"="E-payment or E-commerce (t-2) × Capital",
-               "pay_or_ecomnod_t_3:CAP"="E-payment or E-commerce (t-3) × Capital",
+               "pay_or_ecomnod:CAP"="Firm technology adoption × Capital",
+               "pay_or_ecomnod_t_1:CAP"="Firm technology adoption (t-1) × Capital",
+               "pay_or_ecomnod_t_2:CAP"="Firm technology adoption (t-2) × Capital",
+               "pay_or_ecomnod_t_3:CAP"="Firm technology adoption (t-3) × Capital",
                
-               "pay_or_ecomnod:INT"="E-payment or E-commerce × Intermediate",
-               "pay_or_ecomnod_t_1:INT"="E-payment or E-commerce (t-1) × Intermediate",
-               "pay_or_ecomnod_t_2:INT"="E-payment or E-commerce (t-2) × Intermediate",
-               "pay_or_ecomnod_t_3:INT"="E-payment or E-commerce (t-3) × Intermediate"
+               "pay_or_ecomnod:INT"="Firm technology adoption × Intermediate",
+               "pay_or_ecomnod_t_1:INT"="Firm technology adoption (t-1) × Intermediate",
+               "pay_or_ecomnod_t_2:INT"="Firm technology adoption (t-2) × Intermediate",
+               "pay_or_ecomnod_t_3:INT"="Firm technology adoption (t-3) × Intermediate"
 )
 
 

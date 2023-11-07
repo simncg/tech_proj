@@ -1,5 +1,5 @@
 #===========================================================================#
-# Date:    June 2022                                                        #
+# Date:    November 2023                                                    #
 #                                                                           #
 # Project: Analysis of the COVID-19 Shock, Technology and Trade in India,   #
 #          Indonesia and Mexico.                                            #
@@ -22,7 +22,7 @@ rm(fileloc)
 source("../src/packages.R")
 
 # SAMPLE 1: Sample with never adopters and firms that adopted the technology during the period of analysis
-# SAMPLE 2: Sample with all firms (firms that adopted the technology pre-2019, never adopters and after 2018)
+# SAMPLE 2: Sample with all firms (firms that adopted the technology pre-2020, never adopters and after 2019)
 
 # Regression sample of firms adopting the technology during period of analysis ----
 
@@ -208,7 +208,7 @@ table_sample_1<-
             )
           
         ) %>% 
-        rename(`China E-commerce` = China_E_commerce, Consumable = cons_BEC, `E-payment or E-commerce` = tech)
+        rename(`China E-commerce` = China_E_commerce, Consumable = cons_BEC, `Firm technology adoption` = tech)
     ) %>% 
   tibble::column_to_rownames("Data") %>% 
   # Create Latex Table
@@ -221,7 +221,7 @@ table_sample_1<-
   pack_rows("Mexico", 5, 6) %>% 
   column_spec(column = 8:10) %>% 
   add_header_above(c(" " = 2, "Export or Import Trade Value (USD)" = 5, " " = 3))%>% 
-  footnote(general ="This table provides summary statistics for the regression sample that includes never adopter firms and firms that adopted the technology during the analysis period. It details the count of exporting and importing firms, distribution moments of trade value in USD dollar, and the proportion of observations where the dummy variables for the Technology Variable (E-payment or E-commerce), China E-commerce, and Consumable Product Categories are equal to 1.", threeparttable = TRUE)
+  footnote(general ="The summary statistics cover the July 2018-December 2021 period for India and Mexico, the February 2019-June 2021 period for Indonesia’s exports and the February 2019-September 2021 period for Indonesia’s imports. The firm technology adoption, the E-tradeable goods, and the BEC consumer goods variables are all indicator variables, and what is shown in the last three columns is the share of trade value for observations that have those variables equal to 1", threeparttable = TRUE)
 
 
 capture.output(table_sample_1, file = "../../Outputs/Tables/summary_statistics_sample_1.tex")
@@ -332,7 +332,7 @@ table_sample_2<-
   bind_cols(
     # Indonesia Exports
     export_data_IDN %>% 
-      select(tech = adopted_pay_or_ecom_before_2019, China_E_commerce, cons_BEC) %>% 
+      select(tech = adopted_pay_or_ecom_before_2020, China_E_commerce, cons_BEC) %>% 
       na.omit() %>% 
       summarize_all(list(Mean = mean)) %>% 
       pivot_longer(cols = everything(), 
@@ -345,7 +345,7 @@ table_sample_2<-
       bind_rows(
         # Indonesia Imports
         import_data_IDN %>% 
-          select(tech = adopted_pay_or_ecom_before_2019, China_E_commerce, cons_BEC) %>% 
+          select(tech = adopted_pay_or_ecom_before_2020, China_E_commerce, cons_BEC) %>% 
           na.omit() %>% 
           summarize_all(list(Mean = mean)) %>% 
           pivot_longer(cols = everything(), 
@@ -359,7 +359,7 @@ table_sample_2<-
       bind_rows(
         # India Exports
         export_data_IND %>% 
-          select(tech = adopted_pay_or_ecom_before_2019, China_E_commerce, cons_BEC) %>% 
+          select(tech = adopted_pay_or_ecom_before_2020, China_E_commerce, cons_BEC) %>% 
           na.omit() %>% 
           summarize_all(list(Mean = mean)) %>% 
           pivot_longer(cols = everything(), 
@@ -372,7 +372,7 @@ table_sample_2<-
           bind_rows(
             # India Imports
             import_data_IND %>% 
-              select(tech = adopted_pay_or_ecom_before_2019, China_E_commerce, cons_BEC) %>% 
+              select(tech = adopted_pay_or_ecom_before_2020, China_E_commerce, cons_BEC) %>% 
               na.omit() %>% 
               summarize_all(list(Mean = mean)) %>% 
               pivot_longer(cols = everything(), 
@@ -388,7 +388,7 @@ table_sample_2<-
       bind_rows(
         # Mexico Exports
         export_data_MEX %>% 
-          select(tech = adopted_pay_or_ecom_before_2019, China_E_commerce, cons_BEC) %>% 
+          select(tech = adopted_pay_or_ecom_before_2020, China_E_commerce, cons_BEC) %>% 
           na.omit() %>% 
           summarize_all(list(Mean = mean)) %>% 
           pivot_longer(cols = everything(), 
@@ -401,7 +401,7 @@ table_sample_2<-
           bind_rows(
             # Mexico Imports
             import_data_MEX %>% 
-              select(tech = adopted_pay_or_ecom_before_2019, China_E_commerce, cons_BEC) %>% 
+              select(tech = adopted_pay_or_ecom_before_2020, China_E_commerce, cons_BEC) %>% 
               na.omit() %>% 
               summarize_all(list(Mean = mean)) %>% 
               pivot_longer(cols = everything(), 
@@ -414,7 +414,7 @@ table_sample_2<-
           )
         
       ) %>% 
-      rename(`China E-commerce` = China_E_commerce, Consumable = cons_BEC, `E-payment or E-commerce 2019` = tech)
+      rename(`China E-commerce` = China_E_commerce, Consumable = cons_BEC, `Firm technology adoption pre-2020` = tech)
   ) %>% 
     tibble::column_to_rownames("Data") %>% 
     # Create Latex Table
@@ -427,7 +427,7 @@ table_sample_2<-
     pack_rows("Mexico", 5, 6) %>% 
     column_spec(column = 8:10) %>% 
     add_header_above(c(" " = 2, "Export or Import Trade Value (USD)" = 5, " " = 3))%>% 
-    footnote(general ="This table presents summary statistics for the regression sample of all types of firms - those that never adopted the technology, those that adopted it during the analysis period, and those that adopted prior to the analysis period. The details include counts of exporting and importing firms, distribution moments of trade values in USD, and the proportion of observations where the dummy variables for the Technology Variable (Pre-2019 adoption of E-payment or E-commerce), China E-commerce, and Consumable Product Categories are equal to 1.", threeparttable = TRUE)
+    footnote(general ="The summary statistics shown cover all types of firms in the matched samples: firms that never adopt digital technology as well as firms that adopt digital technology up to the end of 2019 or in 2020-2021. The summary statistics cover the July 2018-December 2021 period for India and Mexico, the February 2019-June 2021 period for Indonesia’s exports and the February 2019-September 2021 period for Indonesia’s imports. The firm technology adoption pre-2020, E-tradeable goods, and the BEC consumer goods variables are all indicator variables, and what is shown in the last three columns is the share of trade value for observations that have those variables equal to 1.", threeparttable = TRUE)
 
 
 capture.output(table_sample_2, file = "../../Outputs/Tables/summary_statistics_sample_2.tex")

@@ -1,12 +1,11 @@
 #===========================================================================#
-# Date:    December 2022                                                    #
+# Date:    November 2023                                                    #
 #                                                                           #
 # Project: Analysis of the COVID-19 Shock, Technology and Trade in India,   #
 #          Indonesia and Mexico.                                            #
 #                                                                           #
 # Author:  Simon Caicedo - DECTI - The World Bank                           #
 #                                                                           #
-# Script:  regressions_prop_products_model_MEX.R                            #
 #                                                                           #                                                                      #
 #                                                                           #                                                                                                                                                             #
 #===========================================================================#
