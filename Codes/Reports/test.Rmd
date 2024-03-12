@@ -1,0 +1,207 @@
+---
+title: "Analysis of the COVID-19 Shock, Technology and Trade"
+subtitle: "Variations of pre-2019 Existing Technology Regressions"
+author: "Simón Caicedo"
+date: \today
+header-includes:
+  \usepackage{float}
+  \usepackage{placeins}
+  \usepackage{rotating}
+  \usepackage{graphicx}
+  \usepackage{booktabs}
+  \usepackage{caption}
+  \usepackage{longtable}
+  \usepackage{breqn}
+output:
+  pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.pos = 'H')
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning  = FALSE)
+```
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE, results='hide'}
+
+# Set Working Directory ----
+fileloc <- dirname(rstudioapi::getSourceEditorContext()$path)
+setwd(fileloc)
+rm(fileloc)
+
+
+# modelsummary package options----
+options("modelsummary_format_numeric_latex" = "plain")
+
+
+# Libraries to be used ----
+source("../src/packages.R")
+
+```
+
+
+# Does Existing Tech Use Mitigate COVID Impacts?
+
+## 1. Using Pre-2019 technology Adoption dummy variables and Months Since Adoption  . 
+
+We modify the existing technology regressions by including in the regressions two variables representing the usage of existing technology: Months Since Adoption ($MonthsAdoption_{it}$) and Pre-2019 Technology Adoption ($tech_i$). The latter is a binary variable equal to 1 if the company adopted E-payment or E-commerce technology before 2019, and 0 if it did not. The former denotes the number of months since the firm adopted the E-payment or E-commerce technology, which is applicable only for firms that adopted the technology prior to 2019. For firms that did not adopt the technology before 2019, the Months Since Adoption variable is assigned a value of 0. The estimated regression is:
+
+
+\begin{dmath}\label{reg_2}
+y_{ipt} = \alpha_0 + \alpha_1 MonthsAdoption_{it} \cdot covid_t + \alpha_2 MonthsAdoption_{it} \cdot covid_t \cdot category_p + \alpha_3 tech_i \cdot covid_t + \alpha_4 tech_i \cdot covid_t \cdot category_p  +\alpha_5 covid_t \cdot category_p + FE_p + FE_i + FE_t + \epsilon_{ipt}
+\end{dmath}
+
+
+
+
+## 2. Using dummy variables of different type of pre-2019 adopters.
+
+Firms that adopted the technology before 2019 (existing tech) can be categorized into:
+
+-   2018 Adopters: This subcategory is for firms that adopted the technology during the year 2018.
+
+-   2017 Adopters: This subcategory is for firms that adopted the technology during the year 2017.
+
+-   Pre 2017 Adopters: Since the BuiltWith dataset is only available from 2016 onwards, this subcategory includes both the adopters during 2016 and those that adopted the technology before 2016.
+    
+    
+Based on this, one can run the the following regression using these types of pre-2019 technology adopters, where the baseline catefory are the non-pre-2019 adopters, which includes the never adopters and those firms that adopted the technology from 2019 onwards:
+    
+    
+\begin{dmath}\label{reg_3}
+y_{ipt} = \alpha_0 + \alpha_1 Pre2017Adopter_{i} \cdot covid_t + \alpha_2 Pre2017Adopter_{it} \cdot covid_t \cdot category_p + \alpha_3 2017Adopter_i \cdot covid_t + \alpha_4 2017Adopter_i \cdot covid_t \cdot category_p +  \alpha_5 2018Adopter_i \cdot covid_t + \alpha_6 2018Adopter_i \cdot covid_t \cdot category_p  +\alpha_7 covid_t \cdot category_p + FE_p + FE_i + FE_t + \epsilon_{ipt}
+\end{dmath}
+
+
+Since the BuiltWith dataset is only available for Indonesia from 2017 onwards, we estimate the following regressions for that country:
+
+
+\begin{dmath}\label{reg_3}
+y_{ipt} = \alpha_0 + \alpha_1 Pre2018Adopter_{i} \cdot covid_t + \alpha_2 Pre2018Adopter_{it} \cdot covid_t \cdot category_p +  \alpha_3 2018Adopter_i \cdot covid_t + \alpha_4 2018Adopter_i \cdot covid_t \cdot category_p  +\alpha_5 covid_t \cdot category_p + FE_p + FE_i + FE_t + \epsilon_{ipt}
+\end{dmath}
+
+
+### 2.1.1 Intensive Margin Regressions
+
+
+```{r}
+
+# India - intensive margin regressions of the model that measure if tech adoption mitigated covid impacts using dummies for different types of pre-2019 adopters
+#source("../India/06_regressions_pre_2019_adopters_IND.R", chdir = TRUE)
+
+# Mexico - intensive margin regressions of the model that measure if tech adoption mitigated covid impacts using dummies for different types of pre-2019 adopters
+#source("../Mexico/06_regressions_pre_2019_adopters_MEX.R", chdir = TRUE)
+
+
+# Indonesia - intensive margin regressions of the model that measure if tech adoption mitigated covid impacts using dummies for different types of pre-2019 adopters
+source("../Indonesia/06_regressions_pre_2019_adopters_IDN.R", chdir = TRUE)
+
+
+```
+
+
+
+#### Log Imports and Log Exports
+
+```{r, eval=TRUE}
+
+#pre_2019_adopters_reg_imp_exp_IND[[2]]
+
+```
+
+
+
+```{r, eval = TRUE}
+
+#pre_2019_adopters_reg_imp_exp_MEX[[2]]
+
+```
+
+
+```{r, eval=TRUE}
+
+pre_2019_adopters_reg_imp_exp_IDN[[2]]
+
+```
+
+
+
+#### Number of destinations/sources
+
+
+```{r, eval=TRUE}
+
+#pre_2019_adopters_reg_n_countries_IND[[2]]
+
+```
+
+
+
+```{r, eval=TRUE}
+
+#pre_2019_adopters_reg_n_countries_MEX[[2]]
+
+```
+
+
+
+```{r, eval = TRUE}
+
+pre_2019_adopters_reg_n_countries_IDN[[2]]
+
+```
+
+
+
+#### New Source/Destination dummy
+
+Since the available data for Indonesia is too limited to establish a baseline year, we will exclude these variables for this country.
+
+
+```{r, eval=TRUE}
+
+#pre_2019_adopters_reg_source_dest_IND[[2]]
+
+```
+
+
+
+```{r, eval=TRUE}
+
+#pre_2019_adopters_reg_source_dest_MEX[[2]]
+
+```
+
+
+### 2.1.2 Extensive Margin Regressions
+
+
+```{r, eval=T}
+
+ext_marg_pre_2019_adopters_IND<-readRDS("../../Outputs/India/regressions_results/tech_mitigation_covid_model/models_prop_pre_2019_adopters_IND.rds")[[2]]
+
+ext_marg_pre_2019_adopters_IND
+
+```
+
+
+```{r, eval=T}
+
+ext_marg_pre_2019_adopters_MEX<-readRDS("../../Outputs/Mexico/regressions_results/tech_mitigation_covid_model/models_prop_pre_2019_adopters_MEX.rds")[[2]]
+
+ext_marg_pre_2019_adopters_MEX
+
+```
+
+
+```{r, eval=T}
+
+ext_marg_pre_2019_adopters_IDN<-readRDS("../../Outputs/Indonesia/regressions_results/tech_mitigation_covid_model/models_prop_pre_2019_adopters_IDN.rds")[[2]]
+
+ext_marg_pre_2019_adopters_IDN
+
+```
+
+
+
