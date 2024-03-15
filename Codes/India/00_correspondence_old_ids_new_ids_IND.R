@@ -67,4 +67,3 @@ write.csv(corresp_table, "../../Data/India/processed_data/correspondence_table_o
 
 # Note: 1. There is a 2.67% of old IDs with no new ID correspondence
 #       2. 5% of old IDs has multiple new IDs. 
-# 
