@@ -26,6 +26,30 @@ new_ids_raw_names<-read_csv("../../Data/Mexico/raw_data/MEX_central_dataset_full
   select(domestic, new_id) %>% 
   na.omit(new_id) 
 
+# Data with some IDs that were updated 
+updated_ids<-read.csv("../../Data/Mexico/raw_data/mex_central_dataset_mapping_update16-05.csv") %>%  
+  rename(new_id = ID_domestic, updated_id = `ID_domestic__update16.05`) %>% 
+  select(domestic, new_id, updated_id) %>%
+  filter(new_id!="") 
+
+# Update list of new ids based on changes on some IDs 
+new_ids_raw_names<-new_ids_raw_names %>% 
+  left_join(updated_ids, by = c("new_id", "domestic")) %>% 
+  mutate(new_id_updated = ifelse(is.na(updated_id), new_id, updated_id)) %>% 
+  select(-new_id, -updated_id) %>% 
+  rename(new_id = new_id_updated)
+
+# Additionally 3 firms were dropped in Mexico 
+firms_to_drop<-c("SISTEMA DE AGUA POTABLE Y ALCANTARILLADO DE LEON", 
+                 "SISTEMA MUNICIPAL DE AGUA POTABLE Y ALCANTARILLADO DE GUANAJUATO", 
+                 "PROMEXICO")
+
+new_ids_raw_names<-new_ids_raw_names %>% 
+  filter(!(domestic %in% firms_to_drop))
+
+
+rm(updated_ids)
+
 # Data with old IDs and raw firm names ---- 
 old_ids_raw_names<-read.csv("../../Data/Mexico/raw_data/MEX_finalfirms_addresses.csv") %>%  
   rename(old_id = domestic_firm_id, 

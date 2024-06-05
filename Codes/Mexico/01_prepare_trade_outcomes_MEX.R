@@ -33,7 +33,7 @@ library(dtplyr)
 # trade in that product by that firm to that country in that month.
 
 # Read Panjiva Import Raw Data ---
-panjiva_import_data <- read_dta("../../Data/Mexico/raw_data/MEX_imports_Monthly_dom_locationmode_hs8.dta")%>%
+panjiva_import_data <- read_dta("../../Data/Mexico/raw_data/MEX_imports_monthly_dom_locmode_hs8.dta")%>%
   lazy_dt() %>% 
   filter(!str_starts(hs8 , "27"), 
          country_iso!= "EUN", 
@@ -227,7 +227,7 @@ gc()
 # trade in that product by that firm to that country in that month.
 
 # Read Panjiva Import Raw Data ---
-panjiva_export_data <- read_dta("../../Data/Mexico/raw_data/MEX_exports_Monthly_dom_locationmode_hs8.dta")%>%
+panjiva_export_data <- read_dta("../../Data/Mexico/raw_data/MEX_exports_monthly_dom_locmode_hs8.dta")%>%
   lazy_dt() %>% 
   filter(!str_starts(hs8 , "27"), 
          country_iso!= "EUN", 

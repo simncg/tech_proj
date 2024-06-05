@@ -26,6 +26,20 @@ new_ids_raw_names<-read_csv("../../Data/India/raw_data/IND_central_dataset_full_
   select(domestic, new_id) %>% 
   na.omit(new_id) 
 
+# Data with some IDs that were updated 
+updated_ids<-read.csv("../../Data/India/raw_data/IND_central_dataset_mapping_update16-05.csv") %>%  
+  rename(new_id = ID_domestic, updated_id = `ID_domestic__update16.05`) %>% 
+  select(domestic, new_id, updated_id) %>%
+  filter(new_id!="") 
+
+# Update list of new ids based on changes on some IDs 
+new_ids_raw_names<-new_ids_raw_names %>% 
+  left_join(updated_ids, by = c("new_id", "domestic")) %>% 
+  mutate(new_id_updated = ifelse(is.na(updated_id), new_id, updated_id)) %>% 
+  select(-new_id, -updated_id) %>% 
+  rename(new_id = new_id_updated)
+
+
 # Data with old IDs and raw firm names ---- 
 old_ids_raw_names<-read.csv("../../Data/India/raw_data/india_domestic_contact_all.csv") %>%  
   rename(old_id = ID) %>% 
