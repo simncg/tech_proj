@@ -32,26 +32,31 @@ source("../src/packages.R")
 # 
 
 # Data with new IDs and raw firm names ----
-new_ids_raw_names<-read_csv("../../Data/India/raw_data/IND_central_dataset_full_19-02.csv") %>%
-  rename(new_id = ID_domestic) %>%
-  select(domestic, new_id) %>%
-  na.omit(new_id)
+# new_ids_raw_names<-read_csv("../../Data/India/raw_data/IND_central_dataset_full_19-02.csv") %>%
+#   rename(new_id = ID_domestic) %>%
+#   select(domestic, new_id) %>%
+#   na.omit(new_id)
 
-# Data with some new IDs that were updated  
-updated_ids<-read.csv("../../Data/India/raw_data/IND_central_dataset_mapping_update16-05.csv") %>%  
-  rename(new_id = ID_domestic, updated_id = `ID_domestic__update16.05`) %>% 
-  select(domestic, new_id, updated_id) %>%
-  filter(new_id!="") 
+# # Data with some new IDs that were updated  
+# updated_ids<-read.csv("../../Data/India/raw_data/IND_central_dataset_mapping_update16-05.csv") %>%  
+#   rename(new_id = ID_domestic, updated_id = `ID_domestic__update16.05`) %>% 
+#   select(domestic, new_id, updated_id) %>%
+#   filter(new_id!="") 
+# 
+# # Update list of new ids based on changes on some IDs 
+# new_ids_raw_names<-new_ids_raw_names %>% 
+#   left_join(updated_ids, by = c("new_id", "domestic")) %>% 
+#   mutate(new_id_updated = ifelse(is.na(updated_id), new_id, updated_id)) %>% 
+#   select(-new_id, -updated_id) %>% 
+#   rename(new_id = new_id_updated)
+# 
+# rm(updated_ids)
 
-# Update list of new ids based on changes on some IDs 
-new_ids_raw_names<-new_ids_raw_names %>% 
-  left_join(updated_ids, by = c("new_id", "domestic")) %>% 
-  mutate(new_id_updated = ifelse(is.na(updated_id), new_id, updated_id)) %>% 
-  select(-new_id, -updated_id) %>% 
-  rename(new_id = new_id_updated)
 
-rm(updated_ids)
-
+new_ids_raw_names<-read_csv("../../Data/India/raw_data/IND_domestic_cleaned_names_fixed_05-06.csv") %>%
+     rename(new_id = ID) %>%
+     select(domestic, new_id) %>%
+     na.omit(new_id)
 
 # Data with old IDs and raw firm names ----
 old_ids_raw_names<-read.csv("../../Data/India/raw_data/india_domestic_contact_all.csv") %>%
@@ -75,7 +80,10 @@ corresp_table<-
   ungroup() %>%
   group_by(new_id) %>%
   mutate(different_old_ids = n_distinct(old_id) > 1) %>%
-  ungroup() 
+  ungroup()
+
+
+# 1.	Drop all firms that are in the old file but not in the new file. 
 
 # Dataset with old IDs with no new IDs
 old_ids_no_new_ids<-
@@ -83,9 +91,24 @@ old_ids_no_new_ids<-
   filter(is.na(new_id)) %>% 
   select(-different_new_ids, -different_old_ids)
 
+
+
+# Identify firms that are in the old file but not in the new file (same thing as in old_ids_no_new_ids)
+# old_names_not_in_new_file<-old_ids_raw_names %>% 
+#   distinct(domestic, .keep_all = T) %>% 
+#   left_join(
+#     new_ids_raw_names %>% 
+#       distinct(domestic, .keep_all = T) %>% 
+#       mutate(firm_in_new_file = 1), 
+#     by = c("domestic")
+#   ) %>% 
+#   mutate(firm_in_new_file = ifelse(is.na(firm_in_new_file), 0, firm_in_new_file))
+
+
 # Correspondence table removing old IDs that do not have new IDs
 corresp_table<-corresp_table %>%
   filter(!is.na(new_id))
+
 
 # Save data
 write_dta(old_ids_no_new_ids, "../../Data/India/processed_data/old_ids_with_no_new_ids_IND.dta")
@@ -115,6 +138,12 @@ builtiwith_websites_panjiva<-left_join(old_ids_builtwith_websites, panjiva_enric
             by = c("old_id", "panjiva_raw_firm_name" = "domestic")) %>% 
   relocate(old_id, new_id, panjiva_raw_firm_name, builtwith_website, different_old_ids, different_new_ids)
 
+# This data includes cases where only one id has only one old id
+perfect_match_builtwith <- builtiwith_websites_panjiva %>%
+  filter(different_new_ids == FALSE, different_old_ids == FALSE) %>%
+  select(-different_new_ids, -different_old_ids) %>%
+  mutate(type = 'perfect_match', final_website = builtwith_website, old_id_website = NA) %>%
+  select(old_id, new_id, old_id_website, panjiva_raw_firm_name, builtwith_website, final_website, type)
 
 # This data only includes cases where the new id has multiple old ids 
 same_new_id_diff_old_ids_builtwith<-builtiwith_websites_panjiva %>% 
@@ -150,13 +179,27 @@ same_new_id_diff_old_ids_builtwith<-builtiwith_websites_panjiva %>%
   #filter(only_one_url_retrieved!=1) %>% 
   arrange(new_id, builtwith_website)
   
+# This data includes cases where the new id has multiple old ids but website is unimodal
+unimodal_builtwith <- same_new_id_diff_old_ids_builtwith %>%
+  group_by(new_id) %>%
+  filter(unimodal == 1, !is.na(share_url_mode), share_url_mode != 1) %>%
+  mutate(final_website = ifelse(obs_has_mode == 0, builtwith_website[obs_has_mode == 1][1], builtwith_website), 
+         old_id_website = ifelse(obs_has_mode == 0, old_id[obs_has_mode == 1][1], old_id), # This assign one of the old ids that has the mode
+         type = 'unimodal') %>%
+  select(old_id, new_id, old_id_website, panjiva_raw_firm_name, builtwith_website, final_website, type)
+  
 
 # Save in dta
 write_dta(builtiwith_websites_panjiva, "../../Data/India/processed_data/old_ids_new_ids_builtwith_websites_IND.dta")
 
 # Save in dta
+write_dta(perfect_match_builtwith, "../../Data/India/processed_data/perfect_match_builtwith_IND.dta")
+
+# Save in dta
 write_dta(same_new_id_diff_old_ids_builtwith, "../../Data/India/processed_data/new_ids_with_multiple_old_ids_builtwith_websites_IND.dta")
 
+# Save in dta
+write_dta(unimodal_builtwith, "../../Data/India/processed_data/unimodal_builtwith_IND.dta")
 
 
 
@@ -227,12 +270,21 @@ shares<-same_new_id_diff_old_ids_builtwith %>%
 # Create a dataset with the new ids with multiple old ids but for the cases where only one url was retrieved 
 
 one_url_retrieved<-same_new_id_diff_old_ids_builtwith %>% 
-  filter(only_one_url_retrieved == 1) 
+  filter(only_one_url_retrieved == 1) %>%
+  right_join(corresp_table, by = c("new_id", "panjiva_raw_firm_name" = "domestic")) %>%
+  group_by(new_id) %>%
+  mutate(final_website = ifelse(is.na(builtwith_website), builtwith_website[only_one_url_retrieved == 1][1], builtwith_website),
+         type = 'multimodal_only_one_url_retrieved',
+         old_id = old_id.y,
+         old_id_website = ifelse(is.na(only_one_url_retrieved), old_id[only_one_url_retrieved == 1][1], old_id)) %>%
+  ungroup() %>%
+  filter(!is.na(final_website)) %>%
+  select(old_id, new_id, old_id_website, panjiva_raw_firm_name, builtwith_website, final_website, type)
+  
 
 
-write.csv(one_url_retrieved, "../../Data/India/processed_data/one_url_retrieved_cases_for_fuzzy_IND.csv")
-
-
+#write.csv(one_url_retrieved, "../../Data/India/processed_data/one_url_retrieved_cases_for_fuzzy_IND.csv")
+write.csv(one_url_retrieved, "../../Data/India/processed_data/one_url_retrieved_cases_IND.csv")
 
 # Do the same for Aberdeen 
 
