@@ -142,7 +142,7 @@ builtiwith_websites_panjiva<-left_join(old_ids_builtwith_websites, panjiva_enric
 perfect_match_builtwith <- builtiwith_websites_panjiva %>%
   filter(different_new_ids == FALSE, different_old_ids == FALSE) %>%
   select(-different_new_ids, -different_old_ids) %>%
-  mutate(type = 'perfect_match', final_website = builtwith_website, old_id_website = NA) %>%
+  mutate(type = 'perfect_match', final_website = builtwith_website, old_id_website = old_id) %>%
   select(old_id, new_id, old_id_website, panjiva_raw_firm_name, builtwith_website, final_website, type)
 
 # This data only includes cases where the new id has multiple old ids 
@@ -181,11 +181,12 @@ same_new_id_diff_old_ids_builtwith<-builtiwith_websites_panjiva %>%
   
 # This data includes cases where the new id has multiple old ids but website is unimodal
 unimodal_builtwith <- same_new_id_diff_old_ids_builtwith %>%
+  filter(unimodal == 1, !is.na(share_url_mode), only_one_url_retrieved == 0) %>%
   group_by(new_id) %>%
-  filter(unimodal == 1, !is.na(share_url_mode), share_url_mode != 1) %>%
   mutate(final_website = ifelse(obs_has_mode == 0, builtwith_website[obs_has_mode == 1][1], builtwith_website), 
          old_id_website = ifelse(obs_has_mode == 0, old_id[obs_has_mode == 1][1], old_id), # This assign one of the old ids that has the mode
          type = 'unimodal') %>%
+  ungroup() %>%
   select(old_id, new_id, old_id_website, panjiva_raw_firm_name, builtwith_website, final_website, type)
   
 
@@ -274,6 +275,7 @@ one_url_retrieved<-same_new_id_diff_old_ids_builtwith %>%
   right_join(corresp_table, by = c("new_id", "panjiva_raw_firm_name" = "domestic")) %>%
   group_by(new_id) %>%
   mutate(final_website = ifelse(is.na(builtwith_website), builtwith_website[only_one_url_retrieved == 1][1], builtwith_website),
+         builtwith_website = ifelse(is.na(builtwith_website), builtwith_website[only_one_url_retrieved == 1][1], builtwith_website),
          type = 'multimodal_only_one_url_retrieved',
          old_id = old_id.y,
          old_id_website = ifelse(is.na(only_one_url_retrieved), old_id[only_one_url_retrieved == 1][1], old_id)) %>%
